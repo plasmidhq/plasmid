@@ -6,6 +6,10 @@ import time
 import json
 
 from plasmid.util import endpoint
+from plasmid.storage import Hub, Storage
+
+
+hub = Hub('hub')
 
 
 class Plasmid(Resource):
@@ -19,7 +23,9 @@ class Plasmid(Resource):
             try:
                 return self.databases[name]
             except KeyError:
-                self.databases[name] = db = Database(name)
+                s = Storage(hub, name)
+                s.create()
+                self.databases[name] = db = Database(name, s)
                 return db
         else:
             return StringResource(json.dumps({
@@ -29,11 +35,15 @@ class Plasmid(Resource):
 
 class Database(Resource):
 
-    def __init__(self, name):
+    def __init__(self, name, storage):
         Resource.__init__(self)
         self.name = name
+        self.storage = storage
         self.data = {}
-        self.iteration = 1
+
+    @property
+    def iteration(self):
+        return self.storage.get_meta('iteration')
 
     @endpoint
     def render_GET(self, request):
@@ -70,14 +80,16 @@ class Database(Resource):
         last_iteration = body['last_iteration']
         data = body['data']
 
+        assert self.iteration
+
         if self.iteration > last_iteration:
             return {
-                'error': "Cannot update. Master has changed.",
+                'error': "Cannot update. Master has changed. %s > %s" % (self.iteration, last_iteration),
                 'saved': 0,
             }
 
         else:
-            self.iteration += 1
+            self.storage.set_meta('iteration', self.iteration + 1)
             for k, v in data.items():
                 self.data[k] = (self.iteration, v)
             return json.dumps({'saved': len(data)})
