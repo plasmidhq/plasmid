@@ -39,7 +39,6 @@ class Database(Resource):
         Resource.__init__(self)
         self.name = name
         self.storage = storage
-        self.data = {}
 
     @property
     def iteration(self):
@@ -57,8 +56,9 @@ class Database(Resource):
 
     @endpoint
     def get_clone(self, request):
+        data = self.storage.get_data()
         return {
-            "data": self.data,
+            "data": data,
             "iteration": self.iteration,
         }
 
@@ -66,9 +66,10 @@ class Database(Resource):
     def get_update(self, request, last_iteration):
         last_iteration = int(last_iteration)
         updates = {}
-        for k, (i, v) in self.data.items():
-            if i > last_iteration:
-                updates[k] = (i, v)
+        data = self.storage.get_data(revision=last_iteration)
+        for k, (i, v) in data.items():
+            updates[k] = (i, v)
+        print 'UPDATES', updates
         return {
             "since": last_iteration,
             "until": self.iteration,
@@ -89,9 +90,7 @@ class Database(Resource):
             }
 
         else:
-            self.storage.set_meta('iteration', self.iteration + 1)
-            for k, v in data.items():
-                self.data[k] = (self.iteration, v)
+            self.storage.set_data(data)
             return json.dumps({'saved': len(data)})
 
 
