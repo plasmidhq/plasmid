@@ -1,9 +1,11 @@
+import time
+import json
+from os.path import abspath, join, dirname
+
 from twisted.internet import reactor
 from twisted.web.server import Site
 from twisted.web.resource import Resource
-
-import time
-import json
+from twisted.web.static import File
 
 from plasmid.util import endpoint
 from plasmid.storage import Hub, Storage
@@ -65,10 +67,10 @@ class Database(Resource):
     @endpoint
     def get_update(self, request, last_iteration):
         last_iteration = int(last_iteration)
-        updates = {}
+        updates = []
         data = self.storage.get_data(revision=last_iteration)
         for k, (i, v) in data.items():
-            updates[k] = (i, v)
+            updates.append((i, k, v))
         print 'UPDATES', updates
         return {
             "since": last_iteration,
@@ -123,6 +125,9 @@ class StringResource(Resource):
 
 
 resource = Plasmid()
+static_path = abspath(join(dirname(__file__), '..', 'static'))
+print "Static at", static_path
+resource.putChild('static', File(static_path))
 factory = Site(resource)
 reactor.listenTCP(8880, factory)
 reactor.run()

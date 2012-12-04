@@ -2,6 +2,7 @@ import json
 
 
 def endpoint(func):
-    def _(*args, **kwargs):
-        return json.dumps(func(*args, **kwargs))
+    def _(self, request, *args, **kwargs):
+        request.setHeader('Content-Type', 'application/json')
+        return json.dumps(func(self, request, *args, **kwargs))
     return _
