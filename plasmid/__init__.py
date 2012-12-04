@@ -65,29 +65,29 @@ class Database(Resource):
         }
 
     @endpoint
-    def get_update(self, request, last_iteration):
-        last_iteration = int(last_iteration)
+    def get_update(self, request, last_revision):
+        last_revision = int(last_revision)
         updates = []
-        data = self.storage.get_data(revision=last_iteration)
+        data = self.storage.get_data(revision=last_revision)
         for k, (i, v) in data.items():
             updates.append((i, k, v))
         print 'UPDATES', updates
         return {
-            "since": last_iteration,
+            "since": last_revision,
             "until": self.iteration,
             "updates": updates,
         }
 
-    def post_update(self, request):
+    def post_update(self, request, x):
         body = json.load(request.content)
-        last_iteration = body['last_iteration']
+        last_revision = body['last_revision']
         data = body['data']
 
         assert self.iteration
 
-        if self.iteration > last_iteration:
+        if self.iteration > last_revision:
             return {
-                'error': "Cannot update. Master has changed. %s > %s" % (self.iteration, last_iteration),
+                'error': "Cannot update. Master has changed. %s > %s" % (self.iteration, last_revision),
                 'saved': 0,
             }
 

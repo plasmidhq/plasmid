@@ -3,6 +3,8 @@ var plasmid = {};
 
     var _;
 
+    window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+
     // Request and Event Helper
     
     function EventListener() {}
@@ -29,6 +31,9 @@ var plasmid = {};
     };
     EventListener.prototype.error = function(handler) {
         return this.on('error', handler);
+    };
+    EventListener.prototype.onerror = function() {
+        console.error('Unhandled error', arguments);
     };
     
     function Event(eventname, target, data) {
@@ -123,13 +128,17 @@ var plasmid = {};
         var idbreq = this._db.transaction('localsync')
             .objectStore('localsync')
             .openCursor();
+        var results = []
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
-            if (cursor && !cursor.value.revision) {
-                request.trigger('each', cursor.value);
+            if (cursor) {
+                if (!cursor.value.revision) {
+                    results.push(cursor.value);
+                    request.trigger('each', cursor.value);
+                }
                 cursor.continue();
             } else {
-                request.trigger('done');
+                request.trigger('success', results);
             }
         };
         idbreq.onerror = function(event) {
@@ -186,18 +195,35 @@ var plasmid = {};
     };
 
     Store.prototype.push = function() {
-        // TODO: Totally fake. Make not fake.
-        var store = this;
-        this.meta(get_queued, 'last_revision');
-        function get_queued(error, last_revision) {
-            this._queued(function(error, queued) {
+        var httpreq = new XMLHttpRequest();
+        var url;
+        this.meta('last_revision')
+        .then(function(last_revision) {
+            url = this.remote + 'update/';
+            this._queued()
+            .then(function(queued) {
+                var req_body = {
+                    last_revision: last_revision 
+                };
+                req_body.data = {}
                 for (var i=0; i<queued.length; i++) {
-                    queued[i].revision = last_revision + 1;
-                    var t = this._db.transaction(['localsync'], "readwrite");
-                    t.objectStore('localsync').put(queued[i]);
+                    var q = queued[i];
+                    req_body.data[q.key] = q.value;
                 }
-                this.meta(function(){}, 'last_revision', last_revision + 1);
-            });
+                httpreq.onreadystatechange = handle_post;
+                httpreq.open('POST', url);
+                httpreq.send(JSON.stringify(req_body));
+            })
+        });
+
+        function handle_post() {
+            if (httpreq.readyState === 4) {
+                if (httpreq.status === 200) {
+                    console.log(httpreq.responseText);
+                } else {
+                    console.error('There was a problem with the request.');
+                }
+            }
         }
     };
 
