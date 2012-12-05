@@ -51,10 +51,14 @@ var plasmid = {};
 
     // Store
 
-    var Store = function Store(name, remote) {
+    var Store = function Store(options) {
         var store = this;
-        this.name = name;
-        this.remote = remote;
+
+        this.options = options || {};
+        this.name = options.name;
+        this.remote = options.remote;
+        this.autopush = options.autopush || false;
+
         this.transaction = null;
 
         var req = indexedDB.open(name);
@@ -81,7 +85,7 @@ var plasmid = {};
 
             metastore.add({property: "last_revision", value: 1});
             metastore.add({property: "plasmid_schema_version", value: 1});
-            metastore.add({property: "remote_url", value: remote});
+            metastore.add({property: "remote_url", value: store.remote});
 
             store._meta = metastore;
 
@@ -168,15 +172,21 @@ var plasmid = {};
                 if (httpreq.status === 200) {
                     var data = JSON.parse(httpreq.responseText);
                     var updates = data.updates;
-                    function next() {
-                        var r;
-                        if (updates.length > 0) {
-                            r = updates.shift();
-                            store.trigger('pulldata', r[0], r[1], r[2], next);
+                    if (updates.length > 0) {
+                        function next() {
+                            var r;
+                            if (updates.length > 0) {
+                                r = updates.shift();
+                                store.trigger('pulldata', r[0], r[1], r[2], next);
+                            } else {
+                                r = null;
+                            }
+                            return r
                         }
-                        return r
+                        next();
+                    } else {
+                        store.meta('last_revision', data.until);
                     }
-                    next();
                 } else {
                     console.error('There was a problem with the request.');
                 }
@@ -273,6 +283,8 @@ var plasmid = {};
     };
 
     Store.prototype.put = function(key, value, _revision) {
+        var store = this;
+        var autopush = this.autopush;
         var request = new Request(this);
         var t = this._db.transaction(['localsync'], "readwrite");
         var idbreq = t.objectStore('localsync').put({
@@ -283,6 +295,9 @@ var plasmid = {};
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
                 request.trigger('success', event.target.result.value);
+                if (autopush) {
+                    store.push();
+                }
             } else {
                 request.trigger('missing', key);
             }
