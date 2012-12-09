@@ -229,7 +229,8 @@ var plasmid = {};
         function handle_post() {
             if (httpreq.readyState === 4) {
                 if (httpreq.status === 200) {
-                    console.log(httpreq.responseText);
+                    var data = JSON.parse(httpreq.responseText);
+                    store.trigger('pull');
                 } else {
                     console.error('There was a problem with the request.');
                 }
@@ -262,6 +263,7 @@ var plasmid = {};
     };
 
     Store.prototype.add = function(key, value) {
+        var store = this;
         var request = new Request(this);
         var t = this._db.transaction(['localsync'], "readwrite");
         var idbreq = t.objectStore('localsync').add({
@@ -272,6 +274,7 @@ var plasmid = {};
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
                 request.trigger('success', event.target.result.value);
+                store.trigger('update', key, event.target.result.value);
             } else {
                 request.trigger('missing', key);
             }
