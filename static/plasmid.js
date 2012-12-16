@@ -183,17 +183,21 @@ var plasmid = {};
             db.idb = db;
 
             // Meta storage
-            var metastore = db.createObjectStore('meta', {keyPath: 'key'});
-            metastore.createIndex('key', 'key', {unique: true});
+            if (!db.objectStoreNames.contains('meta')) {
+                var metastore = db.createObjectStore('meta', {keyPath: 'key'});
+                metastore.createIndex('key', 'key', {unique: true});
 
-            metastore.add({key: "last_revision", value: 1});
-            metastore.add({key: "plasmid_schema_version", value: 1});
-            metastore.add({key: "remote_url", value: remote});
+                metastore.add({key: "last_revision", value: 1});
+                metastore.add({key: "plasmid_schema_version", value: 1});
+                metastore.add({key: "remote_url", value: remote});
+            }
 
             // Data storage
             for (storename in options.schema.stores) {
-                var idbstore = db.createObjectStore(storename, {keyPath: 'key'});
-                idbstore.createIndex('revision', 'revision', {unique: false});
+                if (!db.objectStoreNames.contains(storename)) {
+                    var idbstore = db.createObjectStore(storename, {keyPath: 'key'});
+                    idbstore.createIndex('revision', 'revision', {unique: false});
+                }
             }
 
             console.log('Plasmid store established.');
