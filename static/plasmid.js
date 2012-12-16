@@ -314,6 +314,19 @@ var plasmid = {};
             ;
     };
 
+    SyncStore.prototype.sync = function() {
+        var store = this;
+        attempt();
+
+        function attempt() {
+            store.push().on('error', function(reason) {
+                if (reason === 'outofdate') {
+                    store.pull().then(attempt);
+                }
+            });
+        }
+    };
+
     SyncStore.prototype.push = function() {
         var store = this;
         var httpreq = new XMLHttpRequest();
@@ -337,11 +350,21 @@ var plasmid = {};
             })
         });
 
+        var request = new Request();
+        return request;
+
         function handle_post() {
             if (httpreq.readyState === 4) {
                 if (httpreq.status === 200) {
                     var data = JSON.parse(httpreq.responseText);
-                    store.trigger('push');
+                    if (!data.error) {
+                        store.trigger('push');
+                        request.trigger('success');
+                    } else {
+                        if (data.reason == 'outofdate') {
+                            request.trigger('error', data.reason);
+                        }
+                    }
                 } else {
                     console.error('There was a problem with the request.');
                 }

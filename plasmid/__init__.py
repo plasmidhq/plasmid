@@ -77,6 +77,7 @@ class Database(Resource):
             "updates": updates,
         }
 
+    @endpoint
     def post_update(self, request, x):
         body = json.load(request.content)
         last_revision = body['last_revision']
@@ -88,6 +89,7 @@ class Database(Resource):
             return {
                 'error': "Cannot update. Master has changed. %s > %s" % (self.iteration, last_revision),
                 'saved': 0,
+                'reason': 'outofdate',
             }
 
         else:
