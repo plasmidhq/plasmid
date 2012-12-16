@@ -157,23 +157,30 @@ var plasmid = {};
         var remote = options.remote || (this.remote = options.api + options.name + '/');
 
         var db = this;
-        var req = indexedDB.open(this.name);
+        db.stores = {};
+        var req = indexedDB.open(this.name, options.schema.version);
 
         req.onerror = function(event) {
             db.trigger('openerror', event);
         };
         req.onsuccess = function(event) {
             db.idb = event.target.result;
+
+            var st;
+            for (storename in options.schema.stores) {
+                st = options.schema.stores[storename].sync ? SyncStore : LocalStore;
+                db.stores[storename] = new st({
+                    db: db,
+                    storename: storename,
+                });
+            }
+
             db.trigger('opensuccess')
         };
         req.onupgradeneeded = function(event) {
             console.log('Setting up plasmid store...')
             var db = event.target.result;
             db.idb = db;
-
-            // Data storage
-            var idbstore = db.createObjectStore('localsync', {keyPath: 'key'});
-            idbstore.createIndex('revision', 'revision', {unique: false});
 
             // Meta storage
             var metastore = db.createObjectStore('meta', {keyPath: 'key'});
@@ -183,6 +190,12 @@ var plasmid = {};
             metastore.add({key: "plasmid_schema_version", value: 1});
             metastore.add({key: "remote_url", value: remote});
 
+            // Data storage
+            for (storename in options.schema.stores) {
+                var idbstore = db.createObjectStore(storename, {keyPath: 'key'});
+                idbstore.createIndex('revision', 'revision', {unique: false});
+            }
+
             console.log('Plasmid store established.');
         };
 
@@ -190,6 +203,7 @@ var plasmid = {};
             db: this
         ,   storename: 'meta'
         });
+        this.stores.meta = this.meta;
     };
     Database.prototype = new EventListener();
 
@@ -220,8 +234,8 @@ var plasmid = {};
     SyncStore.prototype._queued = function() {
         var request = new Request(this);
         var store = this;
-        var idbreq = this.db.idb.transaction('localsync')
-            .objectStore('localsync')
+        var idbreq = this.db.idb.transaction(this.storename)
+            .objectStore(this.storename)
             .openCursor();
         var results = []
         idbreq.onsuccess = function(event) {
