@@ -68,8 +68,9 @@ class Database(Resource):
         last_revision = int(last_revision)
         updates = []
         data = self.storage.get_data(revision=last_revision)
-        for k, (i, v) in data.items():
-            updates.append((i, k, v))
+        for store in data:
+            for k, (i, v) in data[store].items():
+                updates.append((store, i, k, v))
         print 'UPDATES', updates
         return {
             "since": last_revision,

@@ -211,6 +211,79 @@ var plasmid = {};
     };
     Database.prototype = new EventListener();
 
+    Database.prototype.sync = function() {
+        var database = this;
+        attempt();
+
+        function attempt() {
+            database.push().on('error', function(reason) {
+                if (reason === 'outofdate') {
+                    database.pull().then(attempt);
+                }
+            });
+        }
+    };
+
+    Database.prototype.pull = function() {
+        // Pull the latest updates from the remote sync service
+        // Triggers a 'conflict' event on the store for every conflicting item
+        // Triggers a 'update' event on every item changed by the operation
+        // Triggers a 'pullsuccess' event on the store when the operation completes
+        var database = this;
+        var httpreq = new XMLHttpRequest();
+        var remote = this.remote;
+        var url;
+        this.meta.get('last_revision')
+        .then(function(last_revision) {
+            url = remote + 'update/' + last_revision;
+            httpreq.onreadystatechange = parse_json;
+            httpreq.open('GET', url);
+            httpreq.send(null);
+        });
+
+        var request = new Request();
+        return request;
+
+        function parse_json() {
+            if (httpreq.readyState === 4) {
+                if (httpreq.status === 200) {
+                    var data = JSON.parse(httpreq.responseText);
+                    var updates = data.updates;
+                    if (updates.length > 0) {
+                        function next() {
+                            var r;
+                            if (updates.length > 0) {
+                                r = updates.shift();
+                                var storename = r.shift();
+                                var revision = r.shift();
+                                var key = r.shift();
+                                var value = r.shift();
+
+                                database.stores[storename].put(key, value, revision)
+                                    .then(function(){
+                                        database.meta.put('last_revision', revision).then(next);
+                                    })
+                                    .error(function(){
+                                        console.error(arguments);
+                                    })
+                                ;
+                            } else {
+                                r = null;
+                            }
+                            return r
+                        }
+                        next();
+                    } else {
+                        database.meta.put('last_revision', data.until);
+                    }
+                    request.trigger('success') 
+                } else {
+                    console.error('There was a problem with the request.');
+                }
+            }
+        }
+    };
+
     Database.prototype.push = function() {
         var database = this;
         var httpreq = new XMLHttpRequest();
@@ -334,77 +407,6 @@ var plasmid = {};
         };
         return request;
     }
-
-    SyncStore.prototype.pull = function() {
-        // Pull the latest updates from the remote sync service
-        // Triggers a 'conflict' event on the store for every conflicting item
-        // Triggers a 'update' event on every item changed by the operation
-        // Triggers a 'pullsuccess' event on the store when the operation completes
-        var store = this;
-        var httpreq = new XMLHttpRequest();
-        var remote = this.db.remote;
-        var url;
-        this.db.meta.get('last_revision')
-        .then(function(last_revision) {
-            url = remote + 'update/' + last_revision;
-            httpreq.onreadystatechange = parse_json;
-            httpreq.open('GET', url);
-            httpreq.send(null);
-        });
-
-        var request = new Request();
-        return request;
-
-        function parse_json() {
-            if (httpreq.readyState === 4) {
-                if (httpreq.status === 200) {
-                    var data = JSON.parse(httpreq.responseText);
-                    var updates = data.updates;
-                    if (updates.length > 0) {
-                        function next() {
-                            var r;
-                            if (updates.length > 0) {
-                                r = updates.shift();
-                                store.trigger('pulldata', r[0], r[1], r[2], next);
-                            } else {
-                                r = null;
-                            }
-                            return r
-                        }
-                        next();
-                    } else {
-                        store.db.meta.put('last_revision', data.until);
-                    }
-                    request.trigger('success') 
-                } else {
-                    console.error('There was a problem with the request.');
-                }
-            }
-        }
-    };
-    SyncStore.prototype.onpulldata = function(revision, key, value, next) {
-        this.put(key, value, revision)
-            .then(function(){
-                this.db.meta.put('last_revision', revision).then(next);
-            })
-            .error(function(){
-                console.error(arguments);
-            })
-            ;
-    };
-
-    SyncStore.prototype.sync = function() {
-        var store = this;
-        attempt();
-
-        function attempt() {
-            store.push().on('error', function(reason) {
-                if (reason === 'outofdate') {
-                    store.pull().then(attempt);
-                }
-            });
-        }
-    };
 
     // Exports
 

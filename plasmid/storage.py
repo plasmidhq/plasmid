@@ -84,7 +84,10 @@ class Storage(object):
             except TypeError:
                 return None
         elif revision:
-            cur.execute('SELECT key, revision, value FROM data WHERE revision > ?', (revision,))
+            cur.execute('SELECT store, key, revision, value FROM data WHERE revision > ?', (revision,))
         else:
-            cur.execute('SELECT key, revision, value FROM data')
-        return dict((k, (r, v)) for (k, r, v) in cur.fetchall())
+            cur.execute('SELECT store, key, revision, value FROM data')
+        data = {}
+        for (store, key, rev, value) in cur.fetchall():
+            data.setdefault(store, {})[key] = [rev, value]
+        return data
