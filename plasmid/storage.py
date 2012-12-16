@@ -13,6 +13,7 @@ class Storage(object):
     def __init__(self, hub, name):
         self.hub = hub
         self.name = name
+        self.create()
 
     def conn(self):
         return sqlite3.connect(join(self.hub.path, self.name + '.sqlite'))
@@ -26,9 +27,12 @@ class Storage(object):
         if not self._table_exists('data'):
             cur.execute('''
                 CREATE TABLE data (
-                    key text unique,
+                    store text,
+                    key text,
                     revision integer,
-                    value text
+                    value text,
+
+                    UNIQUE (store, key) ON CONFLICT REPLACE
                 );
             ''')
         if not self._table_exists('meta'):

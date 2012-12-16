@@ -126,6 +126,29 @@ var plasmid = {};
         return request
     };
 
+    Store.prototype.all = function() {
+        var request = new Request(this);
+        var store = this;
+        var idbreq = this._db.transaction('localsync')
+            .objectStore('localsync')
+            .openCursor();
+        var results = []
+        idbreq.onsuccess = function(event) {
+            var cursor = event.target.result;
+            if (cursor) {
+                results.push(cursor.value);
+                request.trigger('each', cursor.value);
+                cursor.continue();
+            } else {
+                request.trigger('success', results);
+            }
+        };
+        idbreq.onerror = function(event) {
+            request.trigger('error');
+        };
+        return request;
+    }
+
     Store.prototype._queued = function() {
         var request = new Request(this);
         var store = this;

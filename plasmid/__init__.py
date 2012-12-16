@@ -26,7 +26,6 @@ class Plasmid(Resource):
                 return self.databases[name]
             except KeyError:
                 s = Storage(hub, name)
-                s.create()
                 self.databases[name] = db = Database(name, s)
                 return db
         else:
