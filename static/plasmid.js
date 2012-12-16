@@ -53,9 +53,10 @@ var plasmid = {};
      *
      * Provides common helpers to work with data in an IndexedDB store
      */
-    var LocalStore = function LocalStore(db, storename) {
-        this.db = db;
-        this.storename = storename;
+    var LocalStore = function LocalStore(options) {
+        var options = options || {};
+        this.db = options.db;
+        this.storename = options.storename;
     };
     LocalStore.prototype = new EventListener();
         /* LocalStore.all()
@@ -64,7 +65,7 @@ var plasmid = {};
     LocalStore.prototype.all = function() {
         var request = new Request(this);
         var store = this;
-        var idbreq = this.db.transaction(this.storename)
+        var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
             .openCursor();
         var results = []
@@ -86,7 +87,7 @@ var plasmid = {};
     LocalStore.prototype.get = function(key) {
         var request = new Request(this);
 
-        var idbreq = this.db.transaction(this.storename)
+        var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
             .get(key);
         idbreq.onsuccess = function(event) {
@@ -105,7 +106,7 @@ var plasmid = {};
     LocalStore.prototype.add = function(key, value) {
         var store = this;
         var request = new Request(this);
-        var t = this.db.transaction([this.storename], "readwrite");
+        var t = this.db.idb.transaction([this.storename], "readwrite");
         var idbreq = t.objectStore(this.storename).add({
             key: key,
             value: value,
@@ -128,7 +129,7 @@ var plasmid = {};
         var store = this;
         var autopush = this.autopush;
         var request = new Request(this);
-        var t = this.db.transaction([this.storename], "readwrite");
+        var t = this.db.idb.transaction([this.storename], "readwrite");
         var idbreq = t.objectStore(this.storename).put({
             key: key,
             value: value,
@@ -153,7 +154,37 @@ var plasmid = {};
         this.transaction = null;
         this.name = options.name;
 
-        this.meta = new SyncStore({
+        var db = this;
+        var req = indexedDB.open(this.name);
+
+        req.onerror = function(event) {
+            db.trigger('openerror', event);
+        };
+        req.onsuccess = function(event) {
+            db.idb = event.target.result;
+            db.trigger('opensuccess')
+        };
+        req.onupgradeneeded = function(event) {
+            console.log('Setting up plasmid store...')
+            var db = event.target.result;
+            db.idb = db;
+
+            // Data storage
+            var idbstore = db.createObjectStore('localsync', {keyPath: 'key'});
+            idbstore.createIndex('revision', 'revision', {unique: false});
+
+            // Meta storage
+            var metastore = db.createObjectStore('meta', {keyPath: 'key'});
+            metastore.createIndex('key', 'key', {unique: true});
+
+            metastore.add({key: "last_revision", value: 1});
+            metastore.add({key: "plasmid_schema_version", value: 1});
+            metastore.add({key: "remote_url", value: idbstore.remote});
+
+            console.log('Plasmid store established.');
+        };
+
+        this.meta = new LocalStore({
             db: this
         ,   storename: 'meta'
         });
@@ -163,6 +194,8 @@ var plasmid = {};
     // SyncStore
 
     var SyncStore = function SyncStore(options) {
+        LocalStore.apply(this, arguments);
+
         var store = this;
 
         this.options = options || {};
@@ -172,37 +205,6 @@ var plasmid = {};
         this.autopush = options.autopush || false;
 
         this.transaction = null;
-
-        var req = indexedDB.open(this.dbname);
-        req.onerror = function(event) {
-            store.trigger('openerror', event);
-        };
-        req.onsuccess = function(event) {
-            var db = event.target.result;
-            store.db = db;
-            store.trigger('opensuccess')
-        };
-        req.onupgradeneeded = function(event) {
-            console.log('Setting up plasmid store...')
-            var db = event.target.result;
-            store.db = db;
-
-            // Data storage
-            var idbstore = db.createObjectStore('localsync', {keyPath: 'key'});
-            idbstore.createIndex('revision', 'revision', {unique: false});
-
-            // Meta storage
-            var metastore = db.createObjectStore('meta', {keyPath: 'property'});
-            metastore.createIndex('property', 'property', {unique: true});
-
-            metastore.add({property: "last_revision", value: 1});
-            metastore.add({property: "plasmid_schema_version", value: 1});
-            metastore.add({property: "remote_url", value: store.remote});
-
-            store._meta = metastore;
-
-            console.log('Plasmid store established.');
-        };
     };
     SyncStore.prototype = new LocalStore();
 
@@ -214,38 +216,10 @@ var plasmid = {};
         this.push();
     }
 
-    SyncStore.prototype.meta = function(key, value) {
-        var request = new Request(this);
-        var store = this;
-        if (typeof value === 'undefined') {
-            var idbreq = this.db.transaction(['meta'])
-                .objectStore('meta')
-                .get(key);
-            idbreq.onsuccess = function(event) {
-                if (event.target.result) {
-                    request.trigger('success', event.target.result.value);
-                } else {
-                    request.trigger('missing', key);
-                }
-            };
-            idbreq.onerror = function(event) {
-                request.trigger('error');
-            }
-        } else {
-            var idbreq = this.db.transaction(['meta'], 'readwrite')
-                .objectStore('meta')
-                .put({
-                    property: key,
-                    value: value
-                });
-        }
-        return request
-    };
-
     SyncStore.prototype._queued = function() {
         var request = new Request(this);
         var store = this;
-        var idbreq = this.db.transaction('localsync')
+        var idbreq = this.db.idb.transaction('localsync')
             .objectStore('localsync')
             .openCursor();
         var results = []
@@ -274,14 +248,18 @@ var plasmid = {};
         // Triggers a 'pullsuccess' event on the store when the operation completes
         var store = this;
         var httpreq = new XMLHttpRequest();
+        var remote = this.remote;
         var url;
-        this.meta('last_revision')
+        this.db.meta.get('last_revision')
         .then(function(last_revision) {
-            url = this.remote + 'update/' + last_revision;
+            url = remote + 'update/' + last_revision;
             httpreq.onreadystatechange = parse_json;
             httpreq.open('GET', url);
             httpreq.send(null);
         });
+
+        var request = new Request();
+        return request;
 
         function parse_json() {
             if (httpreq.readyState === 4) {
@@ -301,8 +279,9 @@ var plasmid = {};
                         }
                         next();
                     } else {
-                        store.meta('last_revision', data.until);
+                        store.db.meta.put('last_revision', data.until);
                     }
+                    request.trigger('success') 
                 } else {
                     console.error('There was a problem with the request.');
                 }
@@ -312,7 +291,7 @@ var plasmid = {};
     SyncStore.prototype.onpulldata = function(revision, key, value, next) {
         this.put(key, value, revision)
             .then(function(){
-                this.meta('last_revision', revision).then(next);
+                this.db.meta.put('last_revision', revision).then(next);
             })
             .error(function(){
                 console.error(arguments);
@@ -322,37 +301,39 @@ var plasmid = {};
 
     SyncStore.prototype.push = function() {
         var store = this;
-        var httpreq = new XMLHttpRequest();
-        var url;
-        this.meta('last_revision')
-        .then(function(last_revision) {
-            url = this.remote + 'update/';
-            this._queued()
-            .then(function(queued) {
-                var req_body = {
-                    last_revision: last_revision 
-                };
-                req_body.data = {}
-                for (var i=0; i<queued.length; i++) {
-                    var q = queued[i];
-                    req_body.data[q.key] = q.value;
-                }
-                httpreq.onreadystatechange = handle_post;
-                httpreq.open('POST', url);
-                httpreq.send(JSON.stringify(req_body));
-            })
-        });
+        return this.pull().then(function(){
+            var httpreq = new XMLHttpRequest();
+            var url;
+            store.db.meta.get('last_revision')
+            .then(function(last_revision) {
+                url = store.remote + 'update/';
+                store._queued()
+                .then(function(queued) {
+                    var req_body = {
+                        last_revision: last_revision 
+                    };
+                    req_body.data = {}
+                    for (var i=0; i<queued.length; i++) {
+                        var q = queued[i];
+                        req_body.data[q.key] = q.value;
+                    }
+                    httpreq.onreadystatechange = handle_post;
+                    httpreq.open('POST', url);
+                    httpreq.send(JSON.stringify(req_body));
+                })
+            });
 
-        function handle_post() {
-            if (httpreq.readyState === 4) {
-                if (httpreq.status === 200) {
-                    var data = JSON.parse(httpreq.responseText);
-                    store.trigger('push');
-                } else {
-                    console.error('There was a problem with the request.');
+            function handle_post() {
+                if (httpreq.readyState === 4) {
+                    if (httpreq.status === 200) {
+                        var data = JSON.parse(httpreq.responseText);
+                        store.trigger('push');
+                    } else {
+                        console.error('There was a problem with the request.');
+                    }
                 }
             }
-        }
+        });
     };
 
     // Exports
