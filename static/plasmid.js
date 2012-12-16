@@ -153,6 +153,8 @@ var plasmid = {};
         this.options = options;
         this.transaction = null;
         this.name = options.name;
+        this.api = options.api;
+        var remote = this.remote = options.api + options.name + '/';
 
         var db = this;
         var req = indexedDB.open(this.name);
@@ -179,7 +181,7 @@ var plasmid = {};
 
             metastore.add({key: "last_revision", value: 1});
             metastore.add({key: "plasmid_schema_version", value: 1});
-            metastore.add({key: "remote_url", value: idbstore.remote});
+            metastore.add({key: "remote_url", value: remote});
 
             console.log('Plasmid store established.');
         };
@@ -201,7 +203,6 @@ var plasmid = {};
         this.options = options || {};
         this.dbname = options.db.name;
         this.storename = options.storename;
-        this.remote = options.remote;
         this.autopush = options.autopush || false;
 
         this.transaction = null;
@@ -213,7 +214,7 @@ var plasmid = {};
     };
 
     SyncStore.prototype.onupdate = function() {
-        this.push();
+        //this.push();
     }
 
     SyncStore.prototype._queued = function() {
@@ -248,7 +249,7 @@ var plasmid = {};
         // Triggers a 'pullsuccess' event on the store when the operation completes
         var store = this;
         var httpreq = new XMLHttpRequest();
-        var remote = this.remote;
+        var remote = this.db.remote;
         var url;
         this.db.meta.get('last_revision')
         .then(function(last_revision) {
@@ -301,39 +302,37 @@ var plasmid = {};
 
     SyncStore.prototype.push = function() {
         var store = this;
-        return this.pull().then(function(){
-            var httpreq = new XMLHttpRequest();
-            var url;
-            store.db.meta.get('last_revision')
-            .then(function(last_revision) {
-                url = store.remote + 'update/';
-                store._queued()
-                .then(function(queued) {
-                    var req_body = {
-                        last_revision: last_revision 
-                    };
-                    req_body.data = {}
-                    for (var i=0; i<queued.length; i++) {
-                        var q = queued[i];
-                        req_body.data[q.key] = q.value;
-                    }
-                    httpreq.onreadystatechange = handle_post;
-                    httpreq.open('POST', url);
-                    httpreq.send(JSON.stringify(req_body));
-                })
-            });
+        var httpreq = new XMLHttpRequest();
+        var url;
+        store.db.meta.get('last_revision')
+        .then(function(last_revision) {
+            url = store.db.remote + 'update/';
+            store._queued()
+            .then(function(queued) {
+                var req_body = {
+                    last_revision: last_revision 
+                };
+                req_body.data = {}
+                for (var i=0; i<queued.length; i++) {
+                    var q = queued[i];
+                    req_body.data[q.key] = q.value;
+                }
+                httpreq.onreadystatechange = handle_post;
+                httpreq.open('POST', url);
+                httpreq.send(JSON.stringify(req_body));
+            })
+        });
 
-            function handle_post() {
-                if (httpreq.readyState === 4) {
-                    if (httpreq.status === 200) {
-                        var data = JSON.parse(httpreq.responseText);
-                        store.trigger('push');
-                    } else {
-                        console.error('There was a problem with the request.');
-                    }
+        function handle_post() {
+            if (httpreq.readyState === 4) {
+                if (httpreq.status === 200) {
+                    var data = JSON.parse(httpreq.responseText);
+                    store.trigger('push');
+                } else {
+                    console.error('There was a problem with the request.');
                 }
             }
-        });
+        }
     };
 
     // Exports
