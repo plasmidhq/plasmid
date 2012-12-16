@@ -154,7 +154,7 @@ var plasmid = {};
         this.transaction = null;
         this.name = options.name;
         this.api = options.api;
-        var remote = this.remote = options.api + options.name + '/';
+        var remote = options.remote || (this.remote = options.api + options.name + '/');
 
         var db = this;
         var req = indexedDB.open(this.name);
