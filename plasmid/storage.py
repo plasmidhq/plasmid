@@ -70,9 +70,10 @@ class Storage(object):
         with conn:
             iteration = self.get_meta('iteration') + 1
             self.set_meta('iteration', iteration)
-            for (name, value) in data.items():
-                cur.execute('INSERT OR REPLACE INTO data (key, revision, value) VALUES (?, ?, ?)',
-                    (name, iteration, value))
+            for store in data:
+                for (name, value) in data[store].items():
+                    cur.execute('INSERT OR REPLACE INTO data (store, key, revision, value) VALUES (?, ?, ?, ?)',
+                        (store, name, iteration, value))
 
     def get_data(self, name=None, revision=None):
         conn, cur = self.cursor()

@@ -211,6 +211,81 @@ var plasmid = {};
     };
     Database.prototype = new EventListener();
 
+    Database.prototype.push = function() {
+        var database = this;
+        var httpreq = new XMLHttpRequest();
+        var url = database.remote + 'update/';
+        var last_revision;
+        var sync_stores = [];
+        for (storename in this.options.schema.stores) {
+            if (this.options.schema.stores[storename].sync) {
+                sync_stores.push(storename);
+            }
+        }
+
+        this.meta.get('last_revision')
+        .then(function(v) {
+            last_revision = v;
+            collect_next_store_queue();
+        });
+
+        var db_queued = [];
+        function collect_next_store_queue() {
+            var store = database.stores[sync_stores.shift()];
+            store._queued()
+            .then(function(store_queued){
+                while (store_queued.length > 0) {
+                    db_queued.push(store_queued.pop());
+                }
+                if (sync_stores.length > 0) {
+                    collect_next_store_queue();
+                } else {
+                    send_queued();
+                }
+            });
+        }
+    
+        function send_queued() {
+            var req_body = {
+                last_revision: last_revision 
+            };
+            req_body.data = {}
+            for (var i=0; i<db_queued.length; i++) {
+                var q = db_queued[i];
+                var store = q[0];
+                var obj = q[1];
+                if (typeof req_body.data[store] === 'undefined') {
+                    req_body.data[store] = {};
+                }
+                req_body.data[store][obj.key] = obj.value;
+            }
+            httpreq.onreadystatechange = handle_post;
+            httpreq.open('POST', url);
+            httpreq.send(JSON.stringify(req_body));
+        }
+
+        var request = new Request();
+        return request;
+
+        function handle_post() {
+            if (httpreq.readyState === 4) {
+                if (httpreq.status === 200) {
+                    var data = JSON.parse(httpreq.responseText);
+                    if (!data.error) {
+                        database.trigger('push');
+                        request.trigger('success');
+                    } else {
+                        if (data.reason == 'outofdate') {
+                            request.trigger('error', data.reason);
+                        }
+                    }
+                } else {
+                    console.error('There was a problem with the request.');
+                }
+            }
+        }
+    };
+
     // SyncStore
 
     var SyncStore = function SyncStore(options) {
@@ -246,7 +321,7 @@ var plasmid = {};
             var cursor = event.target.result;
             if (cursor) {
                 if (!cursor.value.revision) {
-                    results.push(cursor.value);
+                    results.push([store.storename, cursor.value]);
                     request.trigger('each', cursor.value);
                 }
                 cursor.continue();
@@ -328,51 +403,6 @@ var plasmid = {};
                     store.pull().then(attempt);
                 }
             });
-        }
-    };
-
-    SyncStore.prototype.push = function() {
-        var store = this;
-        var httpreq = new XMLHttpRequest();
-        var url;
-        store.db.meta.get('last_revision')
-        .then(function(last_revision) {
-            url = store.db.remote + 'update/';
-            store._queued()
-            .then(function(queued) {
-                var req_body = {
-                    last_revision: last_revision 
-                };
-                req_body.data = {}
-                for (var i=0; i<queued.length; i++) {
-                    var q = queued[i];
-                    req_body.data[q.key] = q.value;
-                }
-                httpreq.onreadystatechange = handle_post;
-                httpreq.open('POST', url);
-                httpreq.send(JSON.stringify(req_body));
-            })
-        });
-
-        var request = new Request();
-        return request;
-
-        function handle_post() {
-            if (httpreq.readyState === 4) {
-                if (httpreq.status === 200) {
-                    var data = JSON.parse(httpreq.responseText);
-                    if (!data.error) {
-                        store.trigger('push');
-                        request.trigger('success');
-                    } else {
-                        if (data.reason == 'outofdate') {
-                            request.trigger('error', data.reason);
-                        }
-                    }
-                } else {
-                    console.error('There was a problem with the request.');
-                }
-            }
         }
     };
 
