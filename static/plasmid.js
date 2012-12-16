@@ -228,6 +228,10 @@ var plasmid = {};
     Database.prototype.sync = function() {
         var request = new Request();
         var database = this;
+        if (!!database.syncing) {
+            return database.syncing;
+        }
+        database.syncing = request;
         attempt();
 
         return request;
@@ -238,9 +242,11 @@ var plasmid = {};
                     database.pull().then(attempt);
                 } else {
                     request.trigger('error', reason);
+                    database.syncing = null;
                 }
             }).then(function() {
                 request.trigger('success');   
+                database.syncing = null;
             });
         }
     };

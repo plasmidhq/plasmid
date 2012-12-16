@@ -1,4 +1,5 @@
 from os.path import join
+import json
 import sqlite3
 
 
@@ -72,6 +73,7 @@ class Storage(object):
             self.set_meta('iteration', iteration)
             for store in data:
                 for (name, value) in data[store].items():
+                    value = json.dumps(value)
                     cur.execute('INSERT OR REPLACE INTO data (store, key, revision, value) VALUES (?, ?, ?, ?)',
                         (store, name, iteration, value))
 
@@ -89,5 +91,5 @@ class Storage(object):
             cur.execute('SELECT store, key, revision, value FROM data')
         data = {}
         for (store, key, rev, value) in cur.fetchall():
-            data.setdefault(store, {})[key] = [rev, value]
+            data.setdefault(store, {})[key] = [rev, json.loads(value)]
         return data
