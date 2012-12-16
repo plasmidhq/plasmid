@@ -49,31 +49,78 @@ var plasmid = {};
 
     // Local IndexedDB Store Helper
 
+    /* StoreWrapper
+     *
+     * Provides common helpers to work with data in an IndexedDB store
+     */
+    var StoreWrapper = function StoreWrapper(db, storename) {
+        this.db = db;
+        this.storename = storename;
+    };
+    StoreWrapper.prototype = new EventListener();
+        /* StoreWrapper.all()
+         * triggers 'each' on each value in the store
+         */
+    StoreWrapper.prototype.all = function() {
+        var request = new Request(this);
+        var store = this;
+        var idbreq = this.db.transaction(this.storename)
+            .objectStore(this.storename)
+            .openCursor();
+        var results = []
+        idbreq.onsuccess = function(event) {
+            var cursor = event.target.result;
+            if (cursor) {
+                results.push(cursor.value);
+                request.trigger('each', cursor.value);
+                cursor.continue();
+            } else {
+                request.trigger('success', results);
+            }
+        };
+        idbreq.onerror = function(event) {
+            request.trigger('error');
+        };
+        return request;
+    }
+    
+    var Database = function Database(options) {
+        this.options = options;
+        this.transaction = null;
+        this.name = options.name;
+
+        this.meta = new Store({
+            db: this
+        ,   storename: 'meta'
+        });
+    };
+
     // Store
 
     var Store = function Store(options) {
         var store = this;
 
         this.options = options || {};
-        this.name = options.name;
+        this.dbname = options.db.name;
+        this.storename = options.storename;
         this.remote = options.remote;
         this.autopush = options.autopush || false;
 
         this.transaction = null;
 
-        var req = indexedDB.open(name);
+        var req = indexedDB.open(this.dbname);
         req.onerror = function(event) {
             store.trigger('openerror', event);
         };
         req.onsuccess = function(event) {
             var db = event.target.result;
-            store._db = db;
+            store.db = db;
             store.trigger('opensuccess')
         };
         req.onupgradeneeded = function(event) {
             console.log('Setting up plasmid store...')
             var db = event.target.result;
-            store._db = db;
+            store.db = db;
 
             // Data storage
             var idbstore = db.createObjectStore('localsync', {keyPath: 'key'});
@@ -92,7 +139,7 @@ var plasmid = {};
             console.log('Plasmid store established.');
         };
     };
-    Store.prototype = new EventListener();
+    Store.prototype = new StoreWrapper();
 
     Store.clone = function(name, url) {
         // Clone a remote URL into a new, local store
@@ -102,7 +149,7 @@ var plasmid = {};
         var request = new Request(this);
         var store = this;
         if (typeof value === 'undefined') {
-            var idbreq = this._db.transaction(['meta'])
+            var idbreq = this.db.transaction(['meta'])
                 .objectStore('meta')
                 .get(key);
             idbreq.onsuccess = function(event) {
@@ -116,7 +163,7 @@ var plasmid = {};
                 request.trigger('error');
             }
         } else {
-            var idbreq = this._db.transaction(['meta'], 'readwrite')
+            var idbreq = this.db.transaction(['meta'], 'readwrite')
                 .objectStore('meta')
                 .put({
                     property: key,
@@ -126,33 +173,10 @@ var plasmid = {};
         return request
     };
 
-    Store.prototype.all = function() {
-        var request = new Request(this);
-        var store = this;
-        var idbreq = this._db.transaction('localsync')
-            .objectStore('localsync')
-            .openCursor();
-        var results = []
-        idbreq.onsuccess = function(event) {
-            var cursor = event.target.result;
-            if (cursor) {
-                results.push(cursor.value);
-                request.trigger('each', cursor.value);
-                cursor.continue();
-            } else {
-                request.trigger('success', results);
-            }
-        };
-        idbreq.onerror = function(event) {
-            request.trigger('error');
-        };
-        return request;
-    }
-
     Store.prototype._queued = function() {
         var request = new Request(this);
         var store = this;
-        var idbreq = this._db.transaction('localsync')
+        var idbreq = this.db.transaction('localsync')
             .objectStore('localsync')
             .openCursor();
         var results = []
@@ -264,7 +288,7 @@ var plasmid = {};
     Store.prototype.get = function(key) {
         var request = new Request(this);
 
-        var idbreq = this._db.transaction('localsync')
+        var idbreq = this.db.transaction('localsync')
             .objectStore('localsync')
             .get(key);
         idbreq.onsuccess = function(event) {
@@ -288,7 +312,7 @@ var plasmid = {};
     Store.prototype.add = function(key, value) {
         var store = this;
         var request = new Request(this);
-        var t = this._db.transaction(['localsync'], "readwrite");
+        var t = this.db.transaction(['localsync'], "readwrite");
         var idbreq = t.objectStore('localsync').add({
             key: key,
             value: value,
@@ -312,7 +336,7 @@ var plasmid = {};
         var store = this;
         var autopush = this.autopush;
         var request = new Request(this);
-        var t = this._db.transaction(['localsync'], "readwrite");
+        var t = this.db.transaction(['localsync'], "readwrite");
         var idbreq = t.objectStore('localsync').put({
             key: key,
             value: value,
@@ -339,6 +363,8 @@ var plasmid = {};
 
     // Exports
 
+    plasmid.Database = Database;
+    plasmid.StoreWrapper = StoreWrapper;
     plasmid.Store = Store;
     plasmid.Request = Request;
 
