@@ -212,14 +212,21 @@ var plasmid = {};
     Database.prototype = new EventListener();
 
     Database.prototype.sync = function() {
+        var request = new Request();
         var database = this;
         attempt();
+
+        return request;
 
         function attempt() {
             database.push().on('error', function(reason) {
                 if (reason === 'outofdate') {
                     database.pull().then(attempt);
+                } else {
+                    request.trigger('error', reason);
                 }
+            }).then(function() {
+                request.trigger('success');   
             });
         }
     };
