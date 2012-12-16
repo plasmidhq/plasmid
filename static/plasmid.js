@@ -178,7 +178,6 @@ var plasmid = {};
             db.trigger('opensuccess')
         };
         req.onupgradeneeded = function(event) {
-            console.log('Setting up plasmid store...')
             var db = event.target.result;
             db.idb = db;
 
@@ -199,8 +198,6 @@ var plasmid = {};
                     idbstore.createIndex('revision', 'revision', {unique: false});
                 }
             }
-
-            console.log('Plasmid store established.');
         };
 
         this.meta = new LocalStore({
