@@ -5,6 +5,23 @@ var plasmid = {};
 
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
+    /* Utilities
+     */
+
+    function bind(ctx) {
+        var args = Array.apply(this, arguments);
+        var ctx = Array.prototype.shift.apply(args);
+        var func = Array.prototype.shift.apply(args);
+        console.log(ctx, func, args);
+        return function() {
+            var combined = Array.apply(this, args);
+            while (arguments.length > 0) {
+                combined.push(Array.prototype.shift.apply(arguments));
+            }
+            return func.apply(ctx, combined);
+        };
+    };
+
     // Request and Event Helper
     
     function EventListener() {}
