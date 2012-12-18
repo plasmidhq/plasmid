@@ -1,0 +1,50 @@
+<!doctype html>
+
+<textarea id="scratch">
+</textarea>
+
+<script type="text/javascript" src="plasmid.js"></script>
+<script type="text/javascript">
+
+    // This is what our customer data looks like.
+    const customerData = [
+      { ssn: "444-44-4444", name: "Bill", age: 35, email: "bill@company.com" },
+      { ssn: "555-55-5555", name: "Donna", age: 32, email: "donna@home.org" }
+    ];
+    const dbName = "the_name";
+    const api = window.location.protocol + '//' + window.location.host + '/';
+
+    function log() {
+        console.log.apply(console, arguments);
+    }
+
+    var database = new plasmid.Database({
+        name: 'test_7',
+        api: api,
+        schema: {
+            version: 2,
+            stores: {
+                temp: {sync: false },
+                shared: {sync: true },
+                other: {sync: true },
+            },
+        },
+    });
+
+    var scratch = document.getElementById('scratch');
+    scratch.onkeyup = function() {
+        database.stores.shared.put('scratch', {contents: this.value})
+    }
+    load_and_show();
+
+    function load_and_show() {
+        database.sync()
+        .then(function(){
+            database.stores.shared.get('scratch').then(function(value){
+                scratch.value = value.contents;
+            });
+        });
+    };
+
+</script>
+
