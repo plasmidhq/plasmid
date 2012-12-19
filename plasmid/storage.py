@@ -8,6 +8,9 @@ class Hub(object):
     def __init__(self, path):
         self.path = path
 
+    def get_hub_database(self):
+        return Storage(self, 'plasmid_hub_meta')
+
 
 class Storage(object):
 
@@ -93,3 +96,4 @@ class Storage(object):
         for (store, key, rev, value) in cur.fetchall():
             data.setdefault(store, {})[key] = [rev, json.loads(value)]
         return data
+

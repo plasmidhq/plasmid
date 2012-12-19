@@ -107,3 +107,30 @@ class PlasmidRealm(object):
             resource = self.factory(avatarId)
             return (IResource, resource, lambda: None)
         raise NotImplementedError()
+
+
+PERMISSIONS = (
+    'ReadDatabase',
+    'WriteDatabase',
+    'DeleteDatabase',
+    'CreateDatabase',
+    'ReadAccessToken'
+    'GrantAccessToken',
+    'DeleteAccessToken',
+)
+
+class CredentialBackend(object):
+    def __init__(self, hub):
+        self.hub = hub
+
+    def set_secret(self, access, secret):
+        self.hub.get_hub_database().set_meta('access_' + access, secret)
+
+    def get_secret(self, access):
+        self.hub.get_hub_database().get_meta('access_' + access)
+
+    def get_permission(self, access, permission, resource):
+        return self.hub.get_hub_database().get_meta('perm_%s_%s' % (permission, resource)) or "No"
+
+    def set_permission(self, access, permission, resource, status):
+        self.hub.get_hub_database().set_meta('perm_%s_%s' % (permission, resource), status)

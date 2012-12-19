@@ -28,7 +28,7 @@ var plasmid = {};
         httpreq.open(method, url);
         if (access && secret) {
             var auth = "Basic " + Base64.encode(access + ':' + secret);
-            httpreq.setRequestHeader('Authorization', auth);
+            httpreq.setRequestHeader('authorization', auth);
         }
         if (method == 'POST' || method == 'PUT') {
             httpreq.send(JSON.stringify(body));

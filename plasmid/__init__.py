@@ -1,5 +1,7 @@
-import time
+import argparse
 import json
+import sys
+import time
 from os.path import abspath, join, dirname
 
 from zope.interface import implements
@@ -8,47 +10,23 @@ from twisted.internet import reactor
 from twisted.web.server import Site
 from twisted.web.resource import Resource, IResource
 from twisted.web.static import File
-from twisted.web.guard import HTTPAuthSessionWrapper, BasicCredentialFactory
-from twisted.web._auth.wrapper import UnauthorizedResource
 from twisted.cred.portal import IRealm, Portal
-from twisted.cred.checkers import FilePasswordDB
 
 from plasmid.util import endpoint
 from plasmid.storage import Hub, Storage
+from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 
 
 hub = Hub('hub')
 
 
-class APIAuthSessionWrapper(HTTPAuthSessionWrapper):
-
-    def render(self, request):
-        resp = super(APIAuthSessionWrapper, self).render(request)
-        if isinstance(resp, UnauthorizedResource):
-            request.setResponseCode(200)
-            return "{authorized: false}"
-        else:
-            return resp
-
-
-class PlasmidRealm(object):
-    implements(IRealm)
-
-    def requestAvatar(self, avatarId, mind, *interfaces):
-        if IResource in interfaces:
-            resource = Plasmid(avatarId)
-            resource.putChild('static', File(static_path))
-            return (IResource, resource, lambda: None)
-        raise NotImplementedError()
-
-
 class ServiceRoot(Resource):
-    
+
     def getChild(self, name, request):
         if name == 'static':
             return File(static_path)
         elif name == 'api':
-            return APIAuthSessionWrapper(portal, [credentialFactory])
+            return APIAuthSessionWrapper(portal, [PlasmidCredChecker(hub)])
         else:
             "nothing here"
 
@@ -165,11 +143,37 @@ class StringResource(Resource):
     def render_GET(self, request):
         return self.s
 
-portal = Portal(PlasmidRealm(), [FilePasswordDB('httpd.password')])
-credentialFactory = BasicCredentialFactory("localhost:8880")
+portal = Portal(PlasmidRealm(Plasmid), [PlasmidCredChecker(hub)])
 
 resource = ServiceRoot()
 static_path = abspath(join(dirname(__file__), '..', 'static'))
 factory = Site(resource)
-reactor.listenTCP(8880, factory)
-reactor.run()
+
+def main(argv):
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-c', nargs='?')
+    parser.add_argument('--set-secret', dest='set_secret', nargs=2)
+    parser.add_argument('--check-permission', dest='check_permission', nargs=3)
+    parser.add_argument('--grant-permission', dest='grant_permission', nargs=3)
+    ns = parser.parse_args(argv)
+
+    if ns.set_secret:
+        access, secret = ns.set_secret
+        hub_db = hub.get_hub_database()
+        hub_db.set_meta('access_' + access, secret)
+    elif ns.check_permission:
+        access, permission, resource = ns.check_permission
+        from plasmid.cred import CredentialBackend
+        credbackend = CredentialBackend(hub)
+        print access, permission, resource, credbackend.get_permission(access, permission, resource)
+    elif ns.grant_permission:
+        access, permission, resource = ns.grant_permission
+        from plasmid.cred import CredentialBackend
+        credbackend = CredentialBackend(hub)
+        credbackend.set_permission(access, permission, resource, "Yes")
+    else:
+        reactor.listenTCP(8880, factory)
+        reactor.run()
+
+main(sys.argv)
