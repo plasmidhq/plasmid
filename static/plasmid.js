@@ -22,6 +22,35 @@ var plasmid = {};
         };
     };
 
+    function http(method, url, body, access, secret) {
+        var httpreq = new XMLHttpRequest();
+        httpreq.onreadystatechange = statechange;
+        httpreq.open(method, url);
+        if (access && secret) {
+            var auth = "Basic " + Base64.encode(access + ':' + secret);
+            httpreq.setRequestHeader('Authorization', auth);
+        }
+        if (method == 'POST' || method == 'PUT') {
+            httpreq.send(JSON.stringify(body));
+        } else {
+            httpreq.send(null);
+        }
+
+        var request = new Request();
+        return request;
+
+        function statechange() {
+            if (httpreq.readyState === 4) {
+                if (httpreq.status === 401) {
+                    console.log("Not authorized");
+                } else if (httpreq.status == 200) {
+                    var data = JSON.parse(httpreq.responseText);
+                    request.trigger('success', data);
+                }
+            }
+        }
+    }
+
     // Request and Event Helper
     
     function EventListener() {}
@@ -225,6 +254,10 @@ var plasmid = {};
     };
     Database.prototype = new EventListener();
 
+    Database.prototype.http = function(method, url, body) {
+        return http(method, url, body, this.options.access, this.options.secret);
+    };
+
     Database.prototype.sync = function() {
         var request = new Request();
         var database = this;
@@ -257,63 +290,55 @@ var plasmid = {};
         // Triggers a 'update' event on every item changed by the operation
         // Triggers a 'pullsuccess' event on the store when the operation completes
         var database = this;
-        var httpreq = new XMLHttpRequest();
+        var httpreq;
         var remote = this.remote;
         var url;
         this.meta.get('last_revision')
         .then(function(last_revision) {
             url = remote + 'update/' + last_revision;
-            httpreq.onreadystatechange = parse_json;
-            httpreq.open('GET', url);
-            httpreq.send(null);
+            httpreq = database.http('GET', url);
+            httpreq.then(parse_json);
         });
 
         var request = new Request();
         return request;
 
-        function parse_json() {
-            if (httpreq.readyState === 4) {
-                if (httpreq.status === 200) {
-                    var data = JSON.parse(httpreq.responseText);
-                    var updates = data.updates;
+        function parse_json(data) {
+            var updates = data.updates;
+            if (updates.length > 0) {
+                function next() {
+                    var r;
                     if (updates.length > 0) {
-                        function next() {
-                            var r;
-                            if (updates.length > 0) {
-                                r = updates.shift();
-                                var storename = r.shift();
-                                var revision = r.shift();
-                                var key = r.shift();
-                                var value = r.shift();
+                        r = updates.shift();
+                        var storename = r.shift();
+                        var revision = r.shift();
+                        var key = r.shift();
+                        var value = r.shift();
 
-                                database.stores[storename].put(key, value, revision)
-                                    .then(function(){
-                                        database.meta.put('last_revision', revision).then(next);
-                                    })
-                                    .error(function(){
-                                        console.error(arguments);
-                                    })
-                                ;
-                            } else {
-                                r = null;
-                            }
-                            return r
-                        }
-                        next();
+                        database.stores[storename].put(key, value, revision)
+                            .then(function(){
+                                database.meta.put('last_revision', revision).then(next);
+                            })
+                            .error(function(){
+                                console.error(arguments);
+                            })
+                        ;
                     } else {
-                        database.meta.put('last_revision', data.until);
+                        r = null;
                     }
-                    request.trigger('success') 
-                } else {
-                    console.error('There was a problem with the request.');
+                    return r
                 }
+                next();
+            } else {
+                database.meta.put('last_revision', data.until);
             }
+            request.trigger('success') 
         }
     };
 
     Database.prototype.push = function() {
         var database = this;
-        var httpreq = new XMLHttpRequest();
+        var httpreq;
         var url = database.remote + 'update/';
         var last_revision;
         var sync_stores = [];
@@ -359,28 +384,19 @@ var plasmid = {};
                 }
                 req_body.data[store][obj.key] = obj.value;
             }
-            httpreq.onreadystatechange = handle_post;
-            httpreq.open('POST', url);
-            httpreq.send(JSON.stringify(req_body));
+            database.http('POST', url, req_body).then(handle_post);
         }
 
         var request = new Request();
         return request;
 
-        function handle_post() {
-            if (httpreq.readyState === 4) {
-                if (httpreq.status === 200) {
-                    var data = JSON.parse(httpreq.responseText);
-                    if (!data.error) {
-                        database.trigger('push');
-                        request.trigger('success');
-                    } else {
-                        if (data.reason == 'outofdate') {
-                            request.trigger('error', data.reason);
-                        }
-                    }
-                } else {
-                    console.error('There was a problem with the request.');
+        function handle_post(data) {
+            if (!data.error) {
+                database.trigger('push');
+                request.trigger('success');
+            } else {
+                if (data.reason == 'outofdate') {
+                    request.trigger('error', data.reason);
                 }
             }
         }

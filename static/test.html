@@ -3,6 +3,7 @@
 <textarea id="scratch">
 </textarea>
 
+<script type="text/javascript" src="base64.js"></script>
 <script type="text/javascript" src="plasmid.js"></script>
 <script type="text/javascript">
 
@@ -12,7 +13,9 @@
       { ssn: "555-55-5555", name: "Donna", age: 32, email: "donna@home.org" }
     ];
     const dbName = "the_name";
-    const api = window.location.protocol + '//' + window.location.host + '/';
+    const api = window.location.protocol + '//' + window.location.host + '/api/';
+    const access = "test";
+    const secret = "test";
 
     function log() {
         console.log.apply(console, arguments);
@@ -29,6 +32,8 @@
                 other: {sync: true },
             },
         },
+        access: access,
+        secret: secret
     });
 
     var scratch = document.getElementById('scratch');

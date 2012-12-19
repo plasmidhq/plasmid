@@ -2,10 +2,16 @@ import time
 import json
 from os.path import abspath, join, dirname
 
+from zope.interface import implements
+
 from twisted.internet import reactor
 from twisted.web.server import Site
-from twisted.web.resource import Resource
+from twisted.web.resource import Resource, IResource
 from twisted.web.static import File
+from twisted.web.guard import HTTPAuthSessionWrapper, BasicCredentialFactory
+from twisted.web._auth.wrapper import UnauthorizedResource
+from twisted.cred.portal import IRealm, Portal
+from twisted.cred.checkers import FilePasswordDB
 
 from plasmid.util import endpoint
 from plasmid.storage import Hub, Storage
@@ -14,11 +20,45 @@ from plasmid.storage import Hub, Storage
 hub = Hub('hub')
 
 
+class APIAuthSessionWrapper(HTTPAuthSessionWrapper):
+
+    def render(self, request):
+        resp = super(APIAuthSessionWrapper, self).render(request)
+        if isinstance(resp, UnauthorizedResource):
+            request.setResponseCode(200)
+            return "{authorized: false}"
+        else:
+            return resp
+
+
+class PlasmidRealm(object):
+    implements(IRealm)
+
+    def requestAvatar(self, avatarId, mind, *interfaces):
+        if IResource in interfaces:
+            resource = Plasmid(avatarId)
+            resource.putChild('static', File(static_path))
+            return (IResource, resource, lambda: None)
+        raise NotImplementedError()
+
+
+class ServiceRoot(Resource):
+    
+    def getChild(self, name, request):
+        if name == 'static':
+            return File(static_path)
+        elif name == 'api':
+            return APIAuthSessionWrapper(portal, [credentialFactory])
+        else:
+            "nothing here"
+
+
 class Plasmid(Resource):
 
-    def __init__(self):
+    def __init__(self, avatarId):
         Resource.__init__(self)
         self.databases = {}
+        self.avatarId = avatarId
 
     def getChild(self, name, request):
         if name:
@@ -125,11 +165,11 @@ class StringResource(Resource):
     def render_GET(self, request):
         return self.s
 
+portal = Portal(PlasmidRealm(), [FilePasswordDB('httpd.password')])
+credentialFactory = BasicCredentialFactory("localhost:8880")
 
-resource = Plasmid()
+resource = ServiceRoot()
 static_path = abspath(join(dirname(__file__), '..', 'static'))
-print "Static at", static_path
-resource.putChild('static', File(static_path))
 factory = Site(resource)
 reactor.listenTCP(8880, factory)
 reactor.run()
