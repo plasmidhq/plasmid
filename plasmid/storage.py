@@ -1,4 +1,4 @@
-from os.path import join
+from os.path import join, exists
 import json
 import sqlite3
 
@@ -18,6 +18,9 @@ class Storage(object):
         self.hub = hub
         self.name = name
         self.create()
+
+    def exists(self):
+        return exists(join(self.hub.path, self.name + '.sqlite'))
 
     def conn(self):
         return sqlite3.connect(join(self.hub.path, self.name + '.sqlite'))

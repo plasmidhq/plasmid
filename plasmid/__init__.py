@@ -11,6 +11,7 @@ from twisted.web.server import Site
 from twisted.web.resource import Resource, IResource
 from twisted.web.static import File
 from twisted.cred.portal import IRealm, Portal
+from twisted.cred import error
 
 from plasmid.util import endpoint
 from plasmid.storage import Hub, Storage
@@ -45,9 +46,12 @@ class Plasmid(Resource):
             try:
                 return self.databases[name]
             except KeyError:
-                s = Storage(hub, name)
-                self.databases[name] = db = Database(self.avatarId, name, s)
-                return db
+                if credbackend.get_permission(self.avatarId, 'CreateDatabase', name):
+                    s = Storage(hub, name)
+                    self.databases[name] = db = Database(self.avatarId, name, s)
+                    return db
+                else:
+                    raise error.UnauthorizedLogin()
         else:
             return StringResource(json.dumps({
                 "databases": self.databases.keys(),
