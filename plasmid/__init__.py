@@ -15,9 +15,11 @@ from twisted.cred.portal import IRealm, Portal
 from plasmid.util import endpoint
 from plasmid.storage import Hub, Storage
 from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
+from plasmid.cred import CredentialBackend
 
 
 hub = Hub('hub')
+credbackend = CredentialBackend(hub)
 
 
 class ServiceRoot(Resource):
@@ -44,7 +46,7 @@ class Plasmid(Resource):
                 return self.databases[name]
             except KeyError:
                 s = Storage(hub, name)
-                self.databases[name] = db = Database(name, s)
+                self.databases[name] = db = Database(self.avatarId, name, s)
                 return db
         else:
             return StringResource(json.dumps({
@@ -54,66 +56,76 @@ class Plasmid(Resource):
 
 class Database(Resource):
 
-    def __init__(self, name, storage):
+    def __init__(self, access, name, storage):
         Resource.__init__(self)
+        self.access = access
         self.name = name
         self.storage = storage
+        if credbackend.get_permission(self.access, 'ReadDatabase', self.name):
+            self.can_read = True
+        else:
+            self.can_read = False
 
     @property
     def iteration(self):
-        return self.storage.get_meta('iteration')
+        if self.can_read:
+            return self.storage.get_meta('iteration')
 
     @endpoint
     def render_GET(self, request):
-        return {
-            "name": self.name,
-            "iteration": self.iteration,
-        }
+        if self.can_read:
+            return {
+                "name": self.name,
+                "iteration": self.iteration,
+            }
 
     def getChild(self, name, request):
         return DatabaseMethod(self, name)
 
     @endpoint
     def get_clone(self, request):
-        data = self.storage.get_data()
-        return {
-            "data": data,
-            "iteration": self.iteration,
-        }
+        if self.can_read:
+            data = self.storage.get_data()
+            return {
+                "data": data,
+                "iteration": self.iteration,
+            }
 
     @endpoint
     def get_update(self, request, last_revision):
-        last_revision = int(last_revision)
-        updates = []
-        data = self.storage.get_data(revision=last_revision)
-        for store in data:
-            for k, (i, v) in data[store].items():
-                updates.append((store, i, k, v))
-        print 'UPDATES', updates
-        return {
-            "since": last_revision,
-            "until": self.iteration,
-            "updates": updates,
-        }
+        if self.can_read:
+            last_revision = int(last_revision)
+            updates = []
+            data = self.storage.get_data(revision=last_revision)
+            for store in data:
+                for k, (i, v) in data[store].items():
+                    updates.append((store, i, k, v))
+            print 'UPDATES', updates
+            return {
+                "since": last_revision,
+                "until": self.iteration,
+                "updates": updates,
+            }
 
     @endpoint
     def post_update(self, request, x):
-        body = json.load(request.content)
-        last_revision = body['last_revision']
-        data = body['data']
+        if credbackend.get_permission(self.access, 'WriteDatabase', self.name):
+            body = json.load(request.content)
+            last_revision = body['last_revision']
+            data = body['data']
 
-        assert self.iteration
+            assert self.iteration
 
-        if self.iteration > last_revision:
-            return {
-                'error': "Cannot update. Master has changed. %s > %s" % (self.iteration, last_revision),
-                'saved': 0,
-                'reason': 'outofdate',
-            }
+            if self.iteration > last_revision:
+                return {
+                    'error': "Cannot update. Master has changed. %s > %s" % (self.iteration, last_revision),
+                    'saved': 0,
+                    'reason': 'outofdate',
+                }
 
-        else:
-            self.storage.set_data(data)
-            return json.dumps({'saved': len(data)})
+            else:
+                self.storage.set_data(data)
+                return json.dumps({'saved': len(data)})
 
 
 class DatabaseMethod(Resource):
@@ -156,6 +168,7 @@ def main(argv):
     parser.add_argument('--set-secret', dest='set_secret', nargs=2)
     parser.add_argument('--check-permission', dest='check_permission', nargs=3)
     parser.add_argument('--grant-permission', dest='grant_permission', nargs=3)
+    parser.add_argument('--revoke-permission', dest='revoke_permission', nargs=3)
     ns = parser.parse_args(argv)
 
     if ns.set_secret:
@@ -164,14 +177,16 @@ def main(argv):
         hub_db.set_meta('access_' + access, secret)
     elif ns.check_permission:
         access, permission, resource = ns.check_permission
-        from plasmid.cred import CredentialBackend
         credbackend = CredentialBackend(hub)
         print access, permission, resource, credbackend.get_permission(access, permission, resource)
     elif ns.grant_permission:
         access, permission, resource = ns.grant_permission
-        from plasmid.cred import CredentialBackend
         credbackend = CredentialBackend(hub)
         credbackend.set_permission(access, permission, resource, "Yes")
+    elif ns.revoke_permission:
+        access, permission, resource = ns.revoke_permission
+        credbackend = CredentialBackend(hub)
+        credbackend.set_permission(access, permission, resource, "No")
     else:
         reactor.listenTCP(8880, factory)
         reactor.run()

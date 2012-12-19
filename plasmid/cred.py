@@ -130,7 +130,7 @@ class CredentialBackend(object):
         self.hub.get_hub_database().get_meta('access_' + access)
 
     def get_permission(self, access, permission, resource):
-        return self.hub.get_hub_database().get_meta('perm_%s_%s' % (permission, resource)) or "No"
+        return self.hub.get_hub_database().get_meta('perm_%s_%s' % (permission, resource)) == "Yes"
 
     def set_permission(self, access, permission, resource, status):
         self.hub.get_hub_database().set_meta('perm_%s_%s' % (permission, resource), status)
