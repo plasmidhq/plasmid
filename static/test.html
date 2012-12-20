@@ -22,7 +22,7 @@
     }
 
     var database = new plasmid.Database({
-        name: 'test_9',
+        name: 'test',
         api: api,
         schema: {
             version: 2,
@@ -40,7 +40,7 @@
     scratch.onkeyup = function() {
         database.stores.shared.put('scratch', {contents: this.value})
     }
-    load_and_show();
+    database.on('opensuccess', load_and_show);
 
     function load_and_show() {
         database.sync()
