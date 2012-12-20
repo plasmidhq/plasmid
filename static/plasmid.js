@@ -36,7 +36,7 @@ var plasmid = {};
             httpreq.send(null);
         }
 
-        var request = new Request();
+        var request = new Promise();
         return request;
 
         function statechange() {
@@ -51,7 +51,7 @@ var plasmid = {};
         }
     }
 
-    // Request and Event Helper
+    // Promise and Event Helper
     
     function EventListener() {}
     EventListener.prototype.trigger = function(type, args) {
@@ -88,10 +88,10 @@ var plasmid = {};
         this.data = data;
     };
     
-    function Request(target) {
+    function Promise(target) {
         this.target = target; 
     };
-    Request.prototype = new EventListener();
+    Promise.prototype = new EventListener();
 
     // Local IndexedDB Store Helper
 
@@ -109,7 +109,7 @@ var plasmid = {};
          * triggers 'each' on each value in the store
          */
     LocalStore.prototype.all = function() {
-        var request = new Request(this);
+        var request = new Promise(this);
         var store = this;
         var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
@@ -131,7 +131,7 @@ var plasmid = {};
         return request;
     }
     LocalStore.prototype.get = function(key) {
-        var request = new Request(this);
+        var request = new Promise(this);
 
         var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
@@ -151,7 +151,7 @@ var plasmid = {};
     };
     LocalStore.prototype.add = function(key, value) {
         var store = this;
-        var request = new Request(this);
+        var request = new Promise(this);
         var t = this.db.idb.transaction([this.storename], "readwrite");
         var idbreq = t.objectStore(this.storename).add({
             key: key,
@@ -174,7 +174,7 @@ var plasmid = {};
     LocalStore.prototype.put = function(key, value, _revision) {
         var store = this;
         var autopush = this.autopush;
-        var request = new Request(this);
+        var request = new Promise(this);
         var t = this.db.idb.transaction([this.storename], "readwrite");
         var idbreq = t.objectStore(this.storename).put({
             key: key,
@@ -259,7 +259,7 @@ var plasmid = {};
     };
 
     Database.prototype.sync = function() {
-        var request = new Request();
+        var request = new Promise();
         var database = this;
         if (!!database.syncing) {
             return database.syncing;
@@ -300,7 +300,7 @@ var plasmid = {};
             httpreq.then(parse_json);
         });
 
-        var request = new Request();
+        var request = new Promise();
         return request;
 
         function parse_json(data) {
@@ -387,7 +387,7 @@ var plasmid = {};
             database.http('POST', url, req_body).then(handle_post);
         }
 
-        var request = new Request();
+        var request = new Promise();
         return request;
 
         function handle_post(data) {
@@ -427,7 +427,7 @@ var plasmid = {};
     }
 
     SyncStore.prototype._queued = function() {
-        var request = new Request(this);
+        var request = new Promise(this);
         var store = this;
         var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
@@ -456,6 +456,6 @@ var plasmid = {};
     plasmid.Database = Database;
     plasmid.LocalStore = LocalStore;
     plasmid.SyncStore = SyncStore;
-    plasmid.Request = Request;
+    plasmid.Promise = Promise;
 
 })(plasmid);
