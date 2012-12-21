@@ -32,6 +32,7 @@
     });
 
     database.on('opensuccess', show);
+    database.on('updated', show);
 
     function show() {
         $items.innerHTML = "";

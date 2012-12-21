@@ -353,7 +353,8 @@ var plasmid = {};
             } else {
                 database.meta.put('last_revision', data.until);
             }
-            request.trigger('success') 
+            request.trigger('success');
+            database.trigger('updated');
         }
     };
 
