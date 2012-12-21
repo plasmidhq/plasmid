@@ -19,18 +19,26 @@
         schema: {
             version: 1,
             stores: {
-                todo: {sync: true},
+                todo: {
+                    sync: true,
+                    indexes: {
+                        todo: {key: "todo", unique: false, multi: false}
+                    }
+                },
             },
         },
         access: access,
         secret: secret
     });
 
-    database.on('opensuccess', function() {
-        this.stores.todo.all().on('each', function(item){
+    database.on('opensuccess', show);
+
+    function show() {
+        $items.innerHTML = "";
+        database.stores.todo.walk('todo').on('each', function(item){
             $items.innerHTML = $items.innerHTML + ('<li>' + item.value.todo + '</li>');
         });
-    });
+    }
 
     var $items = document.getElementById('items');
     var $entry = document.getElementById('entry');
@@ -43,7 +51,8 @@
             Base64.encode(Math.random().toString()),
             {todo: value, complete: false}
         ).then(function(){
-            database.sync();
+            console.log("sync...");
+            database.sync().then(show);
         });
         $items.innerHTML = $items.innerHTML + ('<li>' + value + '</li>');
     };

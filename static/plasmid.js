@@ -105,16 +105,22 @@ var plasmid = {};
         this.storename = options.storename;
     };
     LocalStore.prototype = new EventListener();
-        /* LocalStore.all()
-         * triggers 'each' on each value in the store
-         */
-    LocalStore.prototype.all = function() {
+
+    /* LocalStore.walk()
+     * triggers 'each' on each value in the store
+     */
+    LocalStore.prototype.walk = function(indexname) {
         var request = new Promise(this);
         var store = this;
-        var idbreq = this.db.idb.transaction(this.storename)
-            .objectStore(this.storename)
-            .openCursor();
+        var idbstore = this.db.idb.transaction(this.storename)
+            .objectStore(this.storename);
         var results = []
+        var idbreq;
+        if (indexname) {
+            idbreq = idbstore.index(indexname).openCursor();
+        } else {
+            idbreq = idbstore.openCursor();
+        }
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
             if (cursor) {
@@ -130,6 +136,7 @@ var plasmid = {};
         };
         return request;
     }
+
     LocalStore.prototype.get = function(key) {
         var request = new Promise(this);
 
@@ -225,6 +232,9 @@ var plasmid = {};
         };
         req.onupgradeneeded = function(event) {
             var db = event.target.result;
+            var txn = event.target.transaction;
+            var storename, indexname, idbstore, indexopt;
+
             db.idb = db;
 
             // Meta storage
@@ -242,6 +252,17 @@ var plasmid = {};
                 if (!db.objectStoreNames.contains(storename)) {
                     var idbstore = db.createObjectStore(storename, {keyPath: 'key'});
                     idbstore.createIndex('revision', 'revision', {unique: false});
+                } else {
+                    idbstore = txn.objectStore(storename);
+                }
+                for (indexname in options.schema.stores[storename].indexes) {
+                    indexopt = options.schema.stores[storename].indexes[indexname];
+                    console.log(storename, "value." + indexname, indexopt);
+                    if (indexopt) {
+                        idbstore.createIndex(indexname, "value." + indexopt.key,
+                            {unique: indexopt.unique, multi: indexopt.multi}
+                        );
+                    }
                 }
             }
         };
