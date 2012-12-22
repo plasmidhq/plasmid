@@ -75,8 +75,9 @@ class Storage(object):
     def set_data(self, data):
         conn, cur = self.cursor()
         with conn:
-            iteration = self.get_meta('iteration') + 1
-            self.set_meta('iteration', iteration)
+            if data:
+                iteration = self.get_meta('iteration') + 1
+                self.set_meta('iteration', iteration)
             for store in data:
                 for (name, value) in data[store].items():
                     value = json.dumps(value)
