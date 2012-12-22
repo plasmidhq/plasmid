@@ -5,6 +5,13 @@
 
 <input type="text" id="entry"></input>
 <button id="add">Add</button>
+<button id=reload onclick="javascript:database.pull()">Reload</button>
+
+<style>
+    .item-complete {
+        text-decoration: line-through;
+    }
+</style>
 
 <script type="text/javascript" src="base64.js"></script>
 <script type="text/javascript" src="plasmid.js"></script>
@@ -34,12 +41,45 @@
     database.on('opensuccess', show);
     database.on('updated', show);
 
+    var itemmap = {};
+
     function show() {
-        $items.innerHTML = "";
         database.stores.todo.walk('todo').on('each', function(item){
-            $items.innerHTML = $items.innerHTML + ('<li>' + item.value.todo + '</li>');
+            if (itemmap[item.key]) {
+                update_item(item);
+            } else {
+                add_item(item);
+            }
         });
     }
+
+    function update_item(item) {
+        var $li;
+        $li = itemmap[item.key];
+        $li.setAttribute('class', 'item' + (item.value.complete?' item-complete' : ''));
+        $li.item = item;
+    }
+
+    function add_item(item) {
+        var $li;
+        $li = document.createElement('li');
+        $li.innerHTML = item.value.todo;
+        $li.setAttribute('class', 'item' + (item.value.complete?' item-complete' : ''));
+        $li.item = item;
+        $li.onclick = itemclick;
+        $items.appendChild($li);
+
+        itemmap[item.key] = $li;
+    }
+
+    function itemclick() {
+        var item = this.item;
+        item.value.complete = !item.value.complete;
+        database.stores.todo.put(item.key, item.value).then(function(){
+            database.sync();
+            show();
+        });
+    };
 
     var $items = document.getElementById('items');
     var $entry = document.getElementById('entry');
@@ -52,9 +92,7 @@
             Base64.encode(Math.random().toString()),
             {todo: value, complete: false}
         ).then(function(){
-            console.log("sync...");
             database.sync().then(show);
         });
-        $items.innerHTML = $items.innerHTML + ('<li>' + value + '</li>');
     };
 </script>

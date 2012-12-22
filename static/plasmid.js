@@ -346,6 +346,7 @@ var plasmid = {};
                         ;
                     } else {
                         r = null;
+                        database.trigger('updated');
                     }
                     return r
                 }
@@ -354,7 +355,6 @@ var plasmid = {};
                 database.meta.put('last_revision', data.until);
             }
             request.trigger('success');
-            database.trigger('updated');
         }
     };
 
