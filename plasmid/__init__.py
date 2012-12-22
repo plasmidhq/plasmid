@@ -71,16 +71,16 @@ class Database(Resource):
             self.can_read = False
 
     @property
-    def iteration(self):
+    def revision(self):
         if self.can_read:
-            return self.storage.get_meta('iteration')
+            return self.storage.get_meta('revision')
 
     @endpoint
     def render_GET(self, request):
         if self.can_read:
             return {
                 "name": self.name,
-                "iteration": self.iteration,
+                "revision": self.revision,
             }
 
     def getChild(self, name, request):
@@ -92,7 +92,7 @@ class Database(Resource):
             data = self.storage.get_data()
             return {
                 "data": data,
-                "iteration": self.iteration,
+                "revision": self.revision,
             }
 
     @endpoint
@@ -107,7 +107,7 @@ class Database(Resource):
             print 'UPDATES', updates
             return {
                 "since": last_revision,
-                "until": self.iteration,
+                "until": self.revision,
                 "updates": updates,
             }
 
@@ -118,11 +118,11 @@ class Database(Resource):
             last_revision = body['last_revision']
             data = body['data']
 
-            assert self.iteration
+            assert self.revision
 
-            if self.iteration > last_revision:
+            if self.revision > last_revision:
                 return {
-                    'error': "Cannot update. Master has changed. %s > %s" % (self.iteration, last_revision),
+                    'error': "Cannot update. Master has changed. %s > %s" % (self.revision, last_revision),
                     'saved': 0,
                     'reason': 'outofdate',
                 }

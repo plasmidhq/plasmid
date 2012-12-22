@@ -50,7 +50,7 @@ class Storage(object):
                     value 
                 );
             ''')
-            self.set_meta('iteration', 1)
+            self.set_meta('revision', 1)
         conn.commit()
 
     def _table_exists(self, table_name):
@@ -76,13 +76,13 @@ class Storage(object):
         conn, cur = self.cursor()
         with conn:
             if data:
-                iteration = self.get_meta('iteration') + 1
-                self.set_meta('iteration', iteration)
+                revision = self.get_meta('revision') + 1
+                self.set_meta('revision', revision)
             for store in data:
                 for (name, value) in data[store].items():
                     value = json.dumps(value)
                     cur.execute('INSERT OR REPLACE INTO data (store, key, revision, value) VALUES (?, ?, ?, ?)',
-                        (store, name, iteration, value))
+                        (store, name, revision, value))
 
     def get_data(self, name=None, revision=None):
         conn, cur = self.cursor()
