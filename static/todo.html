@@ -4,8 +4,9 @@
 </ul>
 
 <input type="text" id="entry"></input>
-<button id="add">Add</button>
-<button id=reload onclick="javascript:database.pull()">Reload</button>
+<button id=add>Add</button>
+<button id=reload>Reload</button>
+<button id=clear>Clear</button>
 
 <style>
     .item-complete {
@@ -20,6 +21,12 @@
     const access = "test";
     const secret = "test";
 
+    var $items = document.getElementById('items');
+    var $entry = document.getElementById('entry');
+    var $add = document.getElementById('add');
+    var $reload = document.getElementById('reload');
+    var $clear = document.getElementById('clear');
+    var itemmap = {};
     var database = new plasmid.Database({
         name: 'todo',
         api: api,
@@ -37,11 +44,8 @@
         access: access,
         secret: secret
     });
-
     database.on('opensuccess', show);
     database.on('updated', show);
-
-    var itemmap = {};
 
     function show() {
         database.stores.todo.walk('todo').on('each', function(item){
@@ -65,6 +69,9 @@
         $li = document.createElement('li');
         $li.innerHTML = item.value.todo;
         $li.setAttribute('class', 'item' + (item.value.complete?' item-complete' : ''));
+        if (item.value.complete) {
+            $li.setAttribute('style', 'display:none;');
+        }
         $li.item = item;
         $li.onclick = itemclick;
         $items.appendChild($li);
@@ -81,9 +88,11 @@
         });
     };
 
-    var $items = document.getElementById('items');
-    var $entry = document.getElementById('entry');
-    var $add = document.getElementById('add');
+    $entry.onkeyup = function(event) {
+        if (event.keyCode === 13) {
+            $add.onclick();
+        }
+    };
 
     $add.onclick = function(){
         var value = $entry.value;
@@ -95,4 +104,21 @@
             database.sync().then(show);
         });
     };
+
+    $reload.onclick = function() {
+        database.sync();
+    };
+
+    $clear.onclick = function() {
+        for (var i=0; i<$items.children.length; i++) {
+            if ($items.children[i].item.value.complete) {
+                $items.children[i].setAttribute('style', 'display:none;');
+            }
+        }
+    };
+
+    window.setInterval(function() {
+        database.pull();
+    }, 1000);
+
 </script>
