@@ -84,7 +84,6 @@
         var item = this.item;
         item.value.complete = !item.value.complete;
         database.stores.todo.put(item.key, item.value).then(function(){
-            database.sync();
             show();
         });
     };
@@ -103,7 +102,6 @@
             {todo: value, complete: false}
         ).then(function(){
             show();
-            database.sync();
         });
     };
 
