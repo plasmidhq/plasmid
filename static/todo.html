@@ -101,7 +101,8 @@
             Base64.encode(Math.random().toString()),
             {todo: value, complete: false}
         ).then(function(){
-            database.sync().then(show);
+            show();
+            database.sync();
         });
     };
 
@@ -118,7 +119,8 @@
     };
 
     window.setInterval(function() {
-        database.pull();
+        database.sync().then(function(){
+        });
     }, 1000);
 
 </script>

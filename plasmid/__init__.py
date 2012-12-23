@@ -104,7 +104,7 @@ class Database(Resource):
             for store in data:
                 for k, (i, v) in data[store].items():
                     updates.append((store, i, k, v))
-            print 'UPDATES', updates
+            print 'PULL', updates
             return {
                 "since": last_revision,
                 "until": self.revision,
@@ -118,9 +118,8 @@ class Database(Resource):
             last_revision = body['last_revision']
             data = body['data']
 
-            assert self.revision
-
             if self.revision > last_revision:
+                print 'PUSH', 'FAILED'
                 return {
                     'error': "Cannot update. Master has changed. %s > %s" % (self.revision, last_revision),
                     'saved': 0,
@@ -129,6 +128,7 @@ class Database(Resource):
 
             else:
                 self.storage.set_data(data)
+                print 'PUSH', len(data)
                 return json.dumps({'saved': len(data)})
 
 
