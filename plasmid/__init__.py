@@ -128,8 +128,11 @@ class Database(Resource):
 
             else:
                 self.storage.set_data(data)
-                print 'PUSH', len(data)
-                return json.dumps({'saved': len(data)})
+                print 'PUSH', data
+                return {
+                    'saved': len(data),
+                    'revision': self.storage.get_meta('revision'),
+                }
 
 
 class DatabaseMethod(Resource):

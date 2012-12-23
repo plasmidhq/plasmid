@@ -12,7 +12,6 @@ var plasmid = {};
         var args = Array.apply(this, arguments);
         var ctx = Array.prototype.shift.apply(args);
         var func = Array.prototype.shift.apply(args);
-        console.log(ctx, func, args);
         return function() {
             var combined = Array.apply(this, args);
             while (arguments.length > 0) {
@@ -145,6 +144,7 @@ var plasmid = {};
             .get(key);
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
+                request.trigger('__gotraw__', event.target.result);
                 request.trigger('success', event.target.result.value);
             } else {
                 request.trigger('missing', key);
@@ -156,6 +156,7 @@ var plasmid = {};
 
         return request;
     };
+
     LocalStore.prototype.add = function(key, value) {
         var store = this;
         var request = new Promise(this);
@@ -261,7 +262,6 @@ var plasmid = {};
                 }
                 for (indexname in options.schema.stores[storename].indexes) {
                     indexopt = options.schema.stores[storename].indexes[indexname];
-                    console.log(storename, "value." + indexname, indexopt);
                     if (indexopt) {
                         idbstore.createIndex(indexname, "value." + indexopt.key,
                             {unique: indexopt.unique, multi: indexopt.multi}
@@ -359,13 +359,26 @@ var plasmid = {};
                         var key = r.shift();
                         var value = r.shift();
 
-                        database.stores[storename].put(key, value, revision)
-                            .then(function(){
-                                database.meta.put('last_revision', revision).then(next);
-                            })
-                            .error(function(){
-                                console.error(arguments);
-                            })
+                        function set_value() {
+                            database.stores[storename].put(key, value, revision)
+                                .then(function(){
+                                    database.meta.put('last_revision', revision).then(next);
+                                })
+                                .error(function(){
+                                    console.error(arguments);
+                                })
+                            ;
+                        }
+
+                        // Discover potential conflict
+                        database.stores[storename].get(key)
+                            .on('__gotraw__', function(obj) {
+                                if (obj.revision === null) {
+                                    // conflict!
+                                    request.trigger('conflict', key, obj.value, value)
+                                }
+                                set_value();
+                            }).on('missing', set_value);
                         ;
                     } else {
                         r = null;
@@ -415,8 +428,9 @@ var plasmid = {};
             });
         }
     
+        var req_body;
         function send_queued() {
-            var req_body = {
+            req_body = {
                 last_revision: last_revision 
             };
             req_body.data = {}
@@ -437,8 +451,31 @@ var plasmid = {};
 
         function handle_post(data) {
             if (!data.error) {
-                database.trigger('push');
-                request.trigger('success');
+                // Update the revision for the saved objects.
+                function update_next_obj() {
+                    var next = db_queued.pop();
+                    if (!!next) {
+                        var store = next[0];
+                        var obj = next[1];
+                        database.stores[store].put(obj.key, obj.value, data.revision).then(
+                        function() {
+                            if (db_queued.length > 0) {
+                                update_next_obj();
+                            } else {
+                                finish();
+                            }
+                        });
+                    } else {
+                        finish();
+                    }
+                }
+                function finish() {
+                    database.meta.put('last_revision', data.revision).then(function() {
+                        database.trigger('push');
+                        request.trigger('success');
+                    });
+                }
+                update_next_obj();
             } else {
                 if (data.reason == 'outofdate') {
                     request.trigger('error', data.reason);
