@@ -228,6 +228,10 @@ var plasmid = {};
                 });
             }
 
+            if (options.autoSync) {
+                db.autoSync(options.autoSync);
+            }
+
             db.trigger('opensuccess')
         };
         req.onupgradeneeded = function(event) {
@@ -277,6 +281,25 @@ var plasmid = {};
 
     Database.prototype.http = function(method, url, body) {
         return http(method, url, body, this.options.access, this.options.secret);
+    };
+
+    Database.prototype.autoSync = function(interval) {
+        this.autoSyncIntervalTime = interval;
+        if (!!this.autoSyncInterval) {
+            window.clearInterval(this.autoSyncInterval);
+        }
+        if (!!interval) {
+            this.autoSyncInterval = window.setInterval(do_auto_sync, this.autoSyncIntervalTime);
+        }
+
+        var database = this;
+        function do_auto_sync() {
+            try {
+                database.sync();
+            } catch (e) {
+                console.error("auto sync error: " + e);
+            }
+        }
     };
 
     Database.prototype.sync = function() {

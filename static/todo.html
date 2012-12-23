@@ -41,6 +41,7 @@
                 },
             },
         },
+        autoSync: 1000,
         access: access,
         secret: secret
     });
@@ -117,10 +118,5 @@
             }
         }
     };
-
-    window.setInterval(function() {
-        database.sync().then(function(){
-        });
-    }, 1000);
 
 </script>
