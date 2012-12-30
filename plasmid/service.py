@@ -78,6 +78,9 @@ class Database(Resource):
         else:
             self.can_read = False
 
+    def info(self, msg):
+        logging.info("%s/%s %s" % (self.name, self.access[1], msg))
+
     @property
     def revision(self):
         if self.can_read:
@@ -113,6 +116,7 @@ class Database(Resource):
                 for k, (i, v) in data[store].items():
                     updates.append((store, i, k, v))
             print 'PULL', updates
+            self.info("Client pulled %d updates." % (len(updates)))
             return {
                 "since": last_revision,
                 "until": self.revision,
@@ -127,7 +131,7 @@ class Database(Resource):
             data = body['data']
 
             if self.revision > last_revision:
-                print 'PUSH', 'FAILED'
+                self.info("Client tried to push from out of date clone.")
                 return {
                     'error': "Cannot update. Master has changed. %s > %s" % (self.revision, last_revision),
                     'saved': 0,
@@ -136,7 +140,7 @@ class Database(Resource):
 
             else:
                 self.storage.set_data(data)
-                print 'PUSH', data
+                self.info("Client sent %s updates." % (len(data),))
                 return {
                     'saved': len(data),
                     'revision': self.storage.get_meta('revision'),
