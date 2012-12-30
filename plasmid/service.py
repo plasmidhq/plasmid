@@ -14,7 +14,7 @@ from twisted.web.static import File
 from twisted.cred.portal import IRealm, Portal
 from twisted.cred import error
 
-from plasmid.util import endpoint
+from plasmid.util import endpoint, StringResource
 from plasmid.storage import Hub, Storage
 from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
@@ -165,11 +165,3 @@ class DatabaseMethod(Resource):
     def render_POST(self, request):
         method = getattr(self.database, 'post_' + self.name)
         return method(request, *self.args)
-
-
-class StringResource(Resource):
-    def __init__(self, s):
-        Resource.__init__(self)
-        self.s = s
-    def render_GET(self, request):
-        return self.s
