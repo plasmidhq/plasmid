@@ -99,12 +99,12 @@ class PlasmidCredChecker(object):
 class PlasmidRealm(object):
     implements(IRealm)
 
-    def __init__(self, factory):
+    def __init__(self, hub, factory):
         self.factory = factory
 
     def requestAvatar(self, avatarId, mind, *interfaces):
         if IResource in interfaces:
-            resource = self.factory(avatarId)
+            resource = self.factory(hub, avatarId)
             return (IResource, resource, lambda: None)
         raise NotImplementedError()
 

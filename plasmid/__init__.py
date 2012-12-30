@@ -19,25 +19,29 @@ from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
 
 
-hub = Hub('hub')
-credbackend = CredentialBackend(hub)
+static_path = abspath(join(dirname(__file__), '..', 'static'))
 
 
 class ServiceRoot(Resource):
+
+    def __init__(self, hub):
+        Resource.__init__(self)
+        self.hub = hub
 
     def getChild(self, name, request):
         if name == 'static':
             return File(static_path)
         elif name == 'api':
-            return APIAuthSessionWrapper(portal, [PlasmidCredChecker(hub)])
+            return APIAuthSessionWrapper(portal, [PlasmidCredChecker(self.hub)])
         else:
             "nothing here"
 
 
 class Plasmid(Resource):
 
-    def __init__(self, avatarId):
+    def __init__(self, hub, avatarId):
         Resource.__init__(self)
+        self.hub = hub
         self.databases = {}
         self.avatarId = avatarId
 
@@ -162,11 +166,6 @@ class StringResource(Resource):
     def render_GET(self, request):
         return self.s
 
-portal = Portal(PlasmidRealm(Plasmid), [PlasmidCredChecker(hub)])
-
-resource = ServiceRoot()
-static_path = abspath(join(dirname(__file__), '..', 'static'))
-factory = Site(resource)
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -176,7 +175,12 @@ def main(argv):
     parser.add_argument('--check-permission', dest='check_permission', nargs=3)
     parser.add_argument('--grant-permission', dest='grant_permission', nargs=3)
     parser.add_argument('--revoke-permission', dest='revoke_permission', nargs=3)
+    parser.add_argument('-p', '--hub-path', dest='hub_path', default='hub')
     ns = parser.parse_args(argv)
+
+    hub = Hub(ns.hub_path)
+    credbackend = CredentialBackend(hub)
+
 
     if ns.set_secret:
         access, secret = ns.set_secret
@@ -195,6 +199,10 @@ def main(argv):
         credbackend = CredentialBackend(hub)
         credbackend.set_permission(access, permission, resource, "No")
     else:
+        portal = Portal(PlasmidRealm(hub, Plasmid), [PlasmidCredChecker(hub)])
+        resource = ServiceRoot(hub)
+        factory = Site(resource)
+
         reactor.listenTCP(8880, factory)
         reactor.run()
 
