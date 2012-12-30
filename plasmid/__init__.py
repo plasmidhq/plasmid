@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import sys
 import time
 from os.path import abspath, join, dirname
@@ -19,6 +20,7 @@ from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
 
 
+logging.basicConfig(level=logging.INFO)
 static_path = abspath(join(dirname(__file__), '..', 'static'))
 
 
@@ -27,6 +29,7 @@ class ServiceRoot(Resource):
     def __init__(self, hub):
         Resource.__init__(self)
         self.hub = hub
+        logging.info("Service ready at '%s'" % (hub.path))
 
     def getChild(self, name, request):
         if name == 'static':
