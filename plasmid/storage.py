@@ -17,7 +17,6 @@ class Storage(object):
     def __init__(self, hub, name):
         self.hub = hub
         self.name = name
-        self.create()
 
     def exists(self):
         return exists(join(self.hub.path, self.name + '.sqlite'))

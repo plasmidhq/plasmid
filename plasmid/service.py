@@ -117,17 +117,14 @@ class PlasmidDatabaseDispatch(Resource):
 
     def getChild(self, name, request):
         if name:
-            try:
-                s = Storage(self.hub, name)
-                db = Database(self.hub, self.avatarId, name, s)
-                return db
-            except KeyError:
+            s = Storage(self.hub, name)
+            if not s.exists():
                 if CredentialBackend(self.hub).get_permission(self.avatarId, 'CreateDatabase', name):
-                    s = Storage(self.hub, name)
-                    db = Database(self.hub, self.avatarId, name, s)
-                    return db
+                    s.create()
                 else:
-                    raise error.UnauthorizedLogin()
+                    raise error.UnauthorizedLogin()                    
+            db = Database(self.hub, self.avatarId, name, s)
+            return db
         else:
             return {}
 
