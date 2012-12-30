@@ -56,8 +56,7 @@ def main(argv):
         credbackend = CredentialBackend(hub)
         credbackend.set_permission(access, permission, resource, "No")
     else:
-        portal = Portal(PlasmidRealm(hub, Plasmid), [PlasmidCredChecker(hub)])
-        resource = ServiceRoot(portal, hub)
+        resource = ServiceRoot(hub)
         factory = Site(resource)
 
         reactor.listenTCP(8880, factory)

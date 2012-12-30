@@ -25,9 +25,8 @@ static_path = abspath(join(dirname(__file__), '..', 'static'))
 
 class ServiceRoot(Resource):
 
-    def __init__(self, portal, hub):
+    def __init__(self, hub):
         Resource.__init__(self)
-        self.portal = portal
         self.hub = hub
         logging.info("Service ready at '%s'" % (hub.path))
 
@@ -35,7 +34,8 @@ class ServiceRoot(Resource):
         if name == 'static':
             return File(static_path)
         elif name == 'api':
-            return APIAuthSessionWrapper(self.portal, [PlasmidCredChecker(self.hub)])
+            portal = Portal(PlasmidRealm(self.hub, Plasmid), [PlasmidCredChecker(self.hub)])
+            return APIAuthSessionWrapper(portal, [PlasmidCredChecker(self.hub)])
         else:
             "nothing here"
 
