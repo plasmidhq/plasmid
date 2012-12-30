@@ -24,6 +24,7 @@ static_path = abspath(join(dirname(__file__), '..', 'static'))
 
 
 class ServiceRoot(Resource):
+    """Serves up static resources and authorized API handlers."""
 
     def __init__(self, hub):
         Resource.__init__(self)
@@ -40,6 +41,7 @@ class ServiceRoot(Resource):
 
 
 class Plasmid(Resource):
+    """The Plasmid sync service for a given access token on a hub."""
 
     def __init__(self, hub, avatarId):
         Resource.__init__(self)
@@ -65,6 +67,7 @@ class Plasmid(Resource):
 
 
 class Database(Resource):
+    """API endpoints for a given database."""
 
     def __init__(self, hub, access, name, storage):
         Resource.__init__(self)
@@ -147,6 +150,7 @@ class Database(Resource):
 
 
 class DatabaseMethod(Resource):
+    """Helper for dispatching requests to REST verbs of a database."""
 
     def __init__(self, database, name, args=None):
         Resource.__init__(self)
