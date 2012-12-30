@@ -100,11 +100,12 @@ class PlasmidRealm(object):
     implements(IRealm)
 
     def __init__(self, hub, factory):
+        self.hub = hub
         self.factory = factory
 
     def requestAvatar(self, avatarId, mind, *interfaces):
         if IResource in interfaces:
-            resource = self.factory(hub, avatarId)
+            resource = self.factory(self.hub, avatarId)
             return (IResource, resource, lambda: None)
         raise NotImplementedError()
 
