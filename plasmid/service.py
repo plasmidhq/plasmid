@@ -34,8 +34,7 @@ class ServiceRoot(Resource):
         if name == 'static':
             return File(static_path)
         elif name == 'api':
-            portal = Portal(PlasmidRealm(self.hub, Plasmid), [PlasmidCredChecker(self.hub)])
-            return APIAuthSessionWrapper(portal, [PlasmidCredChecker(self.hub)])
+            return APIAuthSessionWrapper(self.hub, Plasmid)
         else:
             "nothing here"
 

@@ -25,9 +25,9 @@ class APIAuthSessionWrapper(object):
     implements(IResource)
     isLeaf = False
 
-    def __init__(self, portal, credentialFactories):
+    def __init__(self, hub, factory):
+        portal = Portal(PlasmidRealm(hub, factory), [PlasmidCredChecker(hub)])
         self._portal = portal
-        self._credentialFactories = credentialFactories
 
     def getChildWithDefault(self, path, request):
         request.postpath.insert(0, request.prepath.pop())
