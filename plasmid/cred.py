@@ -131,7 +131,30 @@ class CredentialBackend(object):
         self.hub.get_hub_database().get_meta('access_' + access)
 
     def get_permission(self, access, permission, resource):
-        return self.hub.get_hub_database().get_meta('perm_%s_%s' % (permission, resource)) == "Yes"
+        """Determine if the access token has the permission on the resource."""
+
+        db = self.hub.get_hub_database()
+        conn, cur = db.cursor()
+        query = "SELECT resource, active FROM permission WHERE access = ?"
+        cur.execute(query, (access,))
+
+        for for_resource, active in cur.fetchall():
+            if not active:
+                continue
+            else:
+                if for_resource == resource:
+                    return "Yes"
+                elif for_resource.endswith('*'):
+                    if resource.startswith(resource[:-1]):
+                        return "Yes"
+
+        return "No"
 
     def set_permission(self, access, permission, resource, status):
-        self.hub.get_hub_database().set_meta('perm_%s_%s' % (permission, resource), status)
+        
+        db = self.hub.get_hub_database()
+        db.create()
+        conn, cur = db.cursor()
+        query = 'INSERT INTO permission (access, permission, resource, active) VALUES (?, ?, ?, ?)'
+        with conn:
+            cur.execute(query, (access, permission, resource, status == "Yes"))

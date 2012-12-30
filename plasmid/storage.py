@@ -50,6 +50,17 @@ class Storage(object):
                 );
             ''')
             self.set_meta('revision', 1)
+        if not self._table_exists('permission'):
+            cur.execute('''
+                CREATE TABLE permission (
+                    access text,
+                    resource text,
+                    permission text,
+                    active bool,
+
+                    UNIQUE (access, resource, permission) ON CONFLICT REPLACE
+                );
+            ''')
         conn.commit()
 
     def _table_exists(self, table_name):
@@ -70,6 +81,11 @@ class Storage(object):
             return cur.fetchone()[0]
         except TypeError:
             return None
+
+    def get_meta_prefix(self, prefix):
+        conn, cur = self.cursor()
+        cur.execute('SELECT proprety, value FROM meta WHERE property like ?', (prefix+'%',))
+        return cur.fetchall()
 
     def set_data(self, data):
         conn, cur = self.cursor()
