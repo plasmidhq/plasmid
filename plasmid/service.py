@@ -41,29 +41,95 @@ class ServiceRoot(Resource):
 
 
 class Plasmid(Resource):
-    """The Plasmid sync service for a given access token on a hub."""
+    """The Plasmid sync service for a given access token on a hub.
+
+    d/DATABASE - A database resource
+    a/ACCESS - An access token resource
+    """
 
     def __init__(self, hub, avatarId):
         Resource.__init__(self)
         self.hub = hub
-        self.databases = {}
+        self.avatarId = avatarId
+
+        self.resource_factories = {
+            'd': PlasmidDatabaseDispatch,
+            'a': PlasmidAccessDispatch,
+        }
+
+    def getChild(self, name, request):
+        """Dispatch to resource type."""
+
+        return self.resource_factories[name](self.hub, self.avatarId)
+
+
+class PlasmidAccessDispatch(Resource):
+    """
+
+    GET a/TOKEN
+        Report the known permissions
+    GET a/TOKEN/R-NAME
+        Report the permissions of one resource
+    PUT a/TOKEN/R-NAME/PERMISSION
+    DELETE a/TOKEN/R-NAME/PERMISSION
+    """
+
+    def __init__(self, hub, avatarId, token=None, resourceLabel=None, permission=None):
+        Resource.__init__(self)
+        self.hub = hub
+        self.avatarId = avatarId
+
+        self.token = token
+        if resourceLabel:
+            self.resourceType, self.resourceId = resourceLabel.split('-')
+        else:
+            self.resourceType, self.resourceId = None, None
+        self.resourceLabel = resourceLabel
+        self.permission = permission
+
+    def getChild(self, name, request):
+        if name:
+            if not self.token:
+                return self.__class__(self.hub, self.avatarId, name)
+            if not self.resourceId:
+                return self.__class__(self.hub, self.avatarId, self.token, name)
+            if not self.permission:
+                return self.__class__(self.hub, self.avatarId, self.token, self.resourceLabel, name)
+
+    @endpoint
+    def render_GET(self, request):
+        if self.resourceId and self.permission:
+            have = CredentialBackend(self.hub).get_permission(self.avatarId, self.permission, self.resourceId)
+            return {
+                "permission": self.permission,
+                "resource": self.resourceType + '-' + self.resourceId,
+                "access": self.avatarId[1],
+                "active": have,
+            }
+
+
+class PlasmidDatabaseDispatch(Resource):
+
+    def __init__(self, hub, avatarId):
+        Resource.__init__(self)
+        self.hub = hub
         self.avatarId = avatarId
 
     def getChild(self, name, request):
         if name:
             try:
-                return self.databases[name]
+                s = Storage(self.hub, name)
+                db = Database(self.hub, self.avatarId, name, s)
+                return db
             except KeyError:
                 if CredentialBackend(self.hub).get_permission(self.avatarId, 'CreateDatabase', name):
                     s = Storage(self.hub, name)
-                    self.databases[name] = db = Database(self.hub, self.avatarId, name, s)
+                    db = Database(self.hub, self.avatarId, name, s)
                     return db
                 else:
                     raise error.UnauthorizedLogin()
         else:
-            return StringResource(json.dumps({
-                "databases": self.databases.keys(),
-            }))
+            return {}
 
 
 class Database(Resource):

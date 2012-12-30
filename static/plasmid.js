@@ -208,7 +208,7 @@ var plasmid = {};
         this.transaction = null;
         this.name = options.name;
         this.api = options.api;
-        var remote = options.remote || (this.remote = options.api + options.name + '/');
+        var remote = options.remote || (this.remote = options.api + 'd/' + options.name + '/');
 
         var db = this;
         db.stores = {};
@@ -539,5 +539,7 @@ var plasmid = {};
     plasmid.LocalStore = LocalStore;
     plasmid.SyncStore = SyncStore;
     plasmid.Promise = Promise;
+
+    plasmid.http = http;
 
 })(plasmid);
