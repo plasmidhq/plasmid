@@ -75,8 +75,12 @@ it is ready.
 
 ### Database API
 
-*database.put(key, value)* Put the value at the given key
-*database.get(key)* Get the value for the given key
-*database.get(key).then(do)* Pass the value for the given key to the callback function `do`
-*database.get(key).on('error', onerror)* Try to get the value at the given key, but call the error handler if the attempt fails
-*database.sync()* Push new changes back upstream and pull changes down
+**database.put(key, value)** Put the value at the given key
+
+**database.get(key)** Get the value for the given key
+
+**database.get(key).then(do)** Pass the value for the given key to the callback function `do`
+
+**database.get(key).on('error', onerror)** Try to get the value at the given key, but call the error handler if the attempt fails
+
+**database.sync()** Push new changes back upstream and pull changes down
