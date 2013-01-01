@@ -55,11 +55,12 @@ def main(argv):
         access, permission, resource = ns.revoke_permission
         credbackend = CredentialBackend(hub)
         credbackend.set_permission(access, permission, resource, "No")
-    else:
+    else: 
         resource = ServiceRoot(hub)
         factory = Site(resource)
 
         reactor.listenTCP(8880, factory)
         reactor.run()
 
-main(sys.argv)
+if __name__ == '__main__':
+    main(sys.argv)

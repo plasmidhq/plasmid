@@ -18,7 +18,7 @@ class UnauthorizedResource(Resource):
 
     def render(self, request):
         request.setResponseCode(500)
-        return '{authorized:false}'
+        return '{"authorized":false}'
 
 
 class APIAuthSessionWrapper(object):
