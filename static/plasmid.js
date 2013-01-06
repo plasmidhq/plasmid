@@ -8,6 +8,8 @@ var plasmid = {};
     /* Utilities
      */
 
+    function noop(){};
+
     function bind(ctx) {
         var args = Array.apply(this, arguments);
         var ctx = Array.prototype.shift.apply(args);
@@ -65,14 +67,24 @@ var plasmid = {};
         var event = new Event(type, this.target, args);
         if (!!handler) {
             handler.apply(this.target||this, args);
+        } else {
+            if (typeof this.__eventqueue === 'undefined') {
+                this.__eventqueue = {};
+            }
+            if (typeof this.__eventqueue[type] === 'undefined') {
+                this.__eventqueue[type] = [];
+            }
+            this.__eventqueue[type].push(args);
         }
     };
     EventListener.prototype.on = function(eventname, handler) {
         this['on' + eventname] = handler;
+        while (this.__eventqueue && this.__eventqueue[eventname] && this.__eventqueue[eventname].length > 0) {
+            var args = this.__eventqueue[eventname].pop(0);
+            args.splice(0, 0, eventname);
+            this.trigger.apply(this, args);
+        }
         return this;
-    };
-    EventListener.prototype.then = function(handler) {
-        return this.on('success', handler);
     };
     EventListener.prototype.error = function(handler) {
         return this.on('error', handler);
@@ -91,6 +103,51 @@ var plasmid = {};
         this.target = target; 
     };
     Promise.prototype = new EventListener();
+
+    Promise.prototype.then = function(handler) {
+        return this.on('success', handler);
+    };
+    Promise.prototype.ok = function(result) {
+        this.result = result;
+        this.trigger('success', result);
+    };
+    Promise.prototype.chain = function(promises, doneevent) {
+        var self = this;
+        var waiting = promises.length;
+        var i;
+        var results = [];
+        for (i = 0; i < promises.length; i++) {
+            if (promises[i].hasOwnProperty('result')) {
+                waiting = waiting - 1;
+                results[i] = promises[i].result;
+            } else {
+                promises[i].__chainoriginalsuccess = promises[i].onsuccess;
+                promises[i].then(create_result_handler(i));
+                promises[i].on('error', cancel);
+            }
+        }
+        if (waiting === 0) {
+            self.trigger(doneevent||'success', results);
+        }
+
+        return this;
+
+        function cancel() {
+            self.error();
+        };
+
+        function create_result_handler(i) {
+            function one_done(result) {
+                results[i] = result;
+                waiting = waiting - 1;
+                (promises[i].__chainoriginalsuccess||noop)(result);
+                if (waiting === 0) {
+                    self.trigger(doneevent||'success', results);
+                }
+            }
+            return one_done;
+        }
+    };
 
     // Local IndexedDB Store Helper
 

@@ -18,38 +18,49 @@ var JSONSCA = {};
     // - FileList
     // - Blob
     // - ImageData
-
+    
     
     JSONSCA.pack = function(input) {
+        var promise = new plasmid.Promise();
         var t = typeof input;
         if (t === 'string' || t === 'number' || t === 'boolean') {
-            return input;
-        }
+            promise.ok(input);
+        } else if (t === 'undefined') {
+            promise.ok({'undefined': true});
+        } else if (input === null) {
+            promise.ok({'null': true});
+        } else if (input instanceof Date) {
+            promise.ok({'date': input.getTime()});
+        } else if (input instanceof Array) {
+            var promises = map(JSONSCA.pack, input);
+            promise.chain(promises, 'readytowrap').on('readytowrap', function(results) {
+                promise.ok(results);
+            });
 
-        if (t === 'undefined') {
-            return {'undefined': true};;;;
-        }
+        } else {
 
-        if (input === null) {
-            return {'null': true};
-        }
+            // If nothing else, this treat as a simple object and pack the properties
 
-        if (input instanceof Date) {
-            return {'date': input.getTime()};
-        }
-
-        if (input instanceof Array) {
-            return map(JSONSCA.pack, input);
-        }
-
-        // If nothing else, this treat as a simple object and pack the properties
-        var out = {};
-        for (prop in input) {
-            if (input.hasOwnProperty(prop)) {
-                out[prop] = JSONSCA.pack(input[prop]);
+            var promises = [];
+            var out = {};
+            var proppromise;
+            for (prop in input) {
+                if (input.hasOwnProperty(prop)) {
+                    proppromise = JSONSCA.pack(input[prop]);
+                    proppromise.then((function(prop){
+                        return function(packedprop) {
+                            out[prop] = packedprop;
+                        };
+                    })(prop));
+                    promises.push(proppromise);
+                }
             }
+            promise.chain(promises, 'readytowrap').on('readytowrap', function() {
+                promise.ok({'object': out});
+            });
         }
-        return {'object': out};
+
+        return promise;
     };
 
     JSONSCA.unpack = function(input) {
@@ -60,7 +71,7 @@ var JSONSCA = {};
             return input;
         }
 
-        if (t instanceof Array) {
+        if (input instanceof Array) {
             return map(JSONSCA.unpack, input);
         };
 
@@ -90,7 +101,12 @@ var JSONSCA = {};
     };
 
     JSONSCA.stringify = function(data) {
-        return JSON.stringify(JSONSCA.pack(data));
+        var pack_promise = JSONSCA.pack(data);
+        var stringify_promise = new plasmid.Promise();
+        pack_promise.then(function(packed) {
+            stringify_promise.ok(JSON.stringify(packed));
+        });
+        return stringify_promise;
     };
 
     function map(func, data) {
