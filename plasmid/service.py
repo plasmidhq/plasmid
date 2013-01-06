@@ -181,7 +181,6 @@ class Database(Resource):
             for store in data:
                 for k, (i, v) in data[store].items():
                     updates.append((store, i, k, v))
-            print 'PULL', updates
             self.info("Client pulled %d updates." % (len(updates)))
             return {
                 "since": last_revision,

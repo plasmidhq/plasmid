@@ -15,9 +15,9 @@ var JSONSCA = {};
     // - File
     // - FileList
     // - Blob
+    // - ImageData
     //
     // Will support:
-    // - ImageData
     // - cyclic graphs of references
     
     
@@ -34,6 +34,22 @@ var JSONSCA = {};
             promise.ok({'date': input.getTime()});
         } else if (input instanceof RegExp) {
             promise.ok({'regexp': {'source': input.source}});
+        } else if (input instanceof ImageData) {
+            var blob = new Blob([input.data]);
+            var reader = new FileReader();
+            var out = {'imagedata': {
+                width: input.width,
+                height: input.height,
+                data: undefined,
+            }};
+            reader.onloadend = function() {
+                out.imagedata.data = reader.result;
+                promise.ok(out);
+            };
+            reader.onerror = function() {
+                promise.error("Could not serialize");
+            };
+            reader.readAsBinaryString(blob);
         } else if (input instanceof File || input instanceof Blob) {
             var type = (input instanceof File) ? 'file' : 'blob';
             var out = {};
@@ -105,6 +121,16 @@ var JSONSCA = {};
         if (input['date']) {
             var out = new Date();
             out.setTime(input['date']);
+            return out;
+        }
+
+        if (input['imagedata']) {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            var out = ctx.createImageData(input.imagedata.width, input.imagedata.height);
+            for (var i=0; i < input.imagedata.data.length; i++) {
+                out.data[i] = input.imagedata.data.charCodeAt(i);
+            }
             return out;
         }
 
