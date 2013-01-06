@@ -54,12 +54,11 @@ var JSONSCA = {};
                 promise.error("Could not serialize");
             };
             reader.readAsBinaryString(input);
-        } else if (input instanceof Array) {
+        } else if (input instanceof Array || input instanceof FileList) {
             var promises = map(JSONSCA.pack, input);
             promise.chain(promises, 'readytowrap').on('readytowrap', function(results) {
                 promise.ok(results);
             });
-
         } else {
 
             // If nothing else, this treat as a simple object and pack the properties
