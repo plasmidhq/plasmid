@@ -31,6 +31,8 @@ var JSONSCA = {};
             promise.ok({'null': true});
         } else if (input instanceof Date) {
             promise.ok({'date': input.getTime()});
+        } else if (input instanceof RegExp) {
+            promise.ok({'regexp': {'source': input.source}});
         } else if (input instanceof Array) {
             var promises = map(JSONSCA.pack, input);
             promise.chain(promises, 'readytowrap').on('readytowrap', function(results) {
