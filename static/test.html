@@ -47,13 +47,17 @@
     scratch.onkeyup = function() {
         database.stores.shared.put('scratch', {contents: this.value})
     }
-    //database.on('opensuccess', load_and_show);
+    database.on('opensuccess', load_and_show);
 
     function load_and_show() {
         database.sync()
         .then(function(){
             database.stores.shared.get('scratch').then(function(value){
                 scratch.value = value.contents;
+            });
+
+            database.stores.shared.get('imagedata').then(function(imagedata){
+                ctx.putImageData(imagedata, 0, 0);
             });
         });
     };
@@ -62,8 +66,6 @@
     var image = document.getElementById('image');
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
-    ctx.drawImage(image, 0, 0);
-    var imagedata = ctx.getImageData(0, 0, image.width, image.height);
 
 </script>
 
