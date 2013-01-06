@@ -12,12 +12,13 @@ var JSONSCA = {};
     // - arrays
     // - objects
     // - dates
-    //
-    // Will support:
     // - File
     // - FileList
     // - Blob
+    //
+    // Will support:
     // - ImageData
+    // - cyclic graphs of references
     
     
     JSONSCA.pack = function(input) {

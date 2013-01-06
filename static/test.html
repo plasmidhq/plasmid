@@ -5,6 +5,10 @@
 
 <input type="file" id="file" />
 
+<br />
+
+<img id="image" src="image.jpeg" />
+
 <script type="text/javascript" src="base64.js"></script>
 <script type="text/javascript" src="jsonsca.js"></script>
 <script type="text/javascript" src="plasmid.js"></script>
@@ -54,6 +58,11 @@
     };
 
     var file = document.getElementById('file').files[0];
+    var image = document.getElementById('image');
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0);
+    var imagedata = ctx.getImageData(0, 0, image.width, image.height);
 
 </script>
 
