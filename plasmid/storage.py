@@ -9,7 +9,9 @@ class Hub(object):
         self.path = path
 
     def get_hub_database(self):
-        return Storage(self, 'plasmid_hub_meta')
+        storage = Storage(self, 'plasmid_hub_meta')
+        storage.create()
+        return storage
 
 
 class Storage(object):

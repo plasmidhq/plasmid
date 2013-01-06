@@ -416,12 +416,17 @@ var plasmid = {};
                         var key = r.shift();
                         var value = r.shift();
 
+                        value = JSONSCA.unpack(value);
+                        console.log('pulled data', key, value);
+
                         function set_value() {
                             database.stores[storename].put(key, value, revision)
                                 .then(function(){
+                                    console.log('saved');
                                     database.meta.put('last_revision', revision).then(next);
                                 })
                                 .error(function(){
+                                    console.log('error');
                                     console.error(arguments);
                                 })
                             ;
@@ -469,6 +474,8 @@ var plasmid = {};
             collect_next_store_queue();
         });
 
+        // Get all the unsent (queued) objects from all stores
+
         var db_queued = [];
         function collect_next_store_queue() {
             var store = database.stores[sync_stores.shift()];
@@ -480,10 +487,26 @@ var plasmid = {};
                 if (sync_stores.length > 0) {
                     collect_next_store_queue();
                 } else {
-                    send_queued();
+                    pack_next();
                 }
             });
         }
+
+        // JSON/SCA pack the data
+        var pack_i = -1;
+        function pack_next() {
+            pack_i++;
+            if (pack_i + 1 <= db_queued.length) {
+                JSONSCA.pack(db_queued[pack_i][1].value).then(function(packed) {
+                    db_queued[pack_i][1].value = packed;
+                    pack_next();
+                });
+            } else {
+                send_queued();
+            }
+        }
+
+        // Send all queued objects to the sync server
     
         var req_body;
         function send_queued() {
@@ -514,7 +537,8 @@ var plasmid = {};
                     if (!!next) {
                         var store = next[0];
                         var obj = next[1];
-                        database.stores[store].put(obj.key, obj.value, data.revision).then(
+                        var value = JSONSCA.unpack(obj.value);
+                        database.stores[store].put(obj.key, value, data.revision).then(
                         function() {
                             if (db_queued.length > 0) {
                                 update_next_obj();

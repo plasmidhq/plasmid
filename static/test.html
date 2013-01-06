@@ -4,6 +4,7 @@
 </textarea>
 
 <script type="text/javascript" src="base64.js"></script>
+<script type="text/javascript" src="jsonsca.js"></script>
 <script type="text/javascript" src="plasmid.js"></script>
 <script type="text/javascript">
 
@@ -12,8 +13,7 @@
       { ssn: "444-44-4444", name: "Bill", age: 35, email: "bill@company.com" },
       { ssn: "555-55-5555", name: "Donna", age: 32, email: "donna@home.org" }
     ];
-    const dbName = "the_name";
-    const api = window.location.protocol + '//' + window.location.host + '/api/';
+    const api = window.location.protocol + '//' + window.location.host + '/v1/';
     const access = "test";
     const secret = "test";
 
@@ -40,7 +40,7 @@
     scratch.onkeyup = function() {
         database.stores.shared.put('scratch', {contents: this.value})
     }
-    database.on('opensuccess', load_and_show);
+    //database.on('opensuccess', load_and_show);
 
     function load_and_show() {
         database.sync()

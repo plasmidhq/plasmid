@@ -23,19 +23,16 @@ def main(argv):
 
     if ns.set_secret:
         access, secret = ns.set_secret
-        hub_db = hub.get_hub_database()
+        hub_db = config.hub.get_hub_database()
         hub_db.set_meta('access_' + access, secret)
     elif ns.check_permission:
         access, permission, resource = ns.check_permission
-        credbackend = CredentialBackend(hub)
         print access, permission, resource, credbackend.get_permission(access, permission, resource)
     elif ns.grant_permission:
         access, permission, resource = ns.grant_permission
-        credbackend = CredentialBackend(hub)
         credbackend.set_permission(access, permission, resource, "Yes")
     elif ns.revoke_permission:
         access, permission, resource = ns.revoke_permission
-        credbackend = CredentialBackend(hub)
         credbackend.set_permission(access, permission, resource, "No")
     else: 
         resource = ServiceRoot(config.hub)

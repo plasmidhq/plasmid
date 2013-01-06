@@ -114,16 +114,17 @@ class PlasmidDatabaseDispatch(Resource):
         Resource.__init__(self)
         self.hub = hub
         self.avatarId = avatarId
+        self.access = avatarId[1]
 
     def getChild(self, name, request):
         if name:
             s = Storage(self.hub, name)
             if not s.exists():
-                if CredentialBackend(self.hub).get_permission(self.avatarId, 'CreateDatabase', name):
+                if CredentialBackend().get_permission(self.access, 'CreateDatabase', name):
                     s.create()
                 else:
                     raise error.UnauthorizedLogin()                    
-            db = Database(self.hub, self.avatarId, name, s)
+            db = Database(self.hub, self.access, name, s)
             return db
         else:
             return {}
@@ -138,13 +139,13 @@ class Database(Resource):
         self.access = access
         self.name = name
         self.storage = storage
-        if CredentialBackend(hub).get_permission(self.access, 'ReadDatabase', self.name):
+        if CredentialBackend().get_permission(self.access, 'ReadDatabase', self.name):
             self.can_read = True
         else:
             self.can_read = False
 
     def info(self, msg):
-        logging.info("%s/%s %s" % (self.name, self.access[1], msg))
+        logging.info("%s/%s %s" % (self.name, self.access, msg))
 
     @property
     def revision(self):
@@ -190,7 +191,7 @@ class Database(Resource):
 
     @endpoint
     def post_update(self, request, x):
-        if CredentialBackend(self.hub).get_permission(self.access, 'WriteDatabase', self.name):
+        if CredentialBackend().get_permission(self.access, 'WriteDatabase', self.name):
             body = json.load(request.content)
             last_revision = body['last_revision']
             data = body['data']
@@ -210,6 +211,8 @@ class Database(Resource):
                     'saved': len(data),
                     'revision': self.storage.get_meta('revision'),
                 }
+        request.setResponseCode(500)
+        return {'authorized': False, 'permission': 'WriteDatabase'}
 
 
 class DatabaseMethod(Resource):
