@@ -20,8 +20,8 @@ from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
 from plasmid.service import Plasmid, ServiceRoot
 from plasmid.config import configure
+from plasmid import config
 
 
 logging.basicConfig(level=logging.INFO)
-
 

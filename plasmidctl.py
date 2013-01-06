@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-# plasmidctl.py
+#!/usr/bin/env python2
 
 from plasmid import *
+
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -12,9 +12,12 @@ def main(argv):
     parser.add_argument('--grant-permission', dest='grant_permission', nargs=3)
     parser.add_argument('--revoke-permission', dest='revoke_permission', nargs=3)
     parser.add_argument('-p', '--hub-path', dest='hub_path', default='hub')
-    ns = parser.parse_args(argv)
+    ns = parser.parse_args(argv[1:])
 
-    configure(hub=Hub(ns.hub_path))
+    configure(
+        hub=Hub(ns.hub_path),
+        port=8880,
+    )
 
     credbackend = CredentialBackend()
 
@@ -35,10 +38,10 @@ def main(argv):
         credbackend = CredentialBackend(hub)
         credbackend.set_permission(access, permission, resource, "No")
     else: 
-        resource = ServiceRoot(hub)
+        resource = ServiceRoot(config.hub)
         factory = Site(resource)
 
-        reactor.listenTCP(8880, factory)
+        reactor.listenTCP(config.port, factory)
         reactor.run()
 
 if __name__ == '__main__':
