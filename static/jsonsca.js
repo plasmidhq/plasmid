@@ -33,17 +33,21 @@ var JSONSCA = {};
             promise.ok({'date': input.getTime()});
         } else if (input instanceof RegExp) {
             promise.ok({'regexp': {'source': input.source}});
-        } else if (input instanceof File) {
-            var out = {'file': {
+        } else if (input instanceof File || input instanceof Blob) {
+            var type = (input instanceof File) ? 'file' : 'blob';
+            var out = {};
+            out[type] = {
                 contents: null,
                 properties: {
                     type: input.type,
-                    name: input.name
                 }
-            }};
+            };
+            if (input instanceof File) {
+                out[type].properties.name = input.name;
+            }
             var reader = new FileReader();
             reader.onloadend = function() {
-                out.file.contents = reader.result;
+                out[type].contents = reader.result;
                 promise.ok(out);
             };
             reader.onerror = function() {
@@ -104,16 +108,19 @@ var JSONSCA = {};
             return out;
         }
 
-        if (input['file']) {
-            var ab = new ArrayBuffer(input.file.contents.length);
+        if (input['file'] || input['blob']) {
+            var inputdata = input['file'] || input['blob'];
+            var ab = new ArrayBuffer(inputdata.contents.length);
             var ia = new Uint8Array(ab);
-            for (var i=0; i<input.file.contents.length; i++) {
-                ia[i] = input.file.contents.charCodeAt(i);
+            for (var i=0; i<inputdata.contents.length; i++) {
+                ia[i] = inputdata.contents.charCodeAt(i);
             }
             var out = new Blob([ia],
-                {type: input.file.properties.type}
+                {type: inputdata.properties.type}
             );
-            out.name = input.file.properties.name;
+            if (input['file']) {
+                out.name = inputdata.properties.name;
+            }
             return out;
         }
 
