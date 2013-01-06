@@ -11,6 +11,7 @@ from twisted.cred.credentials import ICredentials
 from twisted.cred import error
 
 from plasmid.util import endpoint
+from plasmid import config
 
 
 class UnauthorizedResource(Resource):
@@ -121,19 +122,17 @@ PERMISSIONS = (
 )
 
 class CredentialBackend(object):
-    def __init__(self, hub):
-        self.hub = hub
 
     def set_secret(self, access, secret):
-        self.hub.get_hub_database().set_meta('access_' + access, secret)
+        config.hub.get_hub_database().set_meta('access_' + access, secret)
 
     def get_secret(self, access):
-        self.hub.get_hub_database().get_meta('access_' + access)
+        config.hub.get_hub_database().get_meta('access_' + access)
 
     def get_permission(self, access, permission, resource):
         """Determine if the access token has the permission on the resource."""
 
-        db = self.hub.get_hub_database()
+        db = config.hub.get_hub_database()
         conn, cur = db.cursor()
         query = "SELECT resource, active FROM permission WHERE access = ?"
         cur.execute(query, (access,))
@@ -152,7 +151,7 @@ class CredentialBackend(object):
 
     def set_permission(self, access, permission, resource, status):
         
-        db = self.hub.get_hub_database()
+        db = config.hub.get_hub_database()
         db.create()
         conn, cur = db.cursor()
         query = 'INSERT INTO permission (access, permission, resource, active) VALUES (?, ?, ?, ?)'

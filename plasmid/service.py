@@ -34,7 +34,7 @@ class ServiceRoot(Resource):
     def getChild(self, name, request):
         if name == 'static':
             return File(static_path)
-        elif name == 'api':
+        elif name == 'v1':
             return APIAuthSessionWrapper(self.hub, Plasmid)
         else:
             "nothing here"
