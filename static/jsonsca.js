@@ -33,6 +33,23 @@ var JSONSCA = {};
             promise.ok({'date': input.getTime()});
         } else if (input instanceof RegExp) {
             promise.ok({'regexp': {'source': input.source}});
+        } else if (input instanceof File) {
+            var out = {'file': {
+                contents: null,
+                properties: {
+                    type: input.type,
+                    name: input.name
+                }
+            }};
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                out.file.contents = reader.result;
+                promise.ok(out);
+            };
+            reader.onerror = function() {
+                promise.error("Could not serialize");
+            };
+            reader.readAsBinaryString(input);
         } else if (input instanceof Array) {
             var promises = map(JSONSCA.pack, input);
             promise.chain(promises, 'readytowrap').on('readytowrap', function(results) {
@@ -84,6 +101,19 @@ var JSONSCA = {};
         if (input['date']) {
             var out = new Date();
             out.setTime(input['date']);
+            return out;
+        }
+
+        if (input['file']) {
+            var ab = new ArrayBuffer(input.file.contents.length);
+            var ia = new Uint8Array(ab);
+            for (var i=0; i<input.file.contents.length; i++) {
+                ia[i] = input.file.contents.charCodeAt(i);
+            }
+            var out = new Blob([ia],
+                {type: input.file.properties.type}
+            );
+            out.name = input.file.properties.name;
             return out;
         }
 
