@@ -21,10 +21,16 @@ var JSONSCA = {};
     // - cyclic graphs of references
     
     
-    JSONSCA.pack = function(input) {
+    JSONSCA.pack = function(input, reftracker) {
         var promise = new plasmid.Promise();
         var t = typeof input;
-        if (t === 'string' || t === 'number' || t === 'boolean') {
+        if (typeof reftracker === 'undefined') {
+            var reftracker = new JSONSCA._ReferenceTracker();
+        }
+        var reference = reftracker.reference(input);
+        if (reference && reference.ref) {
+            promise.ok({'reference': reference.ref});
+        } else if (t === 'string' || t === 'number' || t === 'boolean') {
             promise.ok(input);
         } else if (t === 'undefined') {
             promise.ok({'undefined': true});
@@ -37,11 +43,14 @@ var JSONSCA = {};
         } else if (input instanceof ImageData) {
             var blob = new Blob([input.data]);
             var reader = new FileReader();
-            var out = {'imagedata': {
-                width: input.width,
-                height: input.height,
-                data: undefined,
-            }};
+            var out = {
+                'id': reference['new'],
+                'imagedata': {
+                    width: input.width,
+                    height: input.height,
+                    data: undefined,
+                }
+            };
             reader.onloadend = function() {
                 out.imagedata.data = reader.result;
                 promise.ok(out);
@@ -52,7 +61,9 @@ var JSONSCA = {};
             reader.readAsBinaryString(blob);
         } else if (input instanceof File || input instanceof Blob) {
             var type = (input instanceof File) ? 'file' : 'blob';
-            var out = {};
+            var out = {
+                'id': reference['new'],
+            };
             out[type] = {
                 contents: null,
                 properties: {
@@ -72,9 +83,15 @@ var JSONSCA = {};
             };
             reader.readAsBinaryString(input);
         } else if (input instanceof Array || input instanceof FileList) {
-            var promises = map(JSONSCA.pack, input);
+            var promises = [];
+            for (var i=0; i < input.length; i++) {
+                promises.push(JSONSCA.pack(input[i], reftracker));
+            }
             promise.chain(promises, 'readytowrap').on('readytowrap', function(results) {
-                promise.ok(results);
+                promise.ok({
+                    'id': reference['new'],
+                    'array': results
+                });
             });
         } else {
 
@@ -85,7 +102,7 @@ var JSONSCA = {};
             var proppromise;
             for (prop in input) {
                 if (input.hasOwnProperty(prop)) {
-                    proppromise = JSONSCA.pack(input[prop]);
+                    proppromise = JSONSCA.pack(input[prop], reftracker);
                     proppromise.then((function(prop){
                         return function(packedprop) {
                             out[prop] = packedprop;
@@ -102,18 +119,20 @@ var JSONSCA = {};
         return promise;
     };
 
-    JSONSCA.unpack = function(input) {
+    JSONSCA.unpack = function(input, references) {
         var t = typeof input;
+        var references = references||{};
+        var id = input.id;
 
         // string, number, boolean
         if (t !== 'object') {
             return input;
         }
 
-        if (input instanceof Array) {
-            return map(JSONSCA.unpack, input);
-        };
-
+        if (input['reference']) {
+            return references[input.reference];
+        }
+        
         if (input['null']) {
             return null;
         }
@@ -131,6 +150,7 @@ var JSONSCA = {};
             for (var i=0; i < input.imagedata.data.length; i++) {
                 out.data[i] = input.imagedata.data.charCodeAt(i);
             }
+            references[input.id] = out;
             return out;
         }
 
@@ -147,6 +167,7 @@ var JSONSCA = {};
             if (input['file']) {
                 out.name = inputdata.properties.name;
             }
+            references[input.id] = out;
             return out;
         }
 
@@ -154,11 +175,23 @@ var JSONSCA = {};
             return undefined;
         }
 
-        var out = {}
-        for (prop in input['object']) {
-            out[prop] = JSONSCA.unpack(input['object'][prop]);
+        if (input['array']) {
+            var out = [];
+            for (var i=0; i < input.array.length; i++) {
+                out.push(JSONSCA.unpack(input.array[i], references));
+            }
+            references[input.id] = out;
+            return out;
+        };
+
+        if (input['object']) {
+            var out = {}
+            for (prop in input['object']) {
+                out[prop] = JSONSCA.unpack(input['object'][prop], references);
+            }
+            references[input.id] = out;
+            return out;
         }
-        return out;
     };
 
     JSONSCA.parse = function(data) {
@@ -181,6 +214,37 @@ var JSONSCA = {};
             out.push(func(data[i]));
         }
         return out;
+    };
+
+    function objsize(obj) {
+        var c = 0;
+        for (p in obj) {
+            if (obj.hasOwnProperty(p)) {
+                c++;
+            }
+        }
+        return c;
+    };
+
+    JSONSCA._ReferenceTracker = function() {
+        this.tracked = {};
+        this.next_id = 1;
+    };
+    JSONSCA._ReferenceTracker.prototype.reference = function(obj) {
+        var t = typeof obj;
+        if (t==='object') {
+            for (ref in this.tracked) {
+                if (this.tracked[ref] === obj) {
+                    return {'ref': ref};
+                }
+            }
+            var ref = this.next_id;
+            this.tracked[this.next_id] = obj;
+            this.next_id++;
+            return {'new': ref};
+        } else {
+            return null;
+        }
     };
 
     JSONSCA.__map = map;
