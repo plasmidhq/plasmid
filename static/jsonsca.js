@@ -130,6 +130,7 @@ var JSONSCA = {};
         }
 
         if (input['reference']) {
+            console.log('ref', input.reference, references[input.reference]);
             return references[input.reference];
         }
         
@@ -147,10 +148,10 @@ var JSONSCA = {};
             var canvas = document.createElement('canvas');
             var ctx = canvas.getContext('2d');
             var out = ctx.createImageData(input.imagedata.width, input.imagedata.height);
+            references[input.id] = out;
             for (var i=0; i < input.imagedata.data.length; i++) {
                 out.data[i] = input.imagedata.data.charCodeAt(i);
             }
-            references[input.id] = out;
             return out;
         }
 
@@ -164,10 +165,10 @@ var JSONSCA = {};
             var out = new Blob([ia],
                 {type: inputdata.properties.type}
             );
+            references[input.id] = out;
             if (input['file']) {
                 out.name = inputdata.properties.name;
             }
-            references[input.id] = out;
             return out;
         }
 
@@ -177,19 +178,19 @@ var JSONSCA = {};
 
         if (input['array']) {
             var out = [];
+            references[input.id] = out;
             for (var i=0; i < input.array.length; i++) {
                 out.push(JSONSCA.unpack(input.array[i], references));
             }
-            references[input.id] = out;
             return out;
         };
 
         if (input['object']) {
             var out = {}
+            references[input.id] = out;
             for (prop in input['object']) {
                 out[prop] = JSONSCA.unpack(input['object'][prop], references);
             }
-            references[input.id] = out;
             return out;
         }
     };
