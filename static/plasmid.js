@@ -111,7 +111,7 @@ var plasmid = {};
         this.result = result;
         this.trigger('success', result);
     };
-    Promise.prototype.chain = function(promises, doneevent) {
+    Promise.prototype.chain = function(promises) {
         var self = this;
         var waiting = promises.length;
         var i;
@@ -121,13 +121,12 @@ var plasmid = {};
                 waiting = waiting - 1;
                 results[i] = promises[i].result;
             } else {
-                promises[i].__chainoriginalsuccess = promises[i].onsuccess;
                 promises[i].then(create_result_handler(i));
                 promises[i].on('error', cancel);
             }
         }
         if (waiting === 0) {
-            self.trigger(doneevent||'success', results);
+            self.trigger('success', results);
         }
 
         return this;
@@ -140,9 +139,9 @@ var plasmid = {};
             function one_done(result) {
                 results[i] = result;
                 waiting = waiting - 1;
-                (promises[i].__chainoriginalsuccess||noop)(result);
+                self.trigger('onedone', i, promises[i], result);
                 if (waiting === 0) {
-                    self.trigger(doneevent||'success', results);
+                    self.trigger('success', results);
                 }
             }
             return one_done;

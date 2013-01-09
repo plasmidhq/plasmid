@@ -87,7 +87,7 @@ var JSONSCA = {};
             for (var i=0; i < input.length; i++) {
                 promises.push(JSONSCA.pack(input[i], reftracker));
             }
-            promise.chain(promises, 'readytowrap').on('readytowrap', function(results) {
+            promise.chain(promises).then(function(results) {
                 promise.ok({
                     'id': reference['new'],
                     'array': results
@@ -103,16 +103,15 @@ var JSONSCA = {};
             for (prop in input) {
                 if (input.hasOwnProperty(prop)) {
                     proppromise = JSONSCA.pack(input[prop], reftracker);
-                    proppromise.then((function(prop){
-                        return function(packedprop) {
-                            out[prop] = packedprop;
-                        };
-                    })(prop));
+                    proppromise.prop = prop
                     promises.push(proppromise);
                 }
             }
-            promise.chain(promises, 'readytowrap').on('readytowrap', function() {
+            promise = Promise.chain(promises).then(function() {
                 promise.ok({'object': out});
+            });
+            promise.on('onedone', function(i, promise, result) {
+                out[prop] = result;
             });
         }
 
