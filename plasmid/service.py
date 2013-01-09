@@ -37,6 +37,7 @@ class ServiceRoot(Resource):
         elif name == 'v1':
             return APIAuthSessionWrapper(self.hub, Plasmid)
         else:
+            request.setResponseCode(404)
             "nothing here"
 
 
