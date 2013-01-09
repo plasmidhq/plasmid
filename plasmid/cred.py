@@ -149,6 +149,16 @@ class CredentialBackend(object):
 
         return "No"
 
+    def list_permissions(self, access):
+        db = config.hub.get_hub_database()
+        conn, cur = db.cursor()
+        query = "SELECT permission, resource, active FROM permission WHERE access = ?"
+        cur.execute(query, (access,))
+
+        for permission, resource, active in cur.fetchall():
+            if active:
+                yield resource, permission
+
     def set_permission(self, access, permission, resource, status):
         
         db = config.hub.get_hub_database()

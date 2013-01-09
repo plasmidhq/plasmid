@@ -43,6 +43,12 @@
         secret: secret
     });
 
+    var accesstoken = new plasmid.AccessToken({
+        auth: {access: access, secret: secret}
+    ,   token: access
+    ,   api: api
+    });
+
     var scratch = document.getElementById('scratch');
     scratch.onkeyup = function() {
         database.stores.shared.put('scratch', {contents: this.value})

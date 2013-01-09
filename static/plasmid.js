@@ -148,6 +148,23 @@ var plasmid = {};
         }
     };
 
+    // Access token API
+    
+    var AccessToken = plasmid.AccessToken = function(options) {
+        this.options = options;
+        this.auth = options.auth;
+    };
+    AccessToken.prototype = new EventListener();
+    AccessToken.prototype.list = function() {
+        var o = this.options;
+        var p = http('get', o.api + 'a/' + o.token, null, o.auth.access, o.auth.secret);
+        p.then(function(resp) {
+            promise.ok(resp.permissions);
+        });
+        var promise = new Promise();
+        return promise;
+    };
+
     // Local IndexedDB Store Helper
 
     /* LocalStore

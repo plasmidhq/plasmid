@@ -79,6 +79,7 @@ class PlasmidAccessDispatch(Resource):
         Resource.__init__(self)
         self.hub = hub
         self.avatarId = avatarId
+        self.access = avatarId[1]
 
         self.token = token
         if resourceLabel:
@@ -99,13 +100,22 @@ class PlasmidAccessDispatch(Resource):
 
     @endpoint
     def render_GET(self, request):
+        cred = CredentialBackend()
         if self.resourceId and self.permission:
-            have = CredentialBackend(self.hub).get_permission(self.avatarId, self.permission, self.resourceId)
+            have = cred.get_permission(self.access, self.permission, self.resourceId)
             return {
                 "permission": self.permission,
                 "resource": self.resourceType + '-' + self.resourceId,
-                "access": self.avatarId[1],
+                "access": self.access,
                 "active": have,
+            }
+        elif self.token:
+            return {
+                "permissions": [
+                    {"resource": resource, "permission": permission}
+                    for (resource, permission) in
+                    cred.list_permissions(self.access)
+                ]
             }
 
 
