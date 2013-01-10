@@ -134,8 +134,8 @@ class CredentialBackend(object):
 
         db = config.hub.get_hub_database()
         conn, cur = db.cursor()
-        query = "SELECT resource, active FROM permission WHERE access = ?"
-        cur.execute(query, (access,))
+        query = "SELECT resource, active FROM permission WHERE access = ? AND permission = ?"
+        cur.execute(query, (access, permission))
 
         for for_resource, active in cur.fetchall():
             if not active:

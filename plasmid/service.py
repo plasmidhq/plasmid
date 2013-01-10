@@ -146,6 +146,20 @@ class PlasmidAccessDispatch(Resource):
                 'access': access,
                 'secret': secret,
             }}
+        # Post to /a/TOKEN
+        # Add permission
+        else:
+            permission = body['permission']
+            resource = body['resource']
+            if cred.get_permission(self.access, permission, resource) == "Yes":
+                cred.set_permission(self.token, permission, resource, "Yes")            
+                return {'success': {
+                    'access': self.token,
+                    'permission': permission,
+                    'resource': resource,
+                }}
+            else:
+                return {'error': "Must have a permission to grant it."}
 
 
 class PlasmidDatabaseDispatch(Resource):

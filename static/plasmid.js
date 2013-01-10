@@ -166,12 +166,30 @@ var plasmid = {};
         return promise;
     };
 
-    AccessToken.prototype.create = function(access, secret) {
+    AccessToken.prototype.grant = function(resource, permission) {
+        var self = this;
+        var o = this.options;
+        if (resource instanceof Database) {
+            reource = resource.name;
+        }
+
+        body = {
+            permission: permission
+        ,   resource: resource
+        }
+        http('post', o.api + 'a/' + o.token, body, o.auth.access, o.auth.secret)
+        .then(function(data) {
+            console.log(data);
+        });
+        ;
+    };
+
+    AccessToken.prototype.create = function() {
         var self = this;
         var o = this.options;
         var body = {
-            'access': access,
-            'secret': secret,
+            'access': o.token,
+            'secret': o.secret,
         };
         var p = http('post', o.api + 'a/', body, o.auth.access, o.auth.secret);
         p.then(function(data) {
