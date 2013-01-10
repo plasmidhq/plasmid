@@ -14,7 +14,7 @@ from twisted.web.static import File
 from twisted.cred.portal import IRealm, Portal
 from twisted.cred import error
 
-from plasmid.util import endpoint, StringResource
+from plasmid.util import endpoint, StringResource, random_token
 from plasmid.storage import Hub, Storage
 from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
@@ -97,6 +97,7 @@ class PlasmidAccessDispatch(Resource):
                 return self.__class__(self.hub, self.avatarId, self.token, name)
             if not self.permission:
                 return self.__class__(self.hub, self.avatarId, self.token, self.resourceLabel, name)
+        return self
 
     @endpoint
     def render_GET(self, request):
@@ -114,9 +115,37 @@ class PlasmidAccessDispatch(Resource):
                 "permissions": [
                     {"resource": resource, "permission": permission}
                     for (resource, permission) in
-                    cred.list_permissions(self.access)
+                    cred.list_permissions(self.token)
                 ]
             }
+
+    @endpoint
+    def render_POST(self, request):
+        cred = CredentialBackend()
+        body = json.load(request.content)
+        db = self.hub.get_hub_database()
+        # Post to /a/
+        # Create a token
+        if not self.token:
+            access = body.get('access')
+            secret = body.get('secret')
+            if not access:
+                if secret:
+                    return {'error': "Can only specify secret with token"}
+                access = random_token()
+                secret = random_token()
+            else:
+                # TODO: Fix race condition
+                existing = db.get_meta('access_' + access)
+                if existing:
+                    return {'error': "Access token already exists"}
+
+            db.set_meta('access_' + access, secret)
+
+            return {'success': {
+                'access': access,
+                'secret': secret,
+            }}
 
 
 class PlasmidDatabaseDispatch(Resource):

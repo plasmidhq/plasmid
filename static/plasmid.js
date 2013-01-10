@@ -24,6 +24,7 @@ var plasmid = {};
     };
 
     function http(method, url, body, access, secret) {
+        var method = method.toUpperCase();
         var httpreq = new XMLHttpRequest();
         httpreq.onreadystatechange = statechange;
         httpreq.open(method, url);
@@ -163,6 +164,27 @@ var plasmid = {};
         });
         var promise = new Promise();
         return promise;
+    };
+
+    AccessToken.prototype.create = function(access, secret) {
+        var self = this;
+        var o = this.options;
+        var body = {
+            'access': access,
+            'secret': secret,
+        };
+        var p = http('post', o.api + 'a/', body, o.auth.access, o.auth.secret);
+        p.then(function(data) {
+            if (data.success) {
+                var access = data.success.access;
+                var secret = data.success.secret;
+                self.options.token = access;
+                self.options.secret = secret;
+            } else {
+                promise.error(data.error);
+            }
+        });
+        var promise = new Promise();
     };
 
     // Local IndexedDB Store Helper
