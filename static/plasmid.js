@@ -114,6 +114,7 @@ var plasmid = {};
     };
 
     Promise.chain = function(promises) {
+        console.log('pack object property', prop);
         var self = new Promise();
         var waiting = promises.length;
         var i;
@@ -122,12 +123,14 @@ var plasmid = {};
             if (promises[i].hasOwnProperty('result')) {
                 waiting = waiting - 1;
                 results[i] = promises[i].result;
+                self.trigger('onedone', i, promises[i], promises[i].result);
             } else {
                 promises[i].then(create_result_handler(i));
                 promises[i].on('error', cancel);
             }
         }
         if (waiting === 0) {
+            console.log('chain done immediately');
             self.trigger('success', results);
         }
 
