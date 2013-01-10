@@ -321,11 +321,13 @@ var plasmid = {};
         this.transaction = null;
         this.name = options.name;
         this.api = options.api;
-        var remote = options.remote || (this.remote = options.api + 'd/' + options.name + '/');
+        this.localname = options.localname || options.name;
+        this.remotename = options.remotename || options.name;
+        var remote = options.remote || (this.remote = options.api + 'd/' + this.remotename + '/');
 
         var db = this;
         db.stores = {};
-        var req = indexedDB.open(this.name, options.schema.version);
+        var req = indexedDB.open(this.localname, options.schema.version);
 
         req.onerror = function(event) {
             db.trigger('openerror', event);

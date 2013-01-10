@@ -87,7 +87,8 @@ var JSONSCA = {};
             for (var i=0; i < input.length; i++) {
                 promises.push(JSONSCA.pack(input[i], reftracker));
             }
-            promise.chain(promises).then(function(results) {
+            var wait = new plasmid.Promise();
+            wait.chain(promises).then(function(results) {
                 promise.ok({
                     'id': reference['new'],
                     'array': results
@@ -107,10 +108,11 @@ var JSONSCA = {};
                     promises.push(proppromise);
                 }
             }
-            promise = Promise.chain(promises).then(function() {
+            var wait = new plasmid.Promise();
+            wait.chain(promises).then(function() {
                 promise.ok({'object': out});
-            });
-            promise.on('onedone', function(i, promise, result) {
+            })
+            .on('onedone', function(i, promise, result) {
                 out[prop] = result;
             });
         }

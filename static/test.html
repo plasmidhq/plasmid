@@ -14,6 +14,14 @@
 <script type="text/javascript" src="jsonsca.js"></script>
 <script type="text/javascript" src="plasmid.js"></script>
 <script type="text/javascript">
+    var params = {};
+    var _ = (window.location.href.split('?')[1]||'').split('&');
+    while (_.length > 0) {
+        var m = _.shift().match(/(\w+)=(\w+)/);
+        if (m) {
+            params[m[1]] = m[2];
+        }
+    }
 
     // This is what our customer data looks like.
     const customerData = [
@@ -29,7 +37,8 @@
     }
 
     var database = new plasmid.Database({
-        name: 'test',
+        localname: params.localname || 'test',
+        remotename: params.remotename || 'test',
         api: api,
         schema: {
             version: 2,
