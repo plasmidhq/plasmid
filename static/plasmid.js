@@ -112,8 +112,9 @@ var plasmid = {};
         this.result = result;
         this.trigger('success', result);
     };
-    Promise.prototype.chain = function(promises) {
-        var self = this;
+
+    Promise.chain = function(promises) {
+        var self = new Promise();
         var waiting = promises.length;
         var i;
         var results = [];
@@ -130,7 +131,7 @@ var plasmid = {};
             self.trigger('success', results);
         }
 
-        return this;
+        return self;
 
         function cancel() {
             self.error();
