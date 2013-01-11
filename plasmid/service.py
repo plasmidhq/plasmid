@@ -113,8 +113,12 @@ class PlasmidAccessDispatch(Resource):
         elif self.token:
             return {
                 "permissions": [
-                    {"resource": resource, "permission": permission}
-                    for (resource, permission) in
+                    {
+                        "resource": resource,
+                        "permission": permission,
+                        "value": value,
+                    }
+                    for (resource, permission, value) in
                     cred.list_permissions(self.token)
                 ]
             }
@@ -159,15 +163,23 @@ class PlasmidAccessDispatch(Resource):
         else:
             permission = body['permission']
             resource = body['resource']
-            if cred.get_permission(self.access, permission, resource) == "Yes":
-                cred.set_permission(self.token, permission, resource, "Yes")            
+            value = body['value']
+
+            if value is None:
+                return {'error': "Permission must have a value"}
+
+            god = cred.get_permission(self.access, '*', '*') == '*'
+            perm = cred.get_permission(self.access, permission, resource)
+            if perm is None and not god:
+                return {'error': "Must have a permission to grant it."}
+            else:
+                cred.set_permission(self.token, permission, resource, value)
                 return {'success': {
                     'access': self.token,
                     'permission': permission,
                     'resource': resource,
+                    'value': value,
                 }}
-            else:
-                return {'error': "Must have a permission to grant it."}
 
 
 class PlasmidDatabaseDispatch(Resource):

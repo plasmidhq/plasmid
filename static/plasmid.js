@@ -189,7 +189,7 @@ var plasmid = {};
         return promise;
     };
 
-    Credentials.prototype.grant = function(resource, permission) {
+    Credentials.prototype.grant = function(resource, permission, value) {
         var self = this;
         var o = this.options;
         if (resource instanceof Database) {
@@ -199,12 +199,15 @@ var plasmid = {};
         body = {
             permission: permission
         ,   resource: resource
+        ,   value: value
         }
         http('post', o.api + 'a/' + this.access, body, this.credentials)
         .then(function(data) {
-            promise.ok(true);
-        }).error(function(data) {
-            promise.ok(false);    
+            if (data.error) {
+                promise.trigger('error', data.error);
+            } else {
+                promise.ok();
+            }
         });
         var promise = new Promise();
         return promise;

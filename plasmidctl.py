@@ -9,7 +9,7 @@ def main(argv):
     parser.add_argument('-c', nargs='?')
     parser.add_argument('--set-secret', dest='set_secret', nargs=2)
     parser.add_argument('--check-permission', dest='check_permission', nargs=3)
-    parser.add_argument('--grant-permission', dest='grant_permission', nargs=3)
+    parser.add_argument('--grant-permission', dest='grant_permission', nargs=4)
     parser.add_argument('--revoke-permission', dest='revoke_permission', nargs=3)
     parser.add_argument('-p', '--hub-path', dest='hub_path', default='hub')
     ns = parser.parse_args(argv[1:])
@@ -29,8 +29,8 @@ def main(argv):
         access, permission, resource = ns.check_permission
         print access, permission, resource, credbackend.get_permission(access, permission, resource)
     elif ns.grant_permission:
-        access, permission, resource = ns.grant_permission
-        credbackend.set_permission(access, permission, resource, "Yes")
+        access, permission, resource, value = ns.grant_permission
+        credbackend.set_permission(access, permission, resource, value)
     elif ns.revoke_permission:
         access, permission, resource = ns.revoke_permission
         credbackend.set_permission(access, permission, resource, "No")

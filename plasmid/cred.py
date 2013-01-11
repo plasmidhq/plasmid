@@ -142,12 +142,12 @@ class CredentialBackend(object):
                 continue
             else:
                 if for_resource == resource:
-                    return "Yes"
+                    return active
                 elif for_resource.endswith('*'):
                     if resource.startswith(resource[:-1]):
-                        return "Yes"
+                        return active
 
-        return "No"
+        return None
 
     def list_permissions(self, access):
         db = config.hub.get_hub_database()
@@ -157,7 +157,7 @@ class CredentialBackend(object):
 
         for permission, resource, active in cur.fetchall():
             if active:
-                yield resource, permission
+                yield resource, permission, active
 
     def set_permission(self, access, permission, resource, status):
         
@@ -166,4 +166,4 @@ class CredentialBackend(object):
         conn, cur = db.cursor()
         query = 'INSERT INTO permission (access, permission, resource, active) VALUES (?, ?, ?, ?)'
         with conn:
-            cur.execute(query, (access, permission, resource, status == "Yes"))
+            cur.execute(query, (access, permission, resource, status))
