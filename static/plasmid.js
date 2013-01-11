@@ -344,6 +344,7 @@ var plasmid = {};
     
     var Database = function Database(options) {
         this.options = options;
+        this.credentials = credentials;
         this.transaction = null;
         this.name = options.name;
         this.api = options.api;
@@ -421,7 +422,7 @@ var plasmid = {};
     Database.prototype = new EventListener();
 
     Database.prototype.http = function(method, url, body) {
-        return http(method, url, body, this.options.access, this.options.secret);
+        return http(method, url, body, this.credentials);
     };
 
     Database.prototype.autoSync = function(interval) {
