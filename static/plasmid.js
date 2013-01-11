@@ -114,7 +114,6 @@ var plasmid = {};
     };
 
     Promise.chain = function(promises) {
-        console.log('pack object property', prop);
         var self = new Promise();
         var waiting = promises.length;
         var i;
@@ -130,7 +129,6 @@ var plasmid = {};
             }
         }
         if (waiting === 0) {
-            console.log('chain done immediately');
             self.trigger('success', results);
         }
 
@@ -183,9 +181,12 @@ var plasmid = {};
         }
         http('post', o.api + 'a/' + o.token, body, o.auth.access, o.auth.secret)
         .then(function(data) {
-            console.log(data);
+            promise.ok(true);
+        }).error(function(data) {
+            promise.ok(false);    
         });
-        ;
+        var promise = new Promise();
+        return promise;
     };
 
     AccessToken.prototype.create = function() {
@@ -479,16 +480,13 @@ var plasmid = {};
                         var value = r.shift();
 
                         value = JSONSCA.unpack(value);
-                        console.log('pulled data', key, value);
 
                         function set_value() {
                             database.stores[storename].put(key, value, revision)
                                 .then(function(){
-                                    console.log('saved');
                                     database.meta.put('last_revision', revision).then(next);
                                 })
                                 .error(function(){
-                                    console.log('error');
                                     console.error(arguments);
                                 })
                             ;

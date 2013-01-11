@@ -102,7 +102,6 @@ var JSONSCA = {};
             var proppromise;
             for (prop in input) {
                 if (input.hasOwnProperty(prop)) {
-                    console.log('pack object property', prop);
                     proppromise = JSONSCA.pack(input[prop], reftracker);
                     proppromise.prop = prop
                     promises.push(proppromise);
@@ -110,11 +109,9 @@ var JSONSCA = {};
             }
             var wait = plasmid.Promise.chain(promises);
             wait.then(function() {
-                console.log('done packing object', out);
                 promise.ok({'object': out});
             });
             wait.on('onedone', function(i, promise, result) {
-                console.log('prop ready', promise.prop, result);
                 out[promise.prop] = result;
             });
         }
