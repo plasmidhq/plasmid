@@ -643,7 +643,7 @@ var plasmid = {};
                 }
                 update_next_obj();
             } else {
-                if (data.reason == 'outofdate') {
+                if (data) {
                     request.trigger('error', data.reason);
                 }
             }

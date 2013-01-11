@@ -15,7 +15,7 @@ from twisted.cred.portal import IRealm, Portal
 from twisted.cred import error
 
 from plasmid.util import endpoint, StringResource, random_token
-from plasmid.storage import Hub, Storage
+from plasmid.storage import Hub, Storage, QuotaExceeded
 from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
 
@@ -264,7 +264,8 @@ class Database(Resource):
 
     @endpoint
     def post_update(self, request, x):
-        if CredentialBackend().get_permission(self.access, 'WriteDatabase', self.name):
+        cred = CredentialBackend()
+        if cred.get_permission(self.access, 'WriteDatabase', self.name):
             body = json.load(request.content)
             last_revision = body['last_revision']
             data = body['data']
@@ -278,12 +279,20 @@ class Database(Resource):
                 }
 
             else:
-                self.storage.set_data(data)
-                self.info("Client sent %s updates." % (len(data),))
-                return {
-                    'saved': len(data),
-                    'revision': self.storage.get_meta('revision'),
-                }
+                quota = cred.get_permission(self.access, "DatabaseQuota", self.name)
+                try:
+                    self.storage.set_data(data, quota=quota)
+                except QuotaExceeded:
+                    return {
+                        'error': "quota exceeded",
+                        'reason': "quota",
+                    }
+                else:
+                    self.info("Client sent %s updates." % (len(data),))
+                    return {
+                        'saved': len(data),
+                        'revision': self.storage.get_meta('revision'),
+                    }
         request.setResponseCode(500)
         return {'authorized': False, 'permission': 'WriteDatabase'}
 

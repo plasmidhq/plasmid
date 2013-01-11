@@ -1,6 +1,11 @@
 from os.path import join, exists
+from os import stat
 import json
 import sqlite3
+
+
+class QuotaExceeded(Exception):
+    pass
 
 
 class Hub(object):
@@ -19,6 +24,14 @@ class Storage(object):
     def __init__(self, hub, name):
         self.hub = hub
         self.name = name
+
+    def size(self, unit='b'):
+        size = stat(join(self.hub.path, self.name + '.sqlite')).st_size
+        if unit == 'M':
+            return size / 1024.0 / 1024.0
+        elif unit == 'b':
+            return size
+        raise TypeError('Unit must be M or b')
 
     def exists(self):
         return exists(join(self.hub.path, self.name + '.sqlite'))
@@ -89,8 +102,9 @@ class Storage(object):
         cur.execute('SELECT proprety, value FROM meta WHERE property like ?', (prefix+'%',))
         return cur.fetchall()
 
-    def set_data(self, data):
+    def set_data(self, data, quota=None):
         conn, cur = self.cursor()
+        db_size = self.size()
         with conn:
             if data:
                 revision = self.get_meta('revision') + 1
@@ -98,6 +112,15 @@ class Storage(object):
             for store in data:
                 for (name, value) in data[store].items():
                     value = json.dumps(value)
+
+                    if quota is not None:
+                        value_size = len(value)
+                        cur.execute('SELECT length(value) FROM data WHERE store = ? AND key = ?', (store, name))
+                        cur_size = cur.fetchone()[0]
+                        new_size = db_size - cur_size + value_size
+                        if new_size > quota:
+                            raise QuotaExceeded()
+
                     cur.execute('INSERT OR REPLACE INTO data (store, key, revision, value) VALUES (?, ?, ?, ?)',
                         (store, name, revision, value))
 
