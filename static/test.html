@@ -36,7 +36,10 @@
         console.log.apply(console, arguments);
     }
 
-    var credentials = new plasmid.Credentials(access, secret);
+    var credentials = new plasmid.Credentials({
+        api: api, access: access, secret: secret
+    });
+    credentials.self_cred();
 
     var database = new plasmid.Database({
         localname: params.localname || 'test',
@@ -52,12 +55,6 @@
         },
         access: access,
         secret: secret
-    });
-
-    var accesstoken = new plasmid.AccessToken({
-        credentials: credentials
-    ,   token: access
-    ,   api: api
     });
 
     var scratch = document.getElementById('scratch');

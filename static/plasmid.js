@@ -163,23 +163,25 @@ var plasmid = {};
     // and a "secret token". Together, the pair are called "credentials".
     // Credentials without a secret are "Incomplete Credentials".
 
-    var Credentials = plasmid.Credentials = function(access, secret) {
-        this.access = access;
-        this.secret = secret;
+    var Credentials = plasmid.Credentials = function(options) {
+        this.options = options;
+        this.access = options.access;
+        this.secret = options.secret;
+        this.credentials = options.credentials;
     }
+    Credentials.prototype = new EventListener();
+
+    Credentials.prototype.self_cred = function() {
+        this.credentials = this;
+    };
+
     Credentials.prototype.complete = function() {
         return !!this.secret;
     };
-    
-    var AccessToken = plasmid.AccessToken = function(options) {
-        this.options = options;
-        this.auth = options.auth;
-        this.credentials = options.credentials;
-    };
-    AccessToken.prototype = new EventListener();
-    AccessToken.prototype.list = function() {
+
+    Credentials.prototype.list = function() {
         var o = this.options;
-        var p = http('get', o.api + 'a/' + o.token, null, this.credentials);
+        var p = http('get', o.api + 'a/' + this.access, null, this.credentials);
         p.then(function(resp) {
             promise.ok(resp.permissions);
         });
@@ -187,7 +189,7 @@ var plasmid = {};
         return promise;
     };
 
-    AccessToken.prototype.grant = function(resource, permission) {
+    Credentials.prototype.grant = function(resource, permission) {
         var self = this;
         var o = this.options;
         if (resource instanceof Database) {
@@ -198,7 +200,7 @@ var plasmid = {};
             permission: permission
         ,   resource: resource
         }
-        http('post', o.api + 'a/' + o.token, body, this.credentials)
+        http('post', o.api + 'a/' + this.access, body, this.credentials)
         .then(function(data) {
             promise.ok(true);
         }).error(function(data) {
@@ -208,12 +210,12 @@ var plasmid = {};
         return promise;
     };
 
-    AccessToken.prototype.create = function() {
+    Credentials.prototype.create = function() {
         var self = this;
         var o = this.options;
         var body = {
-            'access': o.token,
-            'secret': o.secret,
+            'access': this.access,
+            'secret': this.secret,
         };
         var p = http('post', o.api + 'a/', body, this.credentials);
         p.then(function(data) {
