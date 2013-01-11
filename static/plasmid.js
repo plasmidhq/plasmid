@@ -164,10 +164,10 @@ var plasmid = {};
     // Credentials without a secret are "Incomplete Credentials".
 
     var Credentials = plasmid.Credentials = function(options) {
-        this.options = options;
-        this.access = options.access;
-        this.secret = options.secret;
-        this.credentials = options.credentials;
+        this.options = options || {};
+        this.access = this.options.access;
+        this.secret = this.options.secret;
+        this.credentials = this.options.credentials;
     }
     Credentials.prototype = new EventListener();
 
@@ -222,8 +222,8 @@ var plasmid = {};
             if (data.success) {
                 var access = data.success.access;
                 var secret = data.success.secret;
-                self.options.token = access;
-                self.options.secret = secret;
+                self.access = access;
+                self.secret = secret;
             } else {
                 promise.error(data.error);
             }

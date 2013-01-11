@@ -134,13 +134,21 @@ class PlasmidAccessDispatch(Resource):
                     return {'error': "Can only specify secret with token"}
                 access = random_token()
                 secret = random_token()
+                existing = bool(db.get_meta('access_' + access))
             else:
-                # TODO: Fix race condition
-                existing = db.get_meta('access_' + access)
-                if existing:
+                existing = bool(db.get_meta('access_' + access))
+
+            # TODO: Fix race condition
+            if existing:
+                change = cred.get_permission(self.access, 'SetSecret', access)
+                same = access == self.access
+                if not (change or same):
                     return {'error': "Access token already exists"}
 
             db.set_meta('access_' + access, secret)
+
+            if not existing:
+                cred.set_permission(self.access, 'SetSecret', access, "Yes")
 
             return {'success': {
                 'access': access,
