@@ -28,6 +28,10 @@ var plasmid = {};
         var httpreq = new XMLHttpRequest();
         httpreq.onreadystatechange = statechange;
         httpreq.open(method, url);
+        if (access && !secret) {
+            secret = access.secret;
+            access = access.access;
+        }
         if (access && secret) {
             var auth = "Basic " + Base64.encode(access + ':' + secret);
             httpreq.setRequestHeader('authorization', auth);
@@ -152,15 +156,30 @@ var plasmid = {};
     };
 
     // Access token API
+
+    // A note on wording.
+    //
+    // There are two kinds of "tokens" involved: an "access token"
+    // and a "secret token". Together, the pair are called "credentials".
+    // Credentials without a secret are "Incomplete Credentials".
+
+    var Credentials = plasmid.Credentials = function(access, secret) {
+        this.access = access;
+        this.secret = secret;
+    }
+    Credentials.prototype.complete = function() {
+        return !!this.secret;
+    };
     
     var AccessToken = plasmid.AccessToken = function(options) {
         this.options = options;
         this.auth = options.auth;
+        this.credentials = options.credentials;
     };
     AccessToken.prototype = new EventListener();
     AccessToken.prototype.list = function() {
         var o = this.options;
-        var p = http('get', o.api + 'a/' + o.token, null, o.auth.access, o.auth.secret);
+        var p = http('get', o.api + 'a/' + o.token, null, this.credentials);
         p.then(function(resp) {
             promise.ok(resp.permissions);
         });
@@ -179,7 +198,7 @@ var plasmid = {};
             permission: permission
         ,   resource: resource
         }
-        http('post', o.api + 'a/' + o.token, body, o.auth.access, o.auth.secret)
+        http('post', o.api + 'a/' + o.token, body, this.credentials)
         .then(function(data) {
             promise.ok(true);
         }).error(function(data) {
@@ -196,7 +215,7 @@ var plasmid = {};
             'access': o.token,
             'secret': o.secret,
         };
-        var p = http('post', o.api + 'a/', body, o.auth.access, o.auth.secret);
+        var p = http('post', o.api + 'a/', body, this.credentials);
         p.then(function(data) {
             if (data.success) {
                 var access = data.success.access;

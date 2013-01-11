@@ -36,6 +36,8 @@
         console.log.apply(console, arguments);
     }
 
+    var credentials = new plasmid.Credentials(access, secret);
+
     var database = new plasmid.Database({
         localname: params.localname || 'test',
         remotename: params.remotename || 'test',
@@ -53,7 +55,7 @@
     });
 
     var accesstoken = new plasmid.AccessToken({
-        auth: {access: access, secret: secret}
+        credentials: credentials
     ,   token: access
     ,   api: api
     });
