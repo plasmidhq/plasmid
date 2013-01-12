@@ -213,12 +213,13 @@ var plasmid = {};
         return promise;
     };
 
-    Credentials.prototype.create = function() {
+    Credentials.prototype.create = function(type) {
         var self = this;
         var o = this.options;
         var body = {
             'access': this.access,
             'secret': this.secret,
+            'type': type,
         };
         var p = http('post', o.api + 'a/', body, this.credentials);
         p.then(function(data) {
@@ -232,6 +233,7 @@ var plasmid = {};
             }
         });
         var promise = new Promise();
+        return promise;
     };
 
     // Local IndexedDB Store Helper

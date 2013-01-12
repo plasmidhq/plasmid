@@ -149,10 +149,20 @@ class PlasmidAccessDispatch(Resource):
                 if not (change or same):
                     return {'error': "Access token already exists"}
 
+            # Set (possible creating) credentials with secret
             db.set_meta('access_' + access, secret)
 
             if not existing:
                 cred.set_permission(self.access, 'SetSecret', access, "Yes")
+                if cred.get_permission(self.access, 'CreateGuest', access):
+                    if body.get('type') == 'guest':
+                        # Set up the new guest
+                        sp = cred.set_permission
+                        sp(access, 'CreateDatabase', "guest_" + access, "Yes")
+                        sp(access, 'ReadDatabase', "guest_" + access, "Yes")
+                        sp(access, 'WriteDatabase', "guest_" + access, "Yes")
+                        sp(access, 'DatabaseQuota', "guest_" + access, 1024*1024)
+                quota = cred.get_permission(self.access, "DatabaseQuota", self.name)
 
             return {'success': {
                 'access': access,
