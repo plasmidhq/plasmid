@@ -281,6 +281,7 @@ var plasmid = {};
     LocalStore.prototype.get = function(key) {
         var request = new Promise(this);
 
+        console.info('get', key);
         var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
             .get(key);
@@ -683,10 +684,20 @@ var plasmid = {};
         var results = []
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
+            var value;
+            var error = null;
             if (cursor) {
-                if (!cursor.value.revision) {
-                    results.push([store.storename, cursor.value]);
-                    request.trigger('each', cursor.value);
+                try {
+                    value = cursor.value;
+                } catch (error) {
+                    console.error("Could not clone data from IndexedDB! For key "+cursor.key+" in store "+this.storename);
+                }
+                if (error !== null) {
+                    console.error(!error);
+                    if (!cursor.value.revision) {
+                        results.push([store.storename, cursor.value]);
+                        request.trigger('each', cursor.value);
+                    }
                 }
                 cursor.continue();
             } else {
