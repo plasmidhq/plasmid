@@ -664,6 +664,14 @@ var plasmid = {};
         return promise;
     };
 
+    Database.prototype.reset = function() {
+        var self = this;
+        this.drop().then(recreate);
+        function recreate() {
+            Database.call(self, self.options);
+        }
+    };
+
     // SyncStore
 
     var SyncStore = function SyncStore(options) {
