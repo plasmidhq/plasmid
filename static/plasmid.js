@@ -281,7 +281,6 @@ var plasmid = {};
     LocalStore.prototype.get = function(key) {
         var request = new Promise(this);
 
-        console.info('get', key);
         var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
             .get(key);
@@ -649,6 +648,20 @@ var plasmid = {};
                 }
             }
         }
+    };
+
+    Database.prototype.drop = function() {
+        var idbreq = indexedDB.deleteDatabase(this.localname);
+        this.idb.close();
+        idbreq.onsuccess = function(event) {
+            promise.ok();
+        };
+        idbreq.onerror = function(event) {
+            promise.trigger('error');
+        };
+
+        var promise = new Promise();
+        return promise;
     };
 
     // SyncStore
