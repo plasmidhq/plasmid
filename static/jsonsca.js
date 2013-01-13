@@ -1,5 +1,4 @@
-var JSONSCA = {};
-(function(JSONSCA) {
+define(function(require, exports, module) {
 
     // JSON/SCA is a way to represent more datatypes than allowed by JSON
     //
@@ -21,11 +20,11 @@ var JSONSCA = {};
     // - cyclic graphs of references
     
     
-    JSONSCA.pack = function(input, reftracker) {
+    exports.pack = function(input, reftracker) {
         var promise = new plasmid.Promise();
         var t = typeof input;
         if (typeof reftracker === 'undefined') {
-            var reftracker = new JSONSCA._ReferenceTracker();
+            var reftracker = new exports._ReferenceTracker();
         }
         var reference = reftracker.reference(input);
         if (reference && reference.ref) {
@@ -85,7 +84,7 @@ var JSONSCA = {};
         } else if (input instanceof Array || input instanceof FileList) {
             var promises = [];
             for (var i=0; i < input.length; i++) {
-                promises.push(JSONSCA.pack(input[i], reftracker));
+                promises.push(exports.pack(input[i], reftracker));
             }
             plasmid.Promise.chain(promises).then(function(results) {
                 promise.ok({
@@ -102,7 +101,7 @@ var JSONSCA = {};
             var proppromise;
             for (prop in input) {
                 if (input.hasOwnProperty(prop)) {
-                    proppromise = JSONSCA.pack(input[prop], reftracker);
+                    proppromise = exports.pack(input[prop], reftracker);
                     proppromise.prop = prop
                     promises.push(proppromise);
                 }
@@ -119,7 +118,7 @@ var JSONSCA = {};
         return promise;
     };
 
-    JSONSCA.unpack = function(input, references) {
+    exports.unpack = function(input, references) {
         var t = typeof input;
         var references = references||{};
         var id = input.id;
@@ -180,7 +179,7 @@ var JSONSCA = {};
             var out = [];
             references[input.id] = out;
             for (var i=0; i < input.array.length; i++) {
-                out.push(JSONSCA.unpack(input.array[i], references));
+                out.push(exports.unpack(input.array[i], references));
             }
             return out;
         };
@@ -189,18 +188,18 @@ var JSONSCA = {};
             var out = {}
             references[input.id] = out;
             for (prop in input['object']) {
-                out[prop] = JSONSCA.unpack(input['object'][prop], references);
+                out[prop] = exports.unpack(input['object'][prop], references);
             }
             return out;
         }
     };
 
-    JSONSCA.parse = function(data) {
-        return JSONSCA.unpack(JSON.parse(data));
+    exports.parse = function(data) {
+        return exports.unpack(JSON.parse(data));
     };
 
-    JSONSCA.stringify = function(data) {
-        var pack_promise = JSONSCA.pack(data);
+    exports.stringify = function(data) {
+        var pack_promise = exports.pack(data);
         var stringify_promise = new plasmid.Promise();
         pack_promise.then(function(packed) {
             stringify_promise.ok(JSON.stringify(packed));
@@ -227,11 +226,11 @@ var JSONSCA = {};
         return c;
     };
 
-    JSONSCA._ReferenceTracker = function() {
+    exports._ReferenceTracker = function() {
         this.tracked = {};
         this.next_id = 1;
     };
-    JSONSCA._ReferenceTracker.prototype.reference = function(obj) {
+    exports._ReferenceTracker.prototype.reference = function(obj) {
         var t = typeof obj;
         if (t==='object') {
             for (ref in this.tracked) {
@@ -248,6 +247,4 @@ var JSONSCA = {};
         }
     };
 
-    JSONSCA.__map = map;
-
-})(JSONSCA);
+});

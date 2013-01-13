@@ -1,7 +1,7 @@
-var plasmid = {};
-(function(plasmid) {
+define(function(require, exports, module) {
 
-    var _;
+    var Base64 = require('base64');
+    var JSONSCA = require('jsonsca');
 
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
@@ -163,7 +163,7 @@ var plasmid = {};
     // and a "secret token". Together, the pair are called "credentials".
     // Credentials without a secret are "Incomplete Credentials".
 
-    var Credentials = plasmid.Credentials = function(options) {
+    var Credentials = function(options) {
         this.options = options || {};
         this.access = this.options.access;
         this.secret = this.options.secret;
@@ -349,7 +349,7 @@ var plasmid = {};
     
     var Database = function Database(options) {
         this.options = options;
-        this.credentials = credentials;
+        this.credentials = options.credentials;
         this.transaction = null;
         this.name = options.name;
         this.api = options.api;
@@ -735,11 +735,11 @@ var plasmid = {};
 
     // Exports
 
-    plasmid.Database = Database;
-    plasmid.LocalStore = LocalStore;
-    plasmid.SyncStore = SyncStore;
-    plasmid.Promise = Promise;
+    exports.Credentials = Credentials;
+    exports.Database = Database;
+    exports.LocalStore = LocalStore;
+    exports.SyncStore = SyncStore;
+    exports.Promise = Promise;
+    exports.http = http;
 
-    plasmid.http = http;
-
-})(plasmid);
+});

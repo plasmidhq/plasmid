@@ -5,18 +5,18 @@
 *
 **/
 
-var Base64 = {
+define(function(require, exports, module) {
 
 	// private property
-	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+	_keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
 
 	// public method for encoding
-	encode : function (input) {
+	exports.encode = function (input) {
 		var output = "";
 		var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
 		var i = 0;
 
-		input = Base64._utf8_encode(input);
+		input = _utf8_encode(input);
 
 		while (i < input.length) {
 
@@ -36,8 +36,8 @@ var Base64 = {
 			}
 
 			output = output +
-			this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
-			this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+			_keyStr.charAt(enc1) + _keyStr.charAt(enc2) +
+			_keyStr.charAt(enc3) + _keyStr.charAt(enc4);
 
 		}
 
@@ -45,7 +45,7 @@ var Base64 = {
 	},
 
 	// public method for decoding
-	decode : function (input) {
+	exports.decode = function (input) {
 		var output = "";
 		var chr1, chr2, chr3;
 		var enc1, enc2, enc3, enc4;
@@ -55,10 +55,10 @@ var Base64 = {
 
 		while (i < input.length) {
 
-			enc1 = this._keyStr.indexOf(input.charAt(i++));
-			enc2 = this._keyStr.indexOf(input.charAt(i++));
-			enc3 = this._keyStr.indexOf(input.charAt(i++));
-			enc4 = this._keyStr.indexOf(input.charAt(i++));
+			enc1 = _keyStr.indexOf(input.charAt(i++));
+			enc2 = _keyStr.indexOf(input.charAt(i++));
+			enc3 = _keyStr.indexOf(input.charAt(i++));
+			enc4 = _keyStr.indexOf(input.charAt(i++));
 
 			chr1 = (enc1 << 2) | (enc2 >> 4);
 			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
@@ -75,14 +75,14 @@ var Base64 = {
 
 		}
 
-		output = Base64._utf8_decode(output);
+		output = _utf8_decode(output);
 
 		return output;
 
 	},
 
 	// private method for UTF-8 encoding
-	_utf8_encode : function (string) {
+	_utf8_encode = function (string) {
 		string = string.replace(/\r\n/g,"\n");
 		var utftext = "";
 
@@ -109,7 +109,7 @@ var Base64 = {
 	},
 
 	// private method for UTF-8 decoding
-	_utf8_decode : function (utftext) {
+	_utf8_decode = function (utftext) {
 		var string = "";
 		var i = 0;
 		var c = c1 = c2 = 0;
@@ -139,4 +139,4 @@ var Base64 = {
 		return string;
 	}
 
-}
+});
