@@ -18,6 +18,7 @@ from plasmid.util import endpoint, StringResource, random_token
 from plasmid.storage import Hub, Storage, QuotaExceeded
 from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
+from plasmid import config
 
 
 static_path = abspath(join(dirname(__file__), '..', 'static'))
@@ -158,10 +159,13 @@ class PlasmidAccessDispatch(Resource):
                     if body.get('type') == 'guest':
                         # Set up the new guest
                         sp = cred.set_permission
-                        sp(access, 'CreateDatabase', "guest_" + access, "Yes")
-                        sp(access, 'ReadDatabase', "guest_" + access, "Yes")
-                        sp(access, 'WriteDatabase', "guest_" + access, "Yes")
-                        sp(access, 'DatabaseQuota', "guest_" + access, 1024*1024)
+                        dbname = config.guest_db_prefix + access
+                        quota = config.guest_db_quota
+
+                        sp(access, 'CreateDatabase', dbname, "Yes")
+                        sp(access, 'ReadDatabase', dbname, "Yes")
+                        sp(access, 'WriteDatabase', dbname, "Yes")
+                        sp(access, 'DatabaseQuota', dbname, quota)
                 quota = cred.get_permission(self.access, "DatabaseQuota", self.name)
 
             return {'success': {
