@@ -1,17 +1,16 @@
 define(function(require, exports, module) {
 
-    var plasmid = require('plasmid');
+    plasmid = require('plasmid');
+    appname = "APPNAME";
+    plasmid_api = window.location.protocol + '//' + window.location.host + '/v1/';
+    credentials = new plasmid.Credentials({api: plasmid_api});
 
-    var appname = "APPNAME";
-    var plasmid_api = window.location.protocol + '//' + window.location.host + '/v1/';
-    var credentials = new plasmid.Credentials({api: plasmid_api});
-
-    var bootstrap_credentials = new plasmid.Credentials({
+    bootstrap_credentials = new plasmid.Credentials({
         access: "guest-creator",
         secret: "knock-knock"
     });
 
-    var appdb = new plasmid.Database({
+    appdb = new plasmid.Database({
         name: appname,
         api: plasmid_api,
         schema: {

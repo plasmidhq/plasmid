@@ -166,7 +166,6 @@ class PlasmidAccessDispatch(Resource):
                         sp(access, 'ReadDatabase', dbname, "Yes")
                         sp(access, 'WriteDatabase', dbname, "Yes")
                         sp(access, 'DatabaseQuota', dbname, quota)
-                quota = cred.get_permission(self.access, "DatabaseQuota", self.name)
 
             return {'success': {
                 'access': access,
