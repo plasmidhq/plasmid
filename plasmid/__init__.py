@@ -19,7 +19,7 @@ from plasmid.storage import Hub, Storage
 from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
 from plasmid.service import Plasmid, ServiceRoot
-from plasmid.config import configure
+from plasmid.config import configure, DEFAULT
 from plasmid import config
 
 
