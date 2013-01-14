@@ -129,7 +129,7 @@ class CredentialBackend(object):
     def get_secret(self, access):
         config.hub.get_hub_database().get_meta('access_' + access)
 
-    def get_permission(self, access, permission, resource):
+    def get_permission(self, access, permission, resource='*'):
         """Determine if the access token has the permission on the resource."""
 
         db = config.hub.get_hub_database()
@@ -147,7 +147,11 @@ class CredentialBackend(object):
                     if resource.startswith(resource[:-1]):
                         return active
 
-        return None
+        return self.default(permission)
+
+    def default(self, permission):
+        defaults = getattr(config, 'permission_defaults', {})
+        return defaults.get(permission)
 
     def list_permissions(self, access):
         db = config.hub.get_hub_database()

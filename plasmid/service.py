@@ -1,4 +1,5 @@
 import argparse
+from functools import partial
 import json
 import logging
 import sys
@@ -153,19 +154,22 @@ class PlasmidAccessDispatch(Resource):
             # Set (possible creating) credentials with secret
             db.set_meta('access_' + access, secret)
 
+            get_perm = partial(cred.get_permission, self.access)
+            set_perm = partial(cred.set_permission, self.access)
+
             if not existing:
-                cred.set_permission(self.access, 'SetSecret', access, "Yes")
-                if cred.get_permission(self.access, 'CreateGuest', access):
+                set_perm('SetSecret', access, "Yes")
+                if get_perm('CreateGuest'):
                     if body.get('type') == 'guest':
                         # Set up the new guest
-                        sp = cred.set_permission
-                        dbname = config.guest_db_prefix + access
-                        quota = config.guest_db_quota
+                        dbname = get_perm('GuestDatabasePrefix') + access
+                        quota = get_perm('GuestDatabaseQuota')
 
-                        sp(access, 'CreateDatabase', dbname, "Yes")
-                        sp(access, 'ReadDatabase', dbname, "Yes")
-                        sp(access, 'WriteDatabase', dbname, "Yes")
-                        sp(access, 'DatabaseQuota', dbname, quota)
+                        set_new_perm = partial(cred.set_permission, access)
+                        set_new_perm('CreateDatabase', dbname, "Yes")
+                        set_new_perm('ReadDatabase', dbname, "Yes")
+                        set_new_perm('WriteDatabase', dbname, "Yes")
+                        set_new_perm('DatabaseQuota', dbname, quota)
 
             return {'success': {
                 'access': access,

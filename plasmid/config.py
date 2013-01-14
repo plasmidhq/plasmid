@@ -5,8 +5,15 @@ DEFAULT = object()
 hub = None
 port = 8880
 
-guest_db_prefix = 'guest_'
-guest_db_quota = 1024 * 1024
+permission_defaults = {
+    'CreateGuest': 'Ne',
+    'GuestDatabasePrefix': 'guest_',
+    'GuestDatabaseQuota': 1024 * 1024,
+    'CreateDatabase': 'No',
+    'ReadDatabase': 'No',
+    'WriteDatabase': 'No',
+    'SetSecret': 'No',
+}
 
 
 def configure(**params):
