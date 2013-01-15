@@ -158,12 +158,19 @@ class PlasmidAccessDispatch(Resource):
             set_perm = partial(cred.set_permission, self.access)
 
             if not existing:
+                logging.info("Creating new credentials %s/****" % (
+                    access,
+                    ))
                 set_perm('SetSecret', access, "Yes")
                 if get_perm('CreateGuest'):
                     if body.get('type') == 'guest':
                         # Set up the new guest
                         dbname = get_perm('GuestDatabasePrefix') + access
                         quota = get_perm('GuestDatabaseQuota')
+
+                        logging.info("Setting up guest credentials %s:"
+                            "dbname=%s quota=%s" % (access, dbname, quota)
+                        )
 
                         set_new_perm = partial(cred.set_permission, access)
                         set_new_perm('CreateDatabase', dbname, "Yes")
