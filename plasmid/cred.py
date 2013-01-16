@@ -11,6 +11,7 @@ from twisted.cred.credentials import ICredentials
 from twisted.cred import error
 
 from plasmid.util import endpoint
+from plasmid import signal
 from plasmid import config
 
 
@@ -171,3 +172,4 @@ class CredentialBackend(object):
         query = 'INSERT INTO permission (access, permission, resource, active) VALUES (?, ?, ?, ?)'
         with conn:
             cur.execute(query, (access, permission, resource, status))
+

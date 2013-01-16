@@ -228,11 +228,12 @@ define(function(require, exports, module) {
                 var secret = data.success.secret;
                 self.access = access;
                 self.secret = secret;
+                promise.ok();
             } else {
                 promise.error(data.error);
             }
         });
-        var promise = new Promise();
+        var promise = new Promise(this);
         return promise;
     };
 

@@ -19,6 +19,7 @@ from plasmid.util import endpoint, StringResource, random_token
 from plasmid.storage import Hub, Storage, QuotaExceeded
 from plasmid.cred import APIAuthSessionWrapper, PlasmidCredChecker, PlasmidRealm
 from plasmid.cred import CredentialBackend
+from plasmid import signal
 from plasmid import config
 
 
@@ -140,9 +141,9 @@ class PlasmidAccessDispatch(Resource):
                     return {'error': "Can only specify secret with token"}
                 access = random_token()
                 secret = random_token()
-                existing = bool(db.get_meta('access_' + access))
-            else:
-                existing = bool(db.get_meta('access_' + access))
+
+            existing = bool(db.get_meta('access_' + access))
+            signal.cred_create.send(access, secret, existing)
 
             # TODO: Fix race condition
             if existing:
@@ -177,6 +178,8 @@ class PlasmidAccessDispatch(Resource):
                         set_new_perm('ReadDatabase', dbname, "Yes")
                         set_new_perm('WriteDatabase', dbname, "Yes")
                         set_new_perm('DatabaseQuota', dbname, quota)
+
+                        signal.cred_guest_setup(access, dbname=dbname, setupby=self.access)
 
             return {'success': {
                 'access': access,
