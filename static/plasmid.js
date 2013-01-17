@@ -675,6 +675,19 @@ define(function(require, exports, module) {
         }
     };
 
+    Database.prototype.forgetPushed = function() {
+        var puts = [];
+        for (storename in this.stores) {
+            var store = this.stores[storename];
+            store.walk().each(function(item){
+                var pp = store.put(item.key, item.value, null);
+                puts.push(pp);
+            });
+        }
+        var promise = Promise.chain(puts);
+        return promise;
+    };
+
     // SyncStore
 
     var SyncStore = function SyncStore(options) {

@@ -33,7 +33,7 @@ define(function(require, exports, module) {
             credentials.access = saved_cred.access;
             credentials.secret = saved_cred.secret;
 
-            appdb.trigger('credentialsraedy', credentials);
+            appdb.trigger('credentialsready', credentials);
         }).on('missing', function(){
             // Use the bootstrap creds to create new tokens
             credentials.credentials = bootstrap_credentials;
@@ -45,9 +45,6 @@ define(function(require, exports, module) {
                 appdb.trigger('credentialsready', credentials);
             });
         });
-    });
-
-    appdb.on('credentialsready', function (saved_cred) {
     });
 
 });

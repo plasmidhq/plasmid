@@ -2,16 +2,109 @@
 
 <html>
     <head>
+        <link rel=stylesheet href=bootstrap/css/bootstrap.min.css>
+        <link rel=stylesheet href=bootstrap/css/bootstrap-responsive.min.css>
+        <script src="jquery.js"></script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+
         <script src="require.js"></script>
         <script type="text/javascript">
             var app;
             require(['blankapp'], ready);
             function ready(blankapp) {
                 app = blankapp;
+
+                app.pairing = $('#pairing');
+                appdb.on('credentialsready', function(cred){
+                    var parts = [];
+                    parts.push(cred.access.slice(0, 4));
+                    parts.push(cred.access.slice(4, 8));
+                    parts.push(cred.secret.slice(0, 4));
+                    parts.push(cred.secret.slice(4, 8));
+                    
+                    for (var i=0; i < parts.length; i++) {
+                        app.pairing.find('input').eq(i).val(parts[i]);
+                    }
+                });
+
+                app.pairing.find('input').keyup(function() {
+                    console.log($(this).val());
+                });
+                $('#pairing-close').click(function() {
+                    app.pairing.hide();
+                });
+                $('#pairing-clear-and-pair').click(function() {
+                    app.pairing.find('input').val('');
+                    app.pairing.find('input:eq(0)').focus();
+                    $('#pairing-new-code').show();
+                });
+                $('#pairing-new-code').click(function() {
+                    appdb.drop().then(function(){
+                        var inputs = app.pairing.find('input');
+                        var access = inputs.eq(0).val() + inputs.eq(1).val();
+                        var secret = inputs.eq(2).val() + inputs.eq(3).val();
+                        appdb.forgetPushed()
+                        .then(function() {
+                            appdb.meta('credentials', {
+                                access: access, secret: secret
+                            })
+                        });
+                    });
+                });
             };
         </script>
+        <style>
+            body {
+                padding-top: 60px;
+            }
+            #pairing { display: none; }
+            #pairing-close { float: right; }
+            #pairing-new-code { display: none; }
+            #pairing input {
+                width: 4em;
+            }
+        </style>
     </head>
 
     <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+          <div class="navbar-inner">
+            <div class="container">
+              <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </a>
+              <a class="brand" href="#">Blankapp</a>
+              <div class="nav-collapse collapse">
+                <ul class="nav">
+                  <li class="active"><a href="#">Home</a></li>
+                  <li><a href="#about">About</a></li>
+                  <li><a href="#contact">Contact</a></li>
+                  <li><a onclick="javascript:app.pairing.show();">Pair Devices</a></li>
+                </ul>
+              </div><!--/.nav-collapse -->
+            </div>
+          </div>
+        </div>
+
+        <div class="container">
+
+          <div id=pairing class=well>
+            <span id=pairing-close>close</span>
+            <p id=pairing-message>Enter this code in the other device to share your data from this device.</p>
+            <p>OR, clear the data on this device and <a id="pairing-clear-and-pair">synchronize with another</a>.</p>
+            <input> -
+            <input> -
+            <input> -
+            <input> 
+            <br />
+            <a id=pairing-new-code>Clear all local data and syncronize with other device.</a>
+          </div>
+
+          <h1>Blank Boilerplate Plasmid App</h1>
+          <p>Use this blank app to customize it and quickly build an app on top of the Plasmid database!</p>
+
+        </div> <!-- /container -->
     </body>
 </html>
