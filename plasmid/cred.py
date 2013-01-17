@@ -112,16 +112,6 @@ class PlasmidRealm(object):
         raise NotImplementedError()
 
 
-PERMISSIONS = (
-    'ReadDatabase',
-    'WriteDatabase',
-    'DeleteDatabase',
-    'CreateDatabase',
-    'ReadAccessToken'
-    'GrantAccessToken',
-    'DeleteAccessToken',
-)
-
 class CredentialBackend(object):
 
     def set_secret(self, access, secret):
