@@ -8,6 +8,8 @@ def main(argv):
 
     parser.add_argument('-c', nargs='?')
     parser.add_argument('--set-secret', dest='set_secret', nargs=2)
+    parser.add_argument('--get-meta', dest='get_meta', nargs=1)
+    parser.add_argument('--set-meta', dest='set_meta', nargs=2)
     parser.add_argument('--check-permission', dest='check_permission', nargs=3)
     parser.add_argument('--grant-permission', dest='grant_permission', nargs=4)
     parser.add_argument('--revoke-permission', dest='revoke_permission', nargs=3)
@@ -24,8 +26,13 @@ def main(argv):
 
     if ns.set_secret:
         access, secret = ns.set_secret
+        credbackend.set_secret(access, secret)
+    elif ns.get_meta:
+        print config.hub.get_hub_database().get_meta(ns.get_meta[0])
+    elif ns.set_meta:
+        name, value = ns.set_meta
         hub_db = config.hub.get_hub_database()
-        hub_db.set_meta('access_' + access, secret)
+        hub_db.set_meta(name, value)
     elif ns.check_permission:
         access, permission, resource = ns.check_permission
         print access, permission, resource, credbackend.get_permission(access, permission, resource)

@@ -77,9 +77,8 @@ class PlasmidCredentials(object):
         self.secret = secret
 
     def checkSecret(self, hub, access, secret):
-        hub_db = hub.get_hub_database()
-        known_secret = hub_db.get_meta('access_' + access)
-        if known_secret == secret:
+        match = CredentialBackend().check_secret(access, secret)
+        if match:
             return (IResource, access, lambda x: None)
         else:
             return defer.fail(error.UnauthorizedLogin())
