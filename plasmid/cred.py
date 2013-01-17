@@ -1,3 +1,5 @@
+import hashlib
+
 from zope.interface import implements
 
 from twisted.internet import defer
@@ -114,11 +116,19 @@ class PlasmidRealm(object):
 
 class CredentialBackend(object):
 
-    def set_secret(self, access, secret):
-        config.hub.get_hub_database().set_meta('access_' + access, secret)
+    def _hash_secret(self, secret):
+        secret_hash = hashlib.sha1()
+        secret_hash.update(config.hub.get_hub_database().get_meta('secret_salt'))
+        secret_hash.update(secret)
+        return secret_hash.hexdigest()
 
-    def get_secret(self, access):
-        config.hub.get_hub_database().get_meta('access_' + access)
+    def set_secret(self, access, secret):
+        secret_hash = self._hash_secret(secret)
+        config.hub.get_hub_database().set_meta('access_' + access, secret_hash)
+
+    def check_secret(self, access, secret):
+        secret_hash = self._hash_secret(secret)
+        return secret_hash == config.hub.get_hub_database().get_meta('access_' + access)
 
     def get_permission(self, access, permission, resource='*'):
         """Determine if the access token has the permission on the resource."""
