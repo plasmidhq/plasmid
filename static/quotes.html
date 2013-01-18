@@ -15,6 +15,16 @@
             body {
                 padding-top: 60px;
             }
+            #quote {
+                font-size: 30pt;
+                background: #efefef;
+                padding: 1em;
+            }
+            #by {
+                background: #efefef;
+                padding: 1em;
+                font-style: italic;
+            }
             #pairing { display: none; }
             #pairing-close { float: right; }
             #pairing-new-code { display: none; }
@@ -37,9 +47,10 @@
               <div class="nav-collapse collapse">
                 <ul class="nav">
                   <li class="active"><a href="#">Home</a></li>
+                  <li><a onclick="javascript:require('quotes').enterQuote();">Add Quote</a>
                   <li><a href="#about">About</a></li>
                   <li><a href="#contact">Contact</a></li>
-                  <li><a onclick="javascript:app.pairing.show();">Pair Devices</a></li>
+                  <li><a onclick="javascript:require('quotes').pairing.show();">Pair Devices</a></li>
                 </ul>
               </div><!--/.nav-collapse -->
             </div>
@@ -62,6 +73,7 @@
 
           <h1>Quotable Quotes</h1>
           <p id=quote></p>
+          <span style="float: right;" id=by></span>
 
         </div> <!-- /container -->
     </body>

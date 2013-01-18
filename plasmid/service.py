@@ -153,7 +153,7 @@ class PlasmidAccessDispatch(Resource):
                     return {'error': "Access token already exists"}
 
             # Set (possible creating) credentials with secret
-            db.set_meta('access_' + access, secret)
+            cred.set_secret(access, secret)
 
             get_perm = partial(cred.get_permission, self.access)
             set_perm = partial(cred.set_permission, self.access)

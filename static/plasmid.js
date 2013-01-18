@@ -707,7 +707,7 @@ define(function(require, exports, module) {
         var puts = [];
         for (storename in this.stores) {
             var store = this.stores[storename];
-            store.walk().each(function(item){
+            store.walk().on('each', function(item){
                 var pp = store.put(item.key, item.value, null);
                 puts.push(pp);
             });

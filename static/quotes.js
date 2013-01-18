@@ -27,8 +27,11 @@ define(function(require, exports, module) {
         return this.stores.quotes.count();
     };
 
-    quotedb.addQuote = function(quote) {
-        this.stores.quotes.put(null, {quote: quote});
+    quotedb.addQuote = function(quote, by) {
+        this.stores.quotes.put(null, {
+            quote: quote,
+            by: by
+        });
     };
 
     quotedb.randomQuote = function() {
@@ -49,13 +52,20 @@ define(function(require, exports, module) {
         };
     };
 
+    $pairing = $('#pairing');
+    $pairing_inputs = $pairing.find('input');
+
+    exports.pairing = $pairing;
     exports.cred = credentials;
     exports.bootcred = bootstrap_credentials;
     exports.db = quotedb;
+    exports.enterQuote = function() {
+        var text = prompt();
+        var by = text.replace(/^.*-/, '').trim();
+        var quote = text.replace(/-*[^-]*$/, '').trim();
+        quotedb.addQuote(quote, by);
+    };
 
-    $pairing = $('#pairing');
-    $pairing_inputs = $pairing.find('input');
-    
     quotedb.on('opensuccess', function() {
         // Do we already have credentials?
         var self = this;
@@ -100,21 +110,20 @@ define(function(require, exports, module) {
         $('#pairing-new-code').show();
     });
     $('#pairing-new-code').click(function() {
-        quotedb.drop().then(function(){
-            var access = $pairing_inputs.eq(0).val() + $pairing_inputs.eq(1).val();
-            var secret = $pairing_inputs.eq(2).val() + $pairing_inputs.eq(3).val();
-            quotedb.forgetPushed()
-            .then(function() {
-                quotedb.meta('credentials', {
-                    access: access, secret: secret
-                })
-            });
+        var access = $pairing_inputs.eq(0).val() + $pairing_inputs.eq(1).val();
+        var secret = $pairing_inputs.eq(2).val() + $pairing_inputs.eq(3).val();
+        quotedb.forgetPushed()
+        .then(function() {
+            quotedb.meta.put('credentials', {
+                access: access, secret: secret
+            })
         });
     });
 
     function showRandomQuote() {
         quotedb.randomQuote().then(function(item){
             $('#quote').text(item.quote);
+            $('#by').text(item.by);
         });
     }
 
