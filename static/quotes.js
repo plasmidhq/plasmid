@@ -31,6 +31,8 @@ define(function(require, exports, module) {
         this.stores.quotes.put(null, {
             quote: quote,
             by: by
+        }).then(function(){
+            //quotedb.sync();
         });
     };
 
@@ -48,6 +50,8 @@ define(function(require, exports, module) {
                     promise.ok(item.value);
                 }
                 i++;
+            }).then(function(){
+                //quotedb.sync();
             });
         };
     };
@@ -77,11 +81,13 @@ define(function(require, exports, module) {
         }).on('missing', function(){
             // Use the bootstrap creds to create new tokens
             credentials.credentials = bootstrap_credentials;
-            credentials.create('guest').then(function(){
+            credentials.create('guest').then(function(data){
+                console.log(data);
                 self.meta.put('credentials', {
-                    access: this.access,
-                    secret: this.secret,
+                    access: data.access,
+                    secret: data.secret,
                 });
+                quotedb.setRemote(data.dbname);
                 quotedb.trigger('credentialsready', credentials);
             });
         });

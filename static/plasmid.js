@@ -238,7 +238,7 @@ define(function(require, exports, module) {
                 var secret = data.success.secret;
                 self.access = access;
                 self.secret = secret;
-                promise.ok();
+                promise.ok(data.success);
             } else {
                 promise.error(data.error);
             }
@@ -383,8 +383,7 @@ define(function(require, exports, module) {
         this.name = options.name;
         this.api = options.api;
         this.localname = options.localname || options.name;
-        this.remotename = options.remotename || options.name;
-        var remote = options.remote || (this.remote = options.api + 'd/' + this.remotename + '/');
+        this.remotename = options.remotename || null;
 
         var db = this;
         db.stores = {};
@@ -409,29 +408,38 @@ define(function(require, exports, module) {
                 db.autoSync(options.autoSync);
             }
 
+            if (!db.remotename) {
+                db.meta.get('remotename').then(set_remote);
+            } else {
+                set_remote(db.remotename);
+            }
+
+            function set_remote(remotename) {
+                db.remotename = remotename;
+            }
             db.trigger('opensuccess')
         };
         req.onupgradeneeded = function(event) {
-            var db = event.target.result;
+            var idb = event.target.result;
             var txn = event.target.transaction;
             var storename, indexname, idbstore, indexopt;
 
-            db.idb = db;
+            db.idb = idb;
 
             // Meta storage
-            if (!db.objectStoreNames.contains('meta')) {
-                var metastore = db.createObjectStore('meta', {keyPath: 'key'});
+            if (!idb.objectStoreNames.contains('meta')) {
+                var metastore = idb.createObjectStore('meta', {keyPath: 'key'});
                 metastore.createIndex('key', 'key', {unique: true});
 
                 metastore.add({key: "last_revision", value: 1});
                 metastore.add({key: "plasmid_schema_version", value: 1});
-                metastore.add({key: "remote_url", value: remote});
+                metastore.add({key: "remote_url", value: db._getRemoteEndpoint()});
             }
 
             // Data storage
             for (storename in options.schema.stores) {
-                if (!db.objectStoreNames.contains(storename)) {
-                    var idbstore = db.createObjectStore(storename, {keyPath: 'key'});
+                if (!idb.objectStoreNames.contains(storename)) {
+                    var idbstore = idb.createObjectStore(storename, {keyPath: 'key'});
                     idbstore.createIndex('revision', 'revision', {unique: false});
                 } else {
                     idbstore = txn.objectStore(storename);
@@ -454,6 +462,18 @@ define(function(require, exports, module) {
         this.stores.meta = this.meta;
     };
     Database.prototype = new EventListener();
+
+    Database.prototype._getRemoteEndpoint = function() {
+        var remote = this.options.api + 'd/' + this.remotename + '/';
+        return remote;
+    };
+
+    Database.prototype.setRemote = function(remotename) {
+        var first_remote = (this.remotename === null);
+        this.remotename = remotename;
+        this.meta.put('remotename', remotename);
+        this.trigger('remotechanged', remotename);
+    };
 
     Database.prototype.http = function(method, url, body) {
         return http(method, url, body, this.credentials);

@@ -158,6 +158,7 @@ class PlasmidAccessDispatch(Resource):
             get_perm = partial(cred.get_permission, self.access)
             set_perm = partial(cred.set_permission, self.access)
 
+            dbname = None
             if not existing:
                 logging.info("Creating new credentials %s/****" % (
                     access,
@@ -184,6 +185,7 @@ class PlasmidAccessDispatch(Resource):
             return {'success': {
                 'access': access,
                 'secret': secret,
+                'dbname': dbname,
             }}
         # Post to /a/TOKEN
         # Add permission
