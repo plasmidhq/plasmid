@@ -1,0 +1,68 @@
+<!doctype html>
+
+<html>
+    <head>
+        <link rel=stylesheet href=bootstrap/css/bootstrap.min.css>
+        <link rel=stylesheet href=bootstrap/css/bootstrap-responsive.min.css>
+        <script src="jquery.js"></script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+
+        <script src="require.js"></script>
+        <script type="text/javascript">
+            require(['quotes']);
+        </script>
+        <style>
+            body {
+                padding-top: 60px;
+            }
+            #pairing { display: none; }
+            #pairing-close { float: right; }
+            #pairing-new-code { display: none; }
+            #pairing input {
+                width: 4em;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+          <div class="navbar-inner">
+            <div class="container">
+              <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </a>
+              <a class="brand" href="#">Quotes</a>
+              <div class="nav-collapse collapse">
+                <ul class="nav">
+                  <li class="active"><a href="#">Home</a></li>
+                  <li><a href="#about">About</a></li>
+                  <li><a href="#contact">Contact</a></li>
+                  <li><a onclick="javascript:app.pairing.show();">Pair Devices</a></li>
+                </ul>
+              </div><!--/.nav-collapse -->
+            </div>
+          </div>
+        </div>
+
+        <div class="container">
+
+          <div id=pairing class=well>
+            <span id=pairing-close>close</span>
+            <p id=pairing-message>Enter this code in the other device to share your data from this device.</p>
+            <p>OR, clear the data on this device and <a id="pairing-clear-and-pair">synchronize with another</a>.</p>
+            <input> -
+            <input> -
+            <input> -
+            <input> 
+            <br />
+            <a id=pairing-new-code>Clear all local data and syncronize with other device.</a>
+          </div>
+
+          <h1>Quotable Quotes</h1>
+          <p id=quote></p>
+
+        </div> <!-- /container -->
+    </body>
+</html>

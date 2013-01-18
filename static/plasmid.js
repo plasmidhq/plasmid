@@ -57,6 +57,16 @@ define(function(require, exports, module) {
         }
     }
 
+    random_token = function(size) {
+        var alphanum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv0123456789";
+        var chars = [];
+        while (size > 0) {
+            chars.push(alphanum[parseInt(Math.random() * alphanum.length)]);
+            size--;
+        }
+        return chars.join('');
+    };
+
     // Promise and Event Helper
     
     function EventListener() {}
@@ -250,6 +260,23 @@ define(function(require, exports, module) {
     };
     LocalStore.prototype = new EventListener();
 
+    /* LocalStore.count()
+     * success result is the number of objects in the store
+     */
+    LocalStore.prototype.count = function() {
+        var promise = new Promise(this);
+        var idbstore = this.db.idb.transaction(this.storename)
+            .objectStore(this.storename);
+        var idbreq = idbstore.count();
+        idbreq.onsuccess = function(event) {
+            promise.ok(event.target.result);
+        };
+        idbreq.onerror = function() {
+            promise.error();
+        };
+        return promise;
+    };
+
     /* LocalStore.walk()
      * triggers 'each' on each value in the store
      */
@@ -329,6 +356,7 @@ define(function(require, exports, module) {
         var autopush = this.autopush;
         var request = new Promise(this);
         var t = this.db.idb.transaction([this.storename], "readwrite");
+        var key = (key===null) ? random_token(16) : key;
         var idbreq = t.objectStore(this.storename).put({
             key: key,
             value: value,
