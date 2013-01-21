@@ -32,7 +32,7 @@ define(function(require, exports, module) {
             quote: quote,
             by: by
         }).then(function(){
-            //quotedb.sync();
+            quotedb.sync();
         });
     };
 
@@ -51,7 +51,7 @@ define(function(require, exports, module) {
                 }
                 i++;
             }).then(function(){
-                //quotedb.sync();
+                quotedb.pull();
             });
         };
     };
@@ -118,11 +118,17 @@ define(function(require, exports, module) {
     $('#pairing-new-code').click(function() {
         var access = $pairing_inputs.eq(0).val() + $pairing_inputs.eq(1).val();
         var secret = $pairing_inputs.eq(2).val() + $pairing_inputs.eq(3).val();
-        quotedb.forgetPushed()
-        .then(function() {
+        var remotename = 'guest_' + remotename;
+        var resets = Promise.chain([
+            quotedb.forgetPushed(),
+            quotedb.meta.put('last_revision', 0),
             quotedb.meta.put('credentials', {
                 access: access, secret: secret
-            })
+            }),
+            quotedb.meta.put('remotename', remotename);
+        ]);
+        resets.then(function(){
+            quotedb.pull();
         });
     });
 

@@ -529,18 +529,22 @@ define(function(require, exports, module) {
         // Triggers a 'conflict' event on the store for every conflicting item
         // Triggers a 'update' event on every item changed by the operation
         // Triggers a 'pullsuccess' event on the store when the operation completes
+        var request = new Promise();
         var database = this;
         var httpreq;
-        var remote = this.remote;
-        var url;
-        this.meta.get('last_revision')
-        .then(function(last_revision) {
-            url = remote + 'update/' + last_revision;
-            httpreq = database.http('GET', url);
-            httpreq.then(parse_json);
-        });
+        if (this.remotename === null) {
+            request.trigger('error', 'noremote');
+        } else {
+            var remote = this._getRemoteEndpoint();
+            var url;
+            this.meta.get('last_revision')
+            .then(function(last_revision) {
+                url = remote + 'update/' + last_revision;
+                httpreq = database.http('GET', url);
+                httpreq.then(parse_json);
+            });
+        }
 
-        var request = new Promise();
         return request;
 
         function parse_json(data) {
@@ -593,9 +597,15 @@ define(function(require, exports, module) {
     };
 
     Database.prototype.push = function() {
+        var request = new Promise();
+        if (this.remotename === null) {
+            request.trigger('error', 'noremote');
+            return request;
+        }
+
         var database = this;
         var httpreq;
-        var url = database.remote + 'update/';
+        var url = database._getRemoteEndpoint() + 'update/';
         var last_revision;
         var sync_stores = [];
         for (storename in this.options.schema.stores) {
@@ -662,7 +672,6 @@ define(function(require, exports, module) {
             database.http('POST', url, req_body).then(handle_post);
         }
 
-        var request = new Promise();
         return request;
 
         function handle_post(data) {
