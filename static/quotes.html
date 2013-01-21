@@ -15,16 +15,37 @@
             body {
                 padding-top: 60px;
             }
-            #quote {
+            .quote {
+                margin: 1em;
+                clear: both;
+            }
+            .quote-text {
                 font-size: 30pt;
                 background: #efefef;
+                width: 100%;
                 padding: 1em;
             }
-            #by {
+            .quote-by {
                 background: #efefef;
-                padding: 1em;
                 font-style: italic;
+                min-width: 20%;
+                padding: 1em;
+                margin-bottom: 1em;
             }
+
+            #enter-quote {
+                display: none;
+            }
+
+            #enter-quote input {
+                width: 100%;
+                height: 100%;
+                border: none;
+                background: none;
+                padding: none;
+                font-size: inherit;
+            }
+            
             #pairing { display: none; }
             #pairing-close { float: right; }
             #pairing-new-code { display: none; }
@@ -47,7 +68,7 @@
               <div class="nav-collapse collapse">
                 <ul class="nav">
                   <li class="active"><a href="#">Home</a></li>
-                  <li><a onclick="javascript:require('quotes').enterQuote();">Add Quote</a>
+                  <li><a id=add-quote>Add Quote</a>
                   <li><a href="#about">About</a></li>
                   <li><a href="#contact">Contact</a></li>
                   <li><a onclick="javascript:require('quotes').pairing.show();">Pair Devices</a></li>
@@ -72,8 +93,16 @@
           </div>
 
           <h1>Quotable Quotes</h1>
-          <p id=quote></p>
-          <span style="float: right;" id=by></span>
+
+          <div id=show-quote class=quote>
+              <p class=quote-text></p>
+              <span style="float: right;" class=quote-by></span>
+          </div>
+
+          <div id=enter-quote class=quote>
+              <p class=quote-text><input /></p>
+              <span style="float: right;" class=quote-by><input /></span>
+          </div>
 
         </div> <!-- /container -->
     </body>

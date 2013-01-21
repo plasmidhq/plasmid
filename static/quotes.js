@@ -63,12 +63,6 @@ define(function(require, exports, module) {
     exports.cred = credentials;
     exports.bootcred = bootstrap_credentials;
     exports.db = quotedb;
-    exports.enterQuote = function() {
-        var text = prompt();
-        var by = text.replace(/^.*-/, '').trim();
-        var quote = text.replace(/-*[^-]*$/, '').trim();
-        quotedb.addQuote(quote, by);
-    };
 
     quotedb.on('opensuccess', function() {
         // Do we already have credentials?
@@ -125,7 +119,7 @@ define(function(require, exports, module) {
             quotedb.meta.put('credentials', {
                 access: access, secret: secret
             }),
-            quotedb.meta.put('remotename', remotename);
+            quotedb.meta.put('remotename', remotename)
         ]);
         resets.then(function(){
             quotedb.pull();
@@ -134,10 +128,34 @@ define(function(require, exports, module) {
 
     function showRandomQuote() {
         quotedb.randomQuote().then(function(item){
-            $('#quote').text(item.quote);
-            $('#by').text(item.by);
+            $('#show-quote .quote-text').text(item.quote);
+            $('#show-quote .quote-by').text(item.by);
         });
     }
 
-    $('#quote').click(showRandomQuote);
+    $('#show-quote').click(showRandomQuote);
+    $('#add-quote').click(function() {
+        $('#enter-quote input').val('');
+        $('#show-quote').hide();
+        $('#enter-quote').show();
+        $('#enter-quote .quote-text input').focus();
+    });
+
+    $('#enter-quote .quote-text input').keyup(function(ev) {
+        var $el = $(this);
+        if ($el.val() && ev.keyCode === 13) {
+            $('#enter-quote .quote-by input').focus();
+        }
+    });
+    $('#enter-quote .quote-by input').keyup(function(ev) {
+        var $el = $(this);
+        var quotetext = $('#enter-quote .quote-text input').val();
+        var quoteby = $('#enter-quote .quote-by input').val();
+        if ($el.val() && ev.keyCode === 13) {
+            quotedb.addQuote(quotetext, quoteby);
+            $('#enter-quote input').val('');
+            $('#enter-quote').hide();
+            $('#show-quote').show();
+        }
+    });
 });
