@@ -112,14 +112,14 @@ define(function(require, exports, module) {
     $('#pairing-new-code').click(function() {
         var access = $pairing_inputs.eq(0).val() + $pairing_inputs.eq(1).val();
         var secret = $pairing_inputs.eq(2).val() + $pairing_inputs.eq(3).val();
-        var remotename = 'guest_' + remotename;
+        var remotename = 'guest_' + access;
         var resets = Promise.chain([
             quotedb.forgetPushed(),
             quotedb.meta.put('last_revision', 0),
             quotedb.meta.put('credentials', {
                 access: access, secret: secret
             }),
-            quotedb.meta.put('remotename', remotename)
+            quotedb.setRemote(remotename)
         ]);
         resets.then(function(){
             quotedb.pull();

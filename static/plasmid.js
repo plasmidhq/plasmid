@@ -471,8 +471,17 @@ define(function(require, exports, module) {
     Database.prototype.setRemote = function(remotename) {
         var first_remote = (this.remotename === null);
         this.remotename = remotename;
-        this.meta.put('remotename', remotename);
         this.trigger('remotechanged', remotename);
+        var promise = new Promise(this);
+        this.meta.put('remotename', remotename)
+            .then(function(){
+                promise.ok();
+            })
+            .on('error', function(e) {
+                promise.trigger('error', e);
+            })
+        ;
+        return promise;
     };
 
     Database.prototype.http = function(method, url, body) {
@@ -788,6 +797,7 @@ define(function(require, exports, module) {
                 }
                 if (error !== null) {
                     console.error(!error);
+                } else {
                     if (!cursor.value.revision) {
                         results.push([store.storename, cursor.value]);
                         request.trigger('each', cursor.value);

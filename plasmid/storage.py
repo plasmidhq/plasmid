@@ -116,7 +116,11 @@ class Storage(object):
                     if quota is not None:
                         value_size = len(value)
                         cur.execute('SELECT length(value) FROM data WHERE store = ? AND key = ?', (store, name))
-                        cur_size = cur.fetchone()[0]
+                        cur_size_res = cur.fetchone()
+                        if (cur_size_res is not None):
+                            cur_size = cur.fetchone()[0]
+                        else:
+                            cur_size = 0
                         new_size = db_size - cur_size + value_size
                         if new_size > quota:
                             raise QuotaExceeded()
