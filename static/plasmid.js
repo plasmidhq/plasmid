@@ -308,7 +308,7 @@ define(function(require, exports, module) {
         return request;
     }
 
-    LocalStore.prototype.get = function(key) {
+    LocalStore.prototype._get_item = function(key) {
         var request = new Promise(this);
 
         var idbreq = this.db.idb.transaction(this.storename)
@@ -316,8 +316,7 @@ define(function(require, exports, module) {
             .get(key);
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
-                request.trigger('__gotraw__', event.target.result);
-                request.trigger('success', event.target.result.value);
+                request.trigger('success', event.target.result);
             } else {
                 request.trigger('missing', key);
             }
@@ -327,6 +326,17 @@ define(function(require, exports, module) {
         }
 
         return request;
+    };
+
+    LocalStore.prototype.get = function(key) {
+        var item_request = this._get_item(key);
+        var value_request = new Promise(this);
+        item_request.then(function(item) {
+            value_request.ok(item.value);
+        }).on('error', function(e) {
+            value_request.on('error', e);
+        });
+        return value_request;
     };
 
     LocalStore.prototype.add = function(key, value) {
@@ -582,8 +592,8 @@ define(function(require, exports, module) {
                         }
 
                         // Discover potential conflict
-                        database.stores[storename].get(key)
-                            .on('__gotraw__', function(obj) {
+                        database.stores[storename]._get_item(key)
+                            .then(function(obj) {
                                 if (obj.revision === null) {
                                     // conflict!
                                     request.trigger('conflict', key, obj.value, value)
