@@ -385,6 +385,25 @@ define(function(require, exports, module) {
         };
         return request;
     };
+
+    LocalStore.prototype._remove = function(key) {
+        var store = this;
+        var request = new Promise(this);
+        var t = this.db.idb.transaction([this.storename], "readwrite");
+        var key = (key===null) ? random_token(16) : key;
+        var idbreq = t.objectStore(this.storename).remove(key);
+        idbreq.onsuccess = function(event) {
+            if (event.target.result) {
+                request.trigger('success', event.target.result.value);
+            } else {
+                request.trigger('missing', key);
+            }
+        };
+        idbreq.onerror = function(event) {
+            request.trigger('error', 'unknown');
+        };
+        return request;
+    };
     
     var Database = function Database(options) {
         this.options = options;
@@ -577,11 +596,12 @@ define(function(require, exports, module) {
                         var revision = r.shift();
                         var key = r.shift();
                         var value = r.shift();
+                        var store = database.stores[storename];
 
                         value = JSONSCA.unpack(value);
 
                         function set_value() {
-                            database.stores[storename].put(key, value, revision)
+                            store.put(key, value, revision)
                                 .then(function(){
                                     database.meta.put('last_revision', revision).then(next);
                                 })
@@ -592,13 +612,36 @@ define(function(require, exports, module) {
                         }
 
                         // Discover potential conflict
-                        database.stores[storename]._get_item(key)
+                        store._get_item(key)
                             .then(function(obj) {
                                 if (obj.revision === null) {
                                     // conflict!
-                                    request.trigger('conflict', key, obj.value, value)
+                                    var resolve_puts = [];
+                                    store.trigger('conflict', put, key, obj.value, value);
+                                    // If the resolution put any objects,
+                                    // save those instead of the current value
+                                    if (resolve_puts.length > 0) {
+                                        var steps = [];
+                                        store._remove(key)
+                                        .then(function() {
+                                            while (resolve_puts.length > 0) {
+                                                var n = resolve_puts.shift();
+                                                steps.push(store.put(n[0], n[1]));
+                                            }
+                                            Promise.chain(steps)
+                                            .then(function(){
+                                                database.meta.put('last_revision', revision).then(next);
+                                            });
+                                        });
+                                    } else {
+                                        set_value();
+                                    }
+                                    function put(key, value) {
+                                        resolve_puts.push([key, value]);
+                                    }
+                                } else {
+                                    set_value();
                                 }
-                                set_value();
                             }).on('missing', set_value);
                         ;
                     } else {
