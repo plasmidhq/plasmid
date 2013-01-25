@@ -616,29 +616,7 @@ define(function(require, exports, module) {
                             .then(function(obj) {
                                 if (obj.revision === null) {
                                     // conflict!
-                                    var resolve_puts = [];
-                                    store.trigger('conflict', put, key, obj.value, value);
-                                    // If the resolution put any objects,
-                                    // save those instead of the current value
-                                    if (resolve_puts.length > 0) {
-                                        var steps = [];
-                                        store._remove(key)
-                                        .then(function() {
-                                            while (resolve_puts.length > 0) {
-                                                var n = resolve_puts.shift();
-                                                steps.push(store.put(n[0], n[1]));
-                                            }
-                                            Promise.chain(steps)
-                                            .then(function(){
-                                                database.meta.put('last_revision', revision).then(next);
-                                            });
-                                        });
-                                    } else {
-                                        set_value();
-                                    }
-                                    function put(key, value) {
-                                        resolve_puts.push([key, value]);
-                                    }
+                                    conflict.resolve(store, key, obj.value, value)
                                 } else {
                                     set_value();
                                 }
