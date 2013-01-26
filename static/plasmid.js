@@ -78,11 +78,18 @@ define(function(require, exports, module) {
         } else {
             var args = [];
         }
-        var handler = this['on' + type];
+        var onhandler = this['on' + type];
+        var handlers = (this.__event_handlers[type] || []);
         var event = new Event(type, this.target, args);
-        if (!!handler) {
-            handler.apply(this.target||this, args);
-        } else {
+        if (!!onhandler) {
+            onhandler.apply(this.target||this, args);
+        }
+        if (handlers.length > 0) {
+            for (var i=0; i < handlers.length; i++) {
+                handlers[i].apply(this.target||this, args);
+            }
+        }
+        if (!onhandler && handlers.length === 0) {
             if (typeof this.__eventqueue === 'undefined') {
                 this.__eventqueue = {};
             }
@@ -93,7 +100,9 @@ define(function(require, exports, module) {
         }
     };
     EventListener.prototype.on = function(eventname, handler) {
-        this['on' + eventname] = handler;
+        var handlers = this.__event_handlers = (this.__event_handlers || {});
+        handlers[eventname] = (handlers[eventname] || []);
+        handlers[eventname].push(handler);
         while (this.__eventqueue && this.__eventqueue[eventname] && this.__eventqueue[eventname].length > 0) {
             var args = this.__eventqueue[eventname].pop(0);
             args.splice(0, 0, eventname);
