@@ -8,6 +8,7 @@ def main(argv):
 
     parser.add_argument('-c', nargs='?')
     parser.add_argument('--set-secret', dest='set_secret', nargs=2)
+    parser.add_argument('--list-accounts', dest='list_accounts', action='store_true')
     parser.add_argument('--get-meta', dest='get_meta', nargs=1)
     parser.add_argument('--set-meta', dest='set_meta', nargs=2)
     parser.add_argument('--check-permission', dest='check_permission', nargs=3)
@@ -27,6 +28,9 @@ def main(argv):
     if ns.set_secret:
         access, secret = ns.set_secret
         credbackend.set_secret(access, secret)
+    elif ns.list_accounts:
+        for token in credbackend.list_access_tokens():
+            print token
     elif ns.get_meta:
         print config.hub.get_hub_database().get_meta(ns.get_meta[0])
     elif ns.set_meta:

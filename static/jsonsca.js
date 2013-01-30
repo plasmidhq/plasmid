@@ -19,9 +19,10 @@ define(function(require, exports, module) {
     // Will support:
     // - cyclic graphs of references
     
+    var Promise = require('promise').Promise; 
     
     exports.pack = function(input, reftracker) {
-        var promise = new plasmid.Promise();
+        var promise = new Promise();
         var t = typeof input;
         if (typeof reftracker === 'undefined') {
             var reftracker = new exports._ReferenceTracker();
@@ -86,7 +87,7 @@ define(function(require, exports, module) {
             for (var i=0; i < input.length; i++) {
                 promises.push(exports.pack(input[i], reftracker));
             }
-            plasmid.Promise.chain(promises).then(function(results) {
+            Promise.chain(promises).then(function(results) {
                 promise.ok({
                     'id': reference['new'],
                     'array': results
@@ -106,7 +107,7 @@ define(function(require, exports, module) {
                     promises.push(proppromise);
                 }
             }
-            var wait = plasmid.Promise.chain(promises);
+            var wait = Promise.chain(promises);
             wait.then(function() {
                 promise.ok({'object': out});
             });
@@ -200,7 +201,7 @@ define(function(require, exports, module) {
 
     exports.stringify = function(data) {
         var pack_promise = exports.pack(data);
-        var stringify_promise = new plasmid.Promise();
+        var stringify_promise = new Promise();
         pack_promise.then(function(packed) {
             stringify_promise.ok(JSON.stringify(packed));
         });

@@ -1,7 +1,11 @@
 define(function(require, exports, module) {
 
-    var Base64 = require('base64');
-    var JSONSCA = require('jsonsca');
+    var Base64 = require('base64')
+    ,   JSONSCA = require('jsonsca')
+    ,   promise = require('promise')
+    ,   Promise = promise.Promise
+    ,   EventListener = promise.EventListener
+    ;
 
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
@@ -67,113 +71,6 @@ define(function(require, exports, module) {
         return chars.join('');
     };
 
-    // Promise and Event Helper
-    
-    function EventListener() {}
-    EventListener.prototype.trigger = function(type, args) {
-        if (arguments.length > 2) {
-            var args = Array.prototype.slice.call(arguments, 1);
-        } else if (arguments.length == 2) {
-            var args = [args];
-        } else {
-            var args = [];
-        }
-        var onhandler = this['on' + type];
-        var handlers = (this.__event_handlers[type] || []);
-        var event = new Event(type, this.target, args);
-        if (!!onhandler) {
-            onhandler.apply(this.target||this, args);
-        }
-        if (handlers.length > 0) {
-            for (var i=0; i < handlers.length; i++) {
-                handlers[i].apply(this.target||this, args);
-            }
-        }
-        if (!onhandler && handlers.length === 0) {
-            if (typeof this.__eventqueue === 'undefined') {
-                this.__eventqueue = {};
-            }
-            if (typeof this.__eventqueue[type] === 'undefined') {
-                this.__eventqueue[type] = [];
-            }
-            this.__eventqueue[type].push(args);
-        }
-    };
-    EventListener.prototype.on = function(eventname, handler) {
-        var handlers = this.__event_handlers = (this.__event_handlers || {});
-        handlers[eventname] = (handlers[eventname] || []);
-        handlers[eventname].push(handler);
-        while (this.__eventqueue && this.__eventqueue[eventname] && this.__eventqueue[eventname].length > 0) {
-            var args = this.__eventqueue[eventname].pop(0);
-            args.splice(0, 0, eventname);
-            this.trigger.apply(this, args);
-        }
-        return this;
-    };
-    EventListener.prototype.error = function(handler) {
-        return this.on('error', handler);
-    };
-    EventListener.prototype.onerror = function() {
-        console.error('Unhandled error', arguments);
-    };
-    
-    function Event(eventname, target, data) {
-        this.type = eventname;
-        this.target = target;
-        this.data = data;
-    };
-    
-    function Promise(target) {
-        this.target = target; 
-    };
-    Promise.prototype = new EventListener();
-
-    Promise.prototype.then = function(handler) {
-        return this.on('success', handler);
-    };
-    Promise.prototype.ok = function(result) {
-        this.result = result;
-        this.trigger('success', result);
-    };
-
-    Promise.chain = function(promises) {
-        var self = new Promise();
-        var waiting = promises.length;
-        var i;
-        var results = [];
-        for (i = 0; i < promises.length; i++) {
-            if (promises[i].hasOwnProperty('result')) {
-                waiting = waiting - 1;
-                results[i] = promises[i].result;
-                self.trigger('onedone', i, promises[i], promises[i].result);
-            } else {
-                promises[i].then(create_result_handler(i));
-                promises[i].on('error', cancel);
-            }
-        }
-        if (waiting === 0) {
-            self.trigger('success', results);
-        }
-
-        return self;
-
-        function cancel() {
-            self.error();
-        };
-
-        function create_result_handler(i) {
-            function one_done(result) {
-                results[i] = result;
-                waiting = waiting - 1;
-                self.trigger('onedone', i, promises[i], result);
-                if (waiting === 0) {
-                    self.trigger('success', results);
-                }
-            }
-            return one_done;
-        }
-    };
-
     // Access token API
 
     // A note on wording.
@@ -200,7 +97,7 @@ define(function(require, exports, module) {
 
     Credentials.prototype.list = function() {
         var o = this.options;
-        var p = http('get', o.api + 'a/' + this.access, null, this.credentials);
+        var p = http('get', o.api + 'a/' + this.access, null, this.credentials||this);
         p.then(function(resp) {
             promise.ok(resp.permissions);
         });
@@ -425,6 +322,15 @@ define(function(require, exports, module) {
 
         var db = this;
         db.stores = {};
+        var st;
+        for (storename in options.schema.stores) {
+            st = options.schema.stores[storename].sync ? SyncStore : LocalStore;
+            db.stores[storename] = new st({
+                db: db,
+                storename: storename,
+            });
+        }
+
         var req = indexedDB.open(this.localname, options.schema.version);
 
         req.onerror = function(event) {
@@ -433,14 +339,6 @@ define(function(require, exports, module) {
         req.onsuccess = function(event) {
             db.idb = event.target.result;
 
-            var st;
-            for (storename in options.schema.stores) {
-                st = options.schema.stores[storename].sync ? SyncStore : LocalStore;
-                db.stores[storename] = new st({
-                    db: db,
-                    storename: storename,
-                });
-            }
 
             if (options.autoSync) {
                 db.autoSync(options.autoSync);
@@ -625,7 +523,7 @@ define(function(require, exports, module) {
                             .then(function(obj) {
                                 if (obj.revision === null) {
                                     // conflict!
-                                    conflict.resolve(store, key, obj.value, value)
+                                    store.resolve(store, key, obj.value, value)
                                 } else {
                                     set_value();
                                 }
@@ -818,6 +716,41 @@ define(function(require, exports, module) {
         //this.push();
     }
 
+    SyncStore.prototype.resolve = function(e, key, local, remote) {
+
+        var resolve_puts = [];
+        function put(key, value) {
+            resolve_puts.push([key, value]);
+        }
+
+        // Allow conflict event handles to resolve the conflict first
+        this.trigger('conflict', put, key, local, remote);
+
+        // If the resolution put any objects,
+        // save those instead of the current value
+        if (resolve_puts.length > 0) {
+            var steps = [];
+            this._remove(key)
+            .then(function() {
+                while (resolve_puts.length > 0) {
+                    var n = resolve_puts.shift();
+                    steps.push(this.store.put(n[0], n[1]));
+                }
+                plasmid.Promise.chain(steps)
+                .then(function(){
+                    this.db.meta.put('last_revision', revision).then(next);
+                });
+            });
+        } else {
+            // Default, keep the remote value...
+            console.log('keep', key, remote);
+            this.put(key, remote)
+            .then(function(){
+                this.db.meta.put('last_revision', revision).then(next);
+            });
+        }
+    };
+
     SyncStore.prototype._queued = function() {
         var request = new Promise(this);
         var store = this;
@@ -860,6 +793,7 @@ define(function(require, exports, module) {
     exports.Database = Database;
     exports.LocalStore = LocalStore;
     exports.SyncStore = SyncStore;
+    exports.EventListener = EventListener;
     exports.Promise = Promise;
     exports.http = http;
 

@@ -125,6 +125,14 @@ class CredentialBackend(object):
         secret_hash = self._hash_secret(secret)
         config.hub.get_hub_database().set_meta('access_' + access, secret_hash)
 
+    def list_access_tokens(self):
+        db = config.hub.get_hub_database()
+        conn, cur = db.cursor()
+        query = "SELECT property FROM meta WHERE property LIKE 'access_%'"
+        cur.execute(query)
+
+        return cur.fetchall()
+
     def check_secret(self, access, secret):
         secret_hash = self._hash_secret(secret)
         return secret_hash == config.hub.get_hub_database().get_meta('access_' + access)
