@@ -220,6 +220,7 @@ define(function(require, exports, module) {
         var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
             .get(key);
+        console.log(key, idbreq);
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
                 request.trigger('success', event.target.result);
@@ -240,7 +241,9 @@ define(function(require, exports, module) {
         item_request.then(function(item) {
             value_request.ok(item.value);
         }).on('error', function(e) {
-            value_request.on('error', e);
+            value_request.trigger('error', e);
+        }).on('missing', function() {
+            value_request.trigger('missing', key);   
         });
         return value_request;
     };
