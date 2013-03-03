@@ -29,9 +29,10 @@ class APIAuthSessionWrapper(object):
     implements(IResource)
     isLeaf = False
 
-    def __init__(self, hub, factory):
+    def __init__(self, hub, factory, log_extra):
         portal = Portal(PlasmidRealm(hub, factory), [PlasmidCredChecker(hub)])
         self._portal = portal
+        self.log = log_extra
 
     def getChildWithDefault(self, path, request):
         request.postpath.insert(0, request.prepath.pop())
@@ -59,9 +60,11 @@ class APIAuthSessionWrapper(object):
         return d
 
     def _loginSucceeded(self, (interface, avatar, logout)):
+        self.log("auth="+avatar)
         return avatar
 
     def _loginFailed(self, result):
+        self.log("auth fail", result.getTraceback())
         return UnauthorizedResource()
 
 

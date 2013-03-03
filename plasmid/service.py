@@ -35,10 +35,39 @@ class ServiceRoot(Resource):
         logging.info("Service ready at '%s'" % (hub.path))
 
     def getChild(self, name, request):
+
+        extra = []
+        traceback = []
+
+        def serviceRequestDone(r):
+            if traceback:
+                log = logging.error
+                msg, tb = traceback.pop()
+                extra.append(msg)
+                tb = '\n' + tb
+            else:
+                log = logging.info
+                tb = ''
+            log("HTTP %s %s %s %sb - %s" % (
+                request.method,
+                request.path,
+                request.code,
+                request.sentLength,
+                '; '.join(extra) + tb,
+            ))
+
+        def log(msg=None, tb=None):
+            if traceback is not None:
+                traceback.append((msg, tb))
+            elif msg is not None:
+                extra.append(msg)
+
+        request.notifyFinish().addCallback(serviceRequestDone)
         if name == 'static':
+            extra.append('static')
             return File(static_path)
         elif name == 'v1':
-            return APIAuthSessionWrapper(self.hub, Plasmid)
+            return APIAuthSessionWrapper(self.hub, Plasmid, log)
         else:
             request.setResponseCode(404)
             "nothing here"
