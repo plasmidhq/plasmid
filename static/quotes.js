@@ -67,20 +67,16 @@ define(function(require, exports, module) {
     quotedb.on('opensuccess', function() {
         // Do we already have credentials?
         var self = this;
-        console.log("looking for credentials...");
         this.meta.get('credentials').then(function(saved_cred){
-            conssole.log("Found saved credentials...");
             credentials.access = saved_cred.access;
             credentials.secret = saved_cred.secret;
 
             quotedb.setRemote(credentials.dbname);
             quotedb.trigger('credentialsready', credentials);
         }).on('missing', function(){
-            console.log("No saved credentials found!");
             // Use the bootstrap creds to create new tokens
             credentials.credentials = bootstrap_credentials;
             credentials.create('guest').then(function(data){
-                console.log(data);
                 self.meta.put('credentials', {
                     access: data.access,
                     secret: data.secret,

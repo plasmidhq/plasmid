@@ -220,7 +220,6 @@ define(function(require, exports, module) {
         var idbreq = this.db.idb.transaction(this.storename)
             .objectStore(this.storename)
             .get(key);
-        console.log(key, idbreq);
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
                 request.trigger('success', event.target.result);
