@@ -57,7 +57,7 @@ class ServiceRoot(Resource):
             ))
 
         def log(msg=None, tb=None):
-            if traceback is not None:
+            if tb is not None:
                 traceback.append((msg, tb))
             elif msg is not None:
                 extra.append(msg)

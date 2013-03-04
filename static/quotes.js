@@ -68,10 +68,11 @@ define(function(require, exports, module) {
         // Do we already have credentials?
         var self = this;
         this.meta.get('credentials').then(function(saved_cred){
+            // Found existing credentials
             credentials.access = saved_cred.access;
             credentials.secret = saved_cred.secret;
 
-            quotedb.setRemote(credentials.dbname);
+            quotedb.setRemote(saved_cred.dbname);
             quotedb.trigger('credentialsready', credentials);
         }).on('missing', function(){
             // Use the bootstrap creds to create new tokens
@@ -80,6 +81,7 @@ define(function(require, exports, module) {
                 self.meta.put('credentials', {
                     access: data.access,
                     secret: data.secret,
+                    dbname: data.dbname,
                 });
                 quotedb.setRemote(data.dbname);
                 quotedb.trigger('credentialsready', credentials);

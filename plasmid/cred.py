@@ -60,7 +60,7 @@ class APIAuthSessionWrapper(object):
         return d
 
     def _loginSucceeded(self, (interface, avatar, logout)):
-        self.log("auth="+avatar)
+        self.log("auth=%s" % (avatar.avatarId[1]))
         return avatar
 
     def _loginFailed(self, result):
