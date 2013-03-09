@@ -55,6 +55,7 @@ class APIAuthSessionWrapper(object):
             return self._error(request, "Unknown authentication method")
 
     def _login(self, credentials):
+        self.credentials = credentials
         d = self._portal.login(credentials, None, IResource)
         d.addCallbacks(self._loginSucceeded, self._loginFailed)
         return d
@@ -64,7 +65,7 @@ class APIAuthSessionWrapper(object):
         return avatar
 
     def _loginFailed(self, result):
-        self.log("auth fail", result.getTraceback())
+        self.log("auth fail %s" % (self.credentials.access,), result.getTraceback())
         return UnauthorizedResource()
 
 
@@ -137,7 +138,10 @@ class CredentialBackend(object):
         return cur.fetchall()
 
     def check_secret(self, access, secret):
-        secret_hash = self._hash_secret(secret)
+        try:
+            secret_hash = self._hash_secret(secret)
+        except TypeError:
+            return False
         return secret_hash == config.hub.get_hub_database().get_meta('access_' + access)
 
     def get_permission(self, access, permission, resource='*'):
