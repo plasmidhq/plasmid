@@ -278,7 +278,7 @@ define(function(require, exports, module) {
         var idbreq = t.objectStore(this.storename).put({
             key: key,
             value: value,
-            revision: _revision||null
+            revision: _revision||"queue"
         });
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
@@ -773,7 +773,7 @@ define(function(require, exports, module) {
                 if (error !== null) {
                     console.error(!error);
                 } else {
-                    if (!cursor.value.revision) {
+                    if (cursor.value.revision === 'queue') {
                         results.push([store.storename, cursor.value]);
                         request.trigger('each', cursor.value);
                     }

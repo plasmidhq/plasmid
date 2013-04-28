@@ -27,7 +27,7 @@ def main(argv):
 
     if ns.set_secret:
         access, secret = ns.set_secret
-        credbackend.set_secret(access, secret)
+        credbackend.set_secret(access, secret, force=True)
     elif ns.list_accounts:
         for token in credbackend.list_access_tokens():
             print token

@@ -9,6 +9,7 @@ class QuotaExceeded(Exception):
 
 
 class Hub(object):
+    """A collection of Storage objects for the databases syncronized."""
 
     def __init__(self, path):
         self.path = path
@@ -20,6 +21,7 @@ class Hub(object):
 
 
 class Storage(object):
+    """An interface to the disc storage for a single database."""
 
     def __init__(self, hub, name):
         self.hub = hub
