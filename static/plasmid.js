@@ -189,7 +189,7 @@ define(function(require, exports, module) {
     LocalStore.prototype.walk = function(indexname) {
         var request = new Promise(this);
         var store = this;
-        var idbstore = this.db.idb.transaction(this.storename)
+        var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
         var results = []
         var idbreq;
@@ -273,7 +273,7 @@ define(function(require, exports, module) {
         var store = this;
         var autopush = this.autopush;
         var request = new Promise(this);
-        var t = this.db.idb.transaction([this.storename], "readwrite");
+        var t = this.db._getIDBTrans([this.storename], "readwrite");
         var key = (key===null) ? random_token(16) : key;
         var idbreq = t.objectStore(this.storename).put({
             key: key,
@@ -291,6 +291,41 @@ define(function(require, exports, module) {
         idbreq.onerror = function(event) {
             request.trigger('error', 'unknown');
         };
+        return request;
+    };
+    LocalStore.prototype.putmany = function(many) {
+        var store = this;
+        var autopush = this.autopush;
+        var request = new Promise(this);
+        var t = this.db.idb.transaction([this.storename], "readwrite");
+
+        function put_next() {
+            if (many.length === 0) {
+                request.trigger('success');
+            } else {
+                var next = many.pop();
+                var key = (next.key===null) ? random_token(16) : next.key;
+                var idbreq = t.objectStore(store.storename).put({
+                    key: key,
+                    value: next.value,
+                    revision: null
+                });
+                idbreq.onsuccess = function(event) {
+                    if (event.target.result) {
+                        put_next();
+                        store.trigger('update', key, event.target.result.value);
+                    } else {
+                        request.trigger('missing', key);
+                    }
+                };
+                idbreq.onerror = function(event) {
+                    request.trigger('error', 'unknown');
+                };
+            }
+        }
+
+        put_next();
+
         return request;
     };
 
@@ -316,7 +351,6 @@ define(function(require, exports, module) {
     var Database = function Database(options) {
         this.options = options;
         this.credentials = options.credentials;
-        this.transaction = null;
         this.name = options.name;
         this.api = options.api;
         this.localname = options.localname || options.name;
@@ -400,6 +434,53 @@ define(function(require, exports, module) {
         this.stores.meta = this.meta;
     };
     Database.prototype = new EventListener();
+
+    Database.prototype._getIDBTrans = function() {
+        var idbt = this.idb.transaction.apply(this.idb, arguments);
+        return idbt;
+    };
+
+    Database.prototype.transaction = function(stores, mode) {
+        var idbt = this.idb.transaction(stores, mode);
+        function TransactionFactory() {
+            this.stores = {};
+
+            this.commit = function() {
+                console.log('COMMIT');
+            }
+
+            this._getIDBTrans = function(stores, mode) {
+                if (typeof stores === 'string') {
+                    var stores = [stores];
+                }
+                if (stores.length == idbt.objectStoreNames.length) {
+                    for (var i=0; i < stores.length; i++) {
+                        if (stores[i] !== idbt.objectStoreNames[i]) {
+                            // different stores
+                            return Database.prototype._getIDBTrans.apply(this, arguments);
+                        }
+                    }
+                    if (mode !== idbt.mode) {
+                        return Database.prototype._getIDBTrans.apply(this, arguments);
+                    }
+
+                    // same stores, same mode, reuse transaction!
+                    return idbt;
+                }
+            }
+
+            for (var i=0; i < stores.length; i++) {
+                this.stores[ stores[i] ] =
+                    new LocalStore({
+                        db: this,
+                        storename: stores[i]
+                    });
+            }
+        };
+        TransactionFactory.prototype = this;
+        var pt = new TransactionFactory();
+        return pt;
+    };
 
     Database.prototype._getRemoteEndpoint = function() {
         var remote = this.options.api + 'd/' + this.remotename + '/';
@@ -706,7 +787,6 @@ define(function(require, exports, module) {
         this.storename = options.storename;
         this.autopush = options.autopush || false;
 
-        this.transaction = null;
     };
     SyncStore.prototype = new LocalStore();
 
