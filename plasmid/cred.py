@@ -118,6 +118,7 @@ class PlasmidRealm(object):
 
 
 class CredentialBackend(object):
+    """Manages creation, verification, and modification of access keys and permissions."""
 
     def _hash_secret(self, secret):
         secret_hash = hashlib.sha1()
@@ -125,9 +126,26 @@ class CredentialBackend(object):
         secret_hash.update(secret)
         return secret_hash.hexdigest()
 
-    def set_secret(self, access, secret):
+    def create_pair(self, access, secret):
+        self.set_secret(access, secret, force=True)
+
+    def set_secret(self, access, secret, force=False):
+        """Change a secret token associated with an access token.
+
+        Raises ValueError on unknown access token.
+        """
+
+        assert access
+        assert secret
+
         secret_hash = self._hash_secret(secret)
-        config.hub.get_hub_database().set_meta('access_' + access, secret_hash)
+        db = config.hub.get_hub_database()
+        k = 'access_' + access
+        if db.get_meta(k) is None and not force:
+            raise ValueError("Unknown access token: %s" % (access,))
+        else:
+            db.set_meta(k, secret_hash)
+
 
     def list_access_tokens(self):
         db = config.hub.get_hub_database()
@@ -138,6 +156,8 @@ class CredentialBackend(object):
         return cur.fetchall()
 
     def check_secret(self, access, secret):
+        """Verify a pair of access and secret keys match."""
+
         try:
             secret_hash = self._hash_secret(secret)
         except TypeError:

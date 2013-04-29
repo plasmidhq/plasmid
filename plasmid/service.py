@@ -171,27 +171,27 @@ class PlasmidAccessDispatch(Resource):
                 access = random_token()
                 secret = random_token()
 
-            existing = bool(db.get_meta('access_' + access))
-            signal.cred_create.send(access, secret, existing)
+            try:
+                cred.create_pair(access, secret)
+                existing = False
+            except ValueError:
+                existing = True
 
-            # TODO: Fix race condition
-            if existing:
                 change = cred.get_permission(self.access, 'SetSecret', access)
                 same = access == self.access
                 if not (change or same):
                     return {'error': "Access token already exists"}
+            else:
+                signal.cred_create.send(access, secret, existing)
 
-            # Set (possible creating) credentials with secret
-            cred.set_secret(access, secret)
+                get_perm = partial(cred.get_permission, self.access)
+                set_perm = partial(cred.set_permission, self.access)
 
-            get_perm = partial(cred.get_permission, self.access)
-            set_perm = partial(cred.set_permission, self.access)
-
-            dbname = None
-            if not existing:
+                dbname = None
                 logging.info("Creating new credentials %s/****" % (
                     access,
                     ))
+
                 set_perm('SetSecret', access, "Yes")
                 if get_perm('CreateGuest'):
                     if body.get('type') == 'guest':
