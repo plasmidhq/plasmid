@@ -171,7 +171,7 @@ define(function(require, exports, module) {
      */
     LocalStore.prototype.count = function() {
         var promise = new Promise(this);
-        var idbstore = this.db.idb.transaction(this.storename)
+        var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
         var idbreq = idbstore.count();
         idbreq.onsuccess = function(event) {
@@ -217,7 +217,7 @@ define(function(require, exports, module) {
     LocalStore.prototype._get_item = function(key) {
         var request = new Promise(this);
 
-        var idbreq = this.db.idb.transaction(this.storename)
+        var idbreq = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename)
             .get(key);
         idbreq.onsuccess = function(event) {
@@ -250,7 +250,7 @@ define(function(require, exports, module) {
     LocalStore.prototype.add = function(key, value) {
         var store = this;
         var request = new Promise(this);
-        var t = this.db.idb.transaction([this.storename], "readwrite");
+        var t = this.db._getIDBTrans([this.storename], "readwrite");
         var idbreq = t.objectStore(this.storename).add({
             key: key,
             value: value,
@@ -297,7 +297,7 @@ define(function(require, exports, module) {
         var store = this;
         var autopush = this.autopush;
         var request = new Promise(this);
-        var t = this.db.idb.transaction([this.storename], "readwrite");
+        var t = this.db._getIDBTrans([this.storename], "readwrite");
 
         function put_next() {
             if (many.length === 0) {
@@ -332,7 +332,7 @@ define(function(require, exports, module) {
     LocalStore.prototype._remove = function(key) {
         var store = this;
         var request = new Promise(this);
-        var t = this.db.idb.transaction([this.storename], "readwrite");
+        var t = this.db._getIDBTrans([this.storename], "readwrite");
         var key = (key===null) ? random_token(16) : key;
         var idbreq = t.objectStore(this.storename).remove(key);
         idbreq.onsuccess = function(event) {
@@ -445,9 +445,15 @@ define(function(require, exports, module) {
         function TransactionFactory() {
             this.stores = {};
 
+            this.abort = function() {
+                idbt.abort();
+            };
+
             this.commit = function() {
-                console.log('COMMIT');
-            }
+                // IndexedDB transactions only commit when
+                // they are out of scope
+                idbt = null;
+            };
 
             this._getIDBTrans = function(stores, mode) {
                 if (typeof stores === 'string') {
@@ -836,7 +842,7 @@ define(function(require, exports, module) {
     SyncStore.prototype._queued = function() {
         var request = new Promise(this);
         var store = this;
-        var idbreq = this.db.idb.transaction(this.storename)
+        var idbreq = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename)
             .openCursor();
         var results = []
