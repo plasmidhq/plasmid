@@ -1,0 +1,5 @@
+*.pyc
+*.swp
+node_modules
+dist
+hub
