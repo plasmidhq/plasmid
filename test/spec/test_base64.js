@@ -1,18 +1,27 @@
 'use strict';
 
-describe('Controller: MainCtrl', function () {
+define(['base64'], function(Base64) {
+  describe('Utility: Base64', function () {
 
-  var a, b, c;
+    // Initialize the controller and a mock scope
+    beforeEach(function () {
+    });
 
-  // Initialize the controller and a mock scope
-  beforeEach(function () {
-    a = 10;
-    b = 5;
+    it('should decode its own data', function () {
+      var encoded = Base64.encode('test');
+      var decoded = Base64.decode(encoded);
+      expect(decoded).toBe('test');
+    });
 
-    c = 15;
-  });
-
-  it('should result in 15', function () {
-    expect(add(a, b)).toBe(c);
+    it('should handle all bytes', function () {
+      var data = [];
+      for (var i=0; i<256; i++) {
+        data.push( String.fromCharCode(i) );
+      }
+      data = data.join('');
+      var encoded = Base64.encode(data);
+      var decoded = Base64.decode(encoded);
+      expect(decoded).toBe(data);
+    });
   });
 });

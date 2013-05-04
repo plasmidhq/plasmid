@@ -7,10 +7,11 @@ var mountFolder = function (connect, dir) {
 module.exports = function (grunt) {
   // load all grunt tasks
   require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+  grunt.loadNpmTasks('grunt-contrib-requirejs');
 
   // configurable paths
   var yeomanConfig = {
-    name: 'example',
+    name: 'plasmid',
     src: 'src',
     dist: 'dist'
   };
@@ -93,6 +94,17 @@ module.exports = function (grunt) {
         singleRun: true
       }
     },
+    requirejs: {
+      compile: {
+        options: {
+          baseUrl: "<%= yeoman.src %>/",
+          mainConfigFile: "build.js",
+            name: "plasmid",
+            include: [],
+          out: "dist/<%= yeoman.name %>.js"
+        }
+      }
+    },
     concat: {
       dist: {
         files: {
@@ -144,9 +156,9 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
-    'jshint',
+    //'jshint',
     'test',
-    'concat',
+    'requirejs',
     'copy',
     'uglify',
   ]);

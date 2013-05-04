@@ -7,10 +7,14 @@ basePath = '';
 files = [
   JASMINE,
   JASMINE_ADAPTER,
-  'src/*.js',
-  'src/**/*.js',
-  'test/mock/**/*.js',
-  'test/spec/**/*.js'
+  REQUIRE,
+  REQUIRE_ADAPTER,
+
+  {pattern: 'src/*.js', included: false},
+  {pattern: 'src/**/*.js', included: false},
+  {pattern: 'test/spec/test_*.js', included: false},
+
+  'test/main.js',
 ];
 
 // list of files to exclude
