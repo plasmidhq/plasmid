@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Plasmid by ironfroggy</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Plasmid</h1>
+        <h2>IndexedDB Synchronization Service</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/ironfroggy/plasmid/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/ironfroggy/plasmid/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/ironfroggy/plasmid" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>Plasmid</h1>
+
+<p>Plasmid is a Client/Server storage solution for client-heavy web applications,
+offering consistent master/slave updates to keep multiple browser instances
+up to do between a single server.</p>
+
+<p>Plasmid is focused on uses with small, per user databases. Such# as task and
+todo lists, note management, writing tools, and other uses.</p>
+
+<p>Plasmid is a VERY EARLY project. Today, it functions, but is lacking in a lot
+of crucial functions, unit tests, and stability. Please try Plasmid and give
+feedback, but don't rely on it just yet!</p>
+
+<h2>Setup</h2>
+
+<p>To try Plasmid, checkout the repository and run the plasmid package. Plasmid
+requires Twisted to run.</p>
+
+<pre><code>python -m plasmid
+</code></pre>
+
+<p>You can visit the demonstration todo application by viewing http://localhost:8880/
+in your browser. If you visit it from multiple browsers, the todo list will be synced,
+even during disconnected periods.</p>
+
+<h2>Management</h2>
+
+<p>If you'd like to use Plasmid, against my advice, you'll want some moderate security
+so create a set of user credentials and grant them access to the appropriate resources.</p>
+
+<pre><code>python -m plasmid --set-secret ACCESS_TOKEN SECRET
+python -m plasmid --grant-permission ACCESS_TOKEN CreateDatabase DATABASE
+python -m plasmid --grant-permission ACCESS_TOKEN ReadDatabase DATABASE
+python -m plasmid --grant-permission ACCESS_TOKEN WriteDatabase DATABASE
+</code></pre>
+
+<p>And pass the access and secret tokens as appropriate options to the Database configuration
+in your client code. (see below)</p>
+
+<h2>Usage</h2>
+
+<p>To connect to and synchronize with a Plasmid database, you'll need to source the required
+Javascript files, and setup the needed configuration.</p>
+
+<pre><code>&lt;script type="text/javascript" src="base64.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="plasmid.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+    var api = window.location.protocol + '//' + window.location.host + '/api/';
+    var access = "ACCESS";
+    var secret = "SECRET";
+
+    var database = new plasmid.Database({
+        name: 'todo',
+        api: api,
+        schema: {
+            version: 1,
+            stores: {
+                todo: {
+                    sync: true,
+                    indexes: {
+                        todo: {key: "todo", unique: false, multi: false}
+                    }
+                },
+            },
+        },
+        autoSync: false,
+        access: access,
+        secret: secret
+    });
+</code></pre>
+
+<p>Once created, you should begin your interactions with the database only when
+it is ready.</p>
+
+<pre><code>database.on('opensuccess', function() {
+    // Use the database now.
+});
+</code></pre>
+
+<h3>Database API</h3>
+
+<p><strong>database.put(key, value)</strong> Put the value at the given key</p>
+
+<p><strong>database.get(key)</strong> Get the value for the given key</p>
+
+<p><strong>database.get(key).then(do)</strong> Pass the value for the given key to the callback function <code>do</code></p>
+
+<p><strong>database.get(key).on('error', onerror)</strong> Try to get the value at the given key, but call the error handler if the attempt fails</p>
+
+<p><strong>database.sync()</strong> Push new changes back upstream and pull changes down</p>
+      </section>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-953592-23");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
