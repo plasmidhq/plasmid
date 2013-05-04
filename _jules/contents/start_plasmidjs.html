@@ -1,0 +1,78 @@
+<h1>Getting Started</h1>
+
+<style>
+    .note {
+        font-style: italic;
+        color: #333;
+        margin-top: 0px;
+        margin-bottom: 1em;
+    }
+    pre {
+        margin-top: 0px;
+        margin-bottom: 1em;
+    }
+</style>
+
+<p>Plasmid.js is the browser portion of the Plasmid toolset, and makes working with the
+IndexedDB API across different browsers and devices.</>
+
+<div>
+<code class=col-50><pre>
+var database = new Database({
+  name: 'todo',
+  schema: {
+    version: 1,
+</pre></code>
+
+<div class="note col-50">
+We create a local database very easily, with a name and begin defining the first
+version of the schema.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50>
+<pre>
+    stores: {
+      todo: {
+</pre></code>
+
+<div class="note col-50">
+The schema defines the stores in the database, each of which we can fill with data objects.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50><pre>
+        indexes: {
+          todo: {
+</pre></code>
+
+<div class="note col-50">
+Optionally, we can define indexes on these stores.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50><pre>
+            key: "todo",
+            unique: false,
+            multi: false
+          }
+        }
+      },
+    },
+  }
+});
+</pre></code>
+
+<div class="note col-50">
+Our index is defined by a key on a property path into the objects we'll
+put in the store, and flags to determine if we enforce uniqueness and
+index arrays as one or multiple values.
+</div>
+<div style="clear:both;"></div>
+</div>
