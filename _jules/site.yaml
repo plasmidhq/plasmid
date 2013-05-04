@@ -1,0 +1,31 @@
+output: ".."
+title: "Plasmid"
+subtitle: "Browser side databases made easy"
+packs:
+- "jules:html5boilerplate"
+- "jules:lesscss"
+- "jules:atom"
+- "jules:pygments"
+- "dir:templates"
+- "dir:static"
+- "dir:contents"
+google_analytics_id: "UA-953592-23"
+domain: "ironfroggy.github.io/plasmid/"
+default_author: "Calvin Spealman <ironfroggy@github.com>"
+ignore:
+- "*.swp"
+- "*.swo"
+- "~*"
+bundle_defaults:
+    output_ext: ""
+    render: jinja2
+collections:
+    tags:
+        key_pattern: "{value}"
+        match:
+            status: published
+        group_by:
+            in: tags
+        meta:
+            render: jinja2
+            template: tag.j2

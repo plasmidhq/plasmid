@@ -1,0 +1,32 @@
+{% extends "site_base.j2" %}
+
+{% block header_right %}
+    <h1>Projects</h1>
+{% endblock %}
+
+{% block mid_column %}
+    <h3>Active Projects</h3>
+    <p>
+    These projects are things I'm actively working on. All of them, if I'm
+    not slacking, are published at Github and have documentation at Read
+    The Docs.
+    </p>
+{% endblock %}
+
+{% block content %}
+    {% for bundle in engine.get_bundles_by("title", "desc", type="project") %}
+        <article class=tease>
+            <h3><a href="{{ bundle.url() }}">{{ bundle.meta.title|title }}</a></h3>
+            <h4>{{ bundle.meta.publish_time }}
+            {% if bundle.tags %}
+            <span class=tags>
+            {% for tag in bundle.tags %}
+                {{ tag }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+            </span>
+            {% endif %}
+            </h4>
+            {{ bundle.content|safe }}
+        </article>
+    {% endfor %}
+{% endblock %}
