@@ -1,6 +1,6 @@
 # Plasmid
 
-Plasmid is a Client/Server storage solution for client-heavy web applicaitons,
+Plasmid is a Client/Server storage solution for client-heavy web applications,
 offering consistent master/slave updates to keep multiple browser instances
 up to do between a single server.
 
@@ -13,7 +13,7 @@ feedback, but don't rely on it just yet!
 
 ## Setup
 
-To try Plasmid, checkout the resposiotry and run the plasmid package. Plasmid
+To try Plasmid, checkout the repository and run the plasmid package. Plasmid
 requires Twisted to run.
 
 	python -m plasmid

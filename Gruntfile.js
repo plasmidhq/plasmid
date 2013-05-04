@@ -3,6 +3,7 @@ var lrSnippet = require('grunt-contrib-livereload/lib/utils').livereloadSnippet;
 var mountFolder = function (connect, dir) {
   return connect.static(require('path').resolve(dir));
 };
+var package_config = require('./package');
 
 module.exports = function (grunt) {
   // load all grunt tasks
@@ -11,7 +12,8 @@ module.exports = function (grunt) {
 
   // configurable paths
   var yeomanConfig = {
-    name: 'plasmid',
+    name: package_config.name,
+    version: package_config.version,
     src: 'src',
     dist: 'dist'
   };
@@ -99,18 +101,19 @@ module.exports = function (grunt) {
         options: {
           baseUrl: "<%= yeoman.src %>/",
           mainConfigFile: "build.js",
-            name: "plasmid",
-            include: [],
-          out: "dist/<%= yeoman.name %>.js"
+          name: "plasmid",
+          include: [],
+          out: "dist/<%= yeoman.name %>-<%= yeoman.version %>-modules.js"
         }
       }
     },
     concat: {
-      dist: {
+      combine: {
         files: {
-          '<%= yeoman.dist %>/<%= yeoman.name %>.js': [
+          '<%= yeoman.dist %>/<%= yeoman.name %>-<%= yeoman.version %>.js': [
+            'static/require.js',
             '.tmp/{,*/}*.js',
-            '<%= yeoman.src %>/{,*/}*.js'
+            "dist/<%= yeoman.name %>-<%= yeoman.version %>-modules.js"
           ]
         }
       }
@@ -118,8 +121,8 @@ module.exports = function (grunt) {
     uglify: {
       dist: {
         files: {
-          '<%= yeoman.dist %>/<%= yeoman.name %>.min.js': [
-            '<%= yeoman.dist %>/<%= yeoman.name %>.js'
+          '<%= yeoman.dist %>/<%= yeoman.name %>-<%= yeoman.version %>.min.js': [
+            '<%= yeoman.dist %>/<%= yeoman.name %>-<%= yeoman.version %>.js'
           ]
         }
       }
@@ -159,6 +162,7 @@ module.exports = function (grunt) {
     //'jshint',
     'test',
     'requirejs',
+    'concat:combine',
     'copy',
     'uglify',
   ]);
