@@ -10,7 +10,7 @@ packs:
 - "dir:static"
 - "dir:contents"
 google_analytics_id: "UA-953592-23"
-domain: "ironfroggy.github.io/plasmid/"
+domain: "ironfroggy.github.io/plasmid"
 default_author: "Calvin Spealman <ironfroggy@github.com>"
 ignore:
 - "*.swp"
