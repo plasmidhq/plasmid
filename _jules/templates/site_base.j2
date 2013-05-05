@@ -8,7 +8,10 @@
 {% endblock %}
 
 {% block header %}
-    <h1><a href="/">{{ bundle.meta.title|default(config.title) }}</a></h1>
+    <h1><a href="http://{{ config.domain }}">{{ bundle.meta.title|default(config.title) }}</a></h1>
+    {% if bundle.meta.subtitle %}
+        <h3>{{ bundle.meta.subtitle }}</h3>
+    {% endif %}
 {% endblock %}
 
 {% block main %}
