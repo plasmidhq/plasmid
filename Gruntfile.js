@@ -167,5 +167,13 @@ module.exports = function (grunt) {
     'uglify',
   ]);
 
+  grunt.registerTask('dev-build', [
+    'clean:dist',
+    'requirejs',
+    'concat:combine',
+    'copy',
+    'uglify',
+  ]);
+
   grunt.registerTask('default', ['build']);
 };
