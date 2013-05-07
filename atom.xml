@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>
+        Plasmid
+    </title>
+    
+    <link href="http://ironfroggy.github.io/plasmid/atom.xml" rel="self" />
+    
+
+    
+    <link href="http://ironfroggy.github.io/plasmid/"/>
+    
+
+    
+    
+
+    <updated></updated>
+
+    <id>atom-feed</id>
+
+    
+
+    
+        <entry>
+            <title type="html">Introduction</title>
+            <author><name>Calvin Spealman &lt;ironfroggy@github.com&gt;</name></author>
+            <link href="http://ironfroggy.github.io/plasmid/"/>
+            <updated>2012-06-23T10:00:00Z</updated>
+            <published>2012-06-23T10:00:00Z</published>
+            <id>main_page</id>
+            
+            
+
+            <content type="html">
+                <p><em>Plasmid makes it easy</em> to take advantage of storage browsers provide for our
+web applications today.</p>
+
+<p><em>Building offline first web apps is a breeze</em> with Plasmid.js, the javascript
+library that makes the complicated details of IndexedDB under the hood and makes
+it easy to build, utilize, and manage your browser-side databases.</p>
+
+<p>But, <em>users don't live on one device</em> and the web thrives online. That's why
+Plasmid was built from the ground up to support synroncizing these databases
+with the Plasmid Sync server.</p>
+
+<p>Together, Plasmid.js and Plasmid Sync make building amazing, data-rich
+web applications effortless. The pair are ideal for building web apps and web-based
+installed applications. You can target all major platforms and users can enjoy
+their data at their fingertips wherever they are.</p>
+
+<p>Plasmid is a <i>VERY EARLY</i> project. Today, it functions, but is lacking in a lot
+of crucial functions, unit tests, and stability. Please try Plasmid and give
+feedback, but don't rely on it just yet!</p>
+
+            </content>
+        </entry>
+    
+</feed>
