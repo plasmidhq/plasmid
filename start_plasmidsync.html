@@ -84,6 +84,11 @@ contain your databases and run the service at <cite>localhost:8880/plasmid/</cit
 </pre></div>
 <p>A directory named <cite>hub</cite> will be created in the current directory, containing any databases
 created.</p>
+<p>From Plasmid.js, you may create a <cite>Database</cite> with an <cite>api</cite> value in its options, pointing
+to the location of the running Plasmid Sync server, and a <cite>credentials</cite> value as an instance
+of the Plasmid.js <cite>Credentials</cite> type. This database instance will have <cite>pull()</cite> and <cite>push()</cite>
+methods to update the local database from the Sync server and to push new changes back to it,
+respectively.</p>
 </div>
 
     </article>
