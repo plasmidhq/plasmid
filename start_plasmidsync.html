@@ -118,6 +118,12 @@ respectively.</p>
 
 <span class="nx">playground</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;opensuccess&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
 
+    <span class="nx">playground</span><span class="p">.</span><span class="nx">pull</span><span class="p">();</span> <span class="c1">// Update from the server</span>
+
+    <span class="nx">playground</span><span class="p">.</span><span class="nx">push</span><span class="p">();</span> <span class="c1">// Push local updates to the server</span>
+
+    <span class="nx">playground</span><span class="p">.</span><span class="nx">sync</span><span class="p">();</span> <span class="c1">// Pull, then push</span>
+
 <span class="p">});</span>
 </pre></div>
 </div>
