@@ -94,6 +94,39 @@ to the location of the running Plasmid Sync server, and a <cite>credentials</cit
 of the Plasmid.js <cite>Credentials</cite> type. This database instance will have <cite>pull()</cite> and <cite>push()</cite>
 methods to update the local database from the Sync server and to push new changes back to it,
 respectively.</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 44)</p>
+<p>Unknown directive type &quot;sourecode&quot;.</p>
+<pre class="literal-block">
+.. sourecode:: javascript
+
+    plasmid_api = window.location.protocol + '//' + window.location.host + '/v1/';
+
+    credentials = new plasmid.Credentials({
+        api: plasmid_api,
+        access: &quot;playground-user&quot;,
+        secret: &quot;playground-secret&quot;
+    });
+
+    playground = new plasmid.Database({
+        name: &quot;playground-db&quot;,
+        remotename: &quot;playground-db&quot;,
+        api: plasmid_api,
+        schema: {
+            version: 1,
+            stores: {
+                things: {sync: true},
+                private: {sync: false}
+            }
+        },
+        credentials: credentials
+    });
+
+    playground.on('opensuccess', function() {
+
+    });
+</pre>
+</div>
 </div>
 </div>
 
