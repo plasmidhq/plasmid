@@ -94,39 +94,32 @@ to the location of the running Plasmid Sync server, and a <cite>credentials</cit
 of the Plasmid.js <cite>Credentials</cite> type. This database instance will have <cite>pull()</cite> and <cite>push()</cite>
 methods to update the local database from the Sync server and to push new changes back to it,
 respectively.</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 44)</p>
-<p>Unknown directive type &quot;sourecode&quot;.</p>
-<pre class="literal-block">
-.. sourecode:: javascript
+<div class="highlight"><pre><span class="nx">plasmid_api</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">protocol</span> <span class="o">+</span> <span class="s1">&#39;//&#39;</span> <span class="o">+</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">host</span> <span class="o">+</span> <span class="s1">&#39;/v1/&#39;</span><span class="p">;</span>
 
-    plasmid_api = window.location.protocol + '//' + window.location.host + '/v1/';
+<span class="nx">credentials</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">plasmid</span><span class="p">.</span><span class="nx">Credentials</span><span class="p">({</span>
+    <span class="nx">api</span><span class="o">:</span> <span class="nx">plasmid_api</span><span class="p">,</span>
+    <span class="nx">access</span><span class="o">:</span> <span class="s2">&quot;playground-user&quot;</span><span class="p">,</span>
+    <span class="nx">secret</span><span class="o">:</span> <span class="s2">&quot;playground-secret&quot;</span>
+<span class="p">});</span>
 
-    credentials = new plasmid.Credentials({
-        api: plasmid_api,
-        access: &quot;playground-user&quot;,
-        secret: &quot;playground-secret&quot;
-    });
+<span class="nx">playground</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">plasmid</span><span class="p">.</span><span class="nx">Database</span><span class="p">({</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;playground-db&quot;</span><span class="p">,</span>
+    <span class="nx">remotename</span><span class="o">:</span> <span class="s2">&quot;playground-db&quot;</span><span class="p">,</span>
+    <span class="nx">api</span><span class="o">:</span> <span class="nx">plasmid_api</span><span class="p">,</span>
+    <span class="nx">schema</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">version</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nx">stores</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">things</span><span class="o">:</span> <span class="p">{</span><span class="nx">sync</span><span class="o">:</span> <span class="kc">true</span><span class="p">},</span>
+            <span class="kr">private</span><span class="o">:</span> <span class="p">{</span><span class="nx">sync</span><span class="o">:</span> <span class="kc">false</span><span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nx">credentials</span><span class="o">:</span> <span class="nx">credentials</span>
+<span class="p">});</span>
 
-    playground = new plasmid.Database({
-        name: &quot;playground-db&quot;,
-        remotename: &quot;playground-db&quot;,
-        api: plasmid_api,
-        schema: {
-            version: 1,
-            stores: {
-                things: {sync: true},
-                private: {sync: false}
-            }
-        },
-        credentials: credentials
-    });
+<span class="nx">playground</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;opensuccess&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
 
-    playground.on('opensuccess', function() {
-
-    });
-</pre>
-</div>
+<span class="p">});</span>
+</pre></div>
 </div>
 </div>
 
