@@ -1,0 +1,8 @@
+{% extends "site_base.j2" %}
+
+{% block content %}
+    {% set main_page = engine.get_bundle(key="main_page") %}
+    <article>
+        {{ main_page.content|safe }}
+    </article>
+{% endblock %}
