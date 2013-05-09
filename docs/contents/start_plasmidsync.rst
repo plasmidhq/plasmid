@@ -66,5 +66,22 @@ respectively.
     });
 
     playground.on('opensuccess', function() {
+        
+        playground.pull(); // Update from the server
 
+        playground.push(); // Push local updates to the server
+
+        playground.sync(); // Pull, then push
+    
     });
+
+Plasmid.js will periodically request updates for a database from the Sync server, sending
+the updates that have
+been made since the last update that was made. When the user has made changes in the browser
+side which need to be syncronized with the server, the new objects will be pushed back to the
+server and *only accepted if there are no un-pulled changes.* 
+
+The server is, essentially, designed to be afraid. No conflicts in the data happen on the
+backend. Instead, conflicts are only possible inside the application itself, inside the browser,
+where the application can deal with these conflicts as is appropriate for its own data, and
+with the opportunity to involve the user in resolutions which cannot be safely automated.
