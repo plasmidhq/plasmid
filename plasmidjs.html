@@ -150,9 +150,7 @@ index arrays as one or multiple values.
         text: "Learn how to use Plasmid.js!",
         completed: false
     })
-</pre></code>
-
-<div class="note col-50">
+</pre></code><div class="note col-50">
     We can use any store defined in our database.<br />
     Here, we're putting our first object into the todo store, and we're
     passing <code>null</code> as the key, so Plasmid will generate one
@@ -160,10 +158,23 @@ index arrays as one or multiple values.
 </div>
 
 <code class=col-50><pre>
-    .then(function(key, value) {
-        console.log("I saved my first todo item this key: ");
-    });
-</pre></code>
+    .then(
+        function ok(key, value) {
+            console.log("I saved my first todo item this key: ");
+        },
+</pre></code><div class="note col-50">
+    When our <code>put()</code> request is done, we'll be given the key and
+    value that were used,
+</div>
+
+<code class=col-50><pre>
+        function error(msg) {
+            console.error("Could not save: " + msg);
+        }
+    )
+</pre></code><div class="note col-50">
+    and we handle an error, if it happens.
+</div>
 
     </article>
 
