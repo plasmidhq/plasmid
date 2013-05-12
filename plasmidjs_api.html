@@ -179,9 +179,45 @@ Initializes a <a class="reference internal" href="#pull">pull</a> followed by a 
 </div>
 <div class="section" id="database-pull">
 <span id="pull"></span><h2>Database.pull()</h2>
+<blockquote>
+<p><em>Important</em> details on conflict resolution are described here. Read carefully.</p>
+<p>If a remote API and database name are configured, fetch all new updates from the Sync
+server and apply them locally.</p>
+<p>In the event of a conflict between an unsynced local change and a remote change being
+pulled, the <cite>&quot;conflict&quot;</cite> event will be triggered on the store containing the object.</p>
+<p>The conflict event is given a <cite>put()</cite> callback, <cite>key</cite>, <cite>local value</cite>, and
+<cite>remote value</cite>, in that order. The conflict handler is responsible for saving any altered
+values or new keys as a result of the conflict, exclusively through the <cite>put()</cite> callback
+it receives.</p>
+<p>If the handler saves any objects, these objects will be the sole results of the conflict
+and may not even include the original objects or keys at all. For example, two objects
+conflicting could result in a new merged object. If this is the case, you should <a class="reference internal" href="#push">push</a>
+to share the results with the sync server.</p>
+<p>If the handler does <em>not</em> save any objects, the default behavior is used and only the
+remote version is kept.</p>
+</blockquote>
 </div>
 <div class="section" id="database-push">
 <span id="push"></span><h2>Database.push()</h2>
+<blockquote>
+If a remote APi and database name are configured, send all unsubmitted changes to the
+Sync server. The remote server will reject the changes if a <a class="reference internal" href="#pull">pull</a> is required first,
+triggering an error.</blockquote>
+</div>
+<div class="section" id="database-drop">
+<h2>Database.drop()</h2>
+<blockquote>
+<p><em>Important</em> this is not reversable! This removes all local data!</p>
+<p>Removes the local database entirely.</p>
+</blockquote>
+</div>
+<div class="section" id="database-reset">
+<h2>Database.reset()</h2>
+<blockquote>
+<p><em>Important</em> this is not reversable! This removes all local data!</p>
+<p>Removes the local database entirely, then recreates it with the current schema and no
+data.</p>
+</blockquote>
 </div>
 </div>
 <div class="system-messages section">
