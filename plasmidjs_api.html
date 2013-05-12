@@ -88,9 +88,8 @@ document is organized.</p>
 <h1>EventListener</h1>
 <p>Almost every object in Plasmid is an <a class="reference internal" href="#eventlistener">EventListener</a>, so this section is important
 to understand the base of all the other types.</p>
-<div class="section" id="eventlistener-on">
-<h2>EventListener.on()</h2>
-<p>EventListener.on(<cite>eventname</cite>, <cite>handler</cite>)</p>
+<div class="section" id="eventlistener-on-eventname-handler">
+<h2>EventListener.on(<cite>eventname</cite>, <cite>handler</cite>)</h2>
 <blockquote>
 <p>Registers <cite>handler</cite> to be called when <cite>eventname</cite> is triggered on this object.
 It will be called bound to this object.</p>
@@ -98,11 +97,15 @@ It will be called bound to this object.</p>
 it will be called with all previous triggers for this event. This allows event
 triggers to be queued before they are registered, as a convenience.</p>
 </blockquote>
-<p>EventListener.trigger(<cite>eventname</cite>, <cite>arguments ...</cite>)</p>
+</div>
+<div class="section" id="eventlistener-trigger-eventname-arguments">
+<h2>EventListener.trigger(<cite>eventname</cite>, <cite>arguments ...</cite>)</h2>
 <blockquote>
 Calls all handlers for <cite>eventname</cite> in the order they were registered, bound to
 this object and passing all the provided <cite>arguments</cite>.</blockquote>
-<p>EventListener.error(<cite>handler</cite>)</p>
+</div>
+<div class="section" id="eventlistener-error-handler">
+<h2>EventListener.error(<cite>handler</cite>)</h2>
 <blockquote>
 As a convenience, binds the <cite>handler</cite> to the <cite>&quot;error&quot;</cite> event.</blockquote>
 </div>
@@ -110,14 +113,19 @@ As a convenience, binds the <cite>handler</cite> to the <cite>&quot;error&quot;<
 <div class="section" id="promise">
 <h1>Promise</h1>
 <p>Promise is based on an <a class="reference internal" href="#eventlistener">EventListener</a>.</p>
-<p>Promise.then(<cite>success</cite>, <cite>error</cite>)</p>
+<div class="section" id="promise-then-success-error">
+<h2>Promise.then(<cite>success</cite>, <cite>error</cite>)</h2>
 <blockquote>
 Binds the <cite>success</cite> handler to the <cite>&quot;success&quot;</cite> event and the <cite>error</cite> handler to
 the <cite>&quot;error&quot;</cite> event. These events are fired to signal the fulfillment of the promise.</blockquote>
-<p>Promise.ok(<cite>result</cite>)</p>
+</div>
+<div class="section" id="promise-ok-result">
+<h2>Promise.ok(<cite>result</cite>)</h2>
 <blockquote>
 Fulfills te promise with <cite>result</cite>.</blockquote>
-<p>Promise.chain(<cite>promises</cite>)</p>
+</div>
+<div class="section" id="promise-chain-promises">
+<h2>Promise.chain(<cite>promises</cite>)</h2>
 <blockquote>
 <p>This is a helper on the constructor object to wait on the result of multiple
 promises. When all <cite>promises</cite> are fulfilled, the chain promise is fulfilled with an
@@ -133,6 +141,7 @@ array of all the results in the same order as the promises were given.</p>
 <span class="p">});</span>
 </pre></div>
 </blockquote>
+</div>
 </div>
 <div class="section" id="database">
 <h1>Database</h1>
