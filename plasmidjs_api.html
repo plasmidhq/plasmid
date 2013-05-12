@@ -77,6 +77,7 @@ been stabilized.</p>
 <p>Plasmid includes a number of important types with their own APIs, by which this
 document is organized.</p>
 <p><a class="reference internal" href="#eventlistener">EventListener</a></p>
+<p><a class="reference internal" href="#promise">Promise</a></p>
 <p><a class="reference internal" href="#database">Database</a></p>
 <p><a href="#id1"><span class="problematic" id="id2">Transaction_</span></a></p>
 <p><a href="#id3"><span class="problematic" id="id4">LocalStore_</span></a></p>
@@ -89,19 +90,49 @@ document is organized.</p>
 to understand the base of all the other types.</p>
 <div class="section" id="eventlistener-on">
 <h2>EventListener.on()</h2>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">&lt;string&gt;</tt>, line 32)</p>
-<p>Title underline too short.</p>
-<pre class="literal-block">
-EventListener.on()
------------------
-</pre>
-</div>
 <p>EventListener.on(<cite>eventname</cite>, <cite>handler</cite>)</p>
 <blockquote>
-Registers <cite>handler</cite> to be called when <cite>eventname</cite> is triggered on this object.
-It will be called bound to this object.</blockquote>
+<p>Registers <cite>handler</cite> to be called when <cite>eventname</cite> is triggered on this object.
+It will be called bound to this object.</p>
+<p>As a side effect, if this is the first handler registered for the event type,
+it will be called with all previous triggers for this event. This allows event
+triggers to be queued before they are registered, as a convenience.</p>
+</blockquote>
+<p>EventListener.trigger(<cite>eventname</cite>, <cite>arguments ...</cite>)</p>
+<blockquote>
+Calls all handlers for <cite>eventname</cite> in the order they were registered, bound to
+this object and passing all the provided <cite>arguments</cite>.</blockquote>
+<p>EventListener.error(<cite>handler</cite>)</p>
+<blockquote>
+As a convenience, binds the <cite>handler</cite> to the <cite>&quot;error&quot;</cite> event.</blockquote>
 </div>
+</div>
+<div class="section" id="promise">
+<h1>Promise</h1>
+<p>Promise is based on an <a class="reference internal" href="#eventlistener">EventListener</a>.</p>
+<p>Promise.then(<cite>success</cite>, <cite>error</cite>)</p>
+<blockquote>
+Binds the <cite>success</cite> handler to the <cite>&quot;success&quot;</cite> event and the <cite>error</cite> handler to
+the <cite>&quot;error&quot;</cite> event. These events are fired to signal the fulfillment of the promise.</blockquote>
+<p>Promise.ok(<cite>result</cite>)</p>
+<blockquote>
+Fulfills te promise with <cite>result</cite>.</blockquote>
+<p>Promise.chain(<cite>promises</cite>)</p>
+<blockquote>
+<p>This is a helper on the constructor object to wait on the result of multiple
+promises. When all <cite>promises</cite> are fulfilled, the chain promise is fulfilled with an
+array of all the results in the same order as the promises were given.</p>
+<p>It is called like this:</p>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">wait</span> <span class="o">=</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">chain</span><span class="p">(</span><span class="nx">promise1</span><span class="p">,</span> <span class="nx">promise2</span><span class="p">);</span>
+<span class="nx">wait</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">results</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">result1</span> <span class="o">=</span> <span class="nx">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">,</span>   <span class="nx">result2</span> <span class="o">=</span> <span class="nx">results</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="p">;</span>
+
+    <span class="p">...</span>
+<span class="p">});</span>
+</pre></div>
+</blockquote>
 </div>
 <div class="section" id="database">
 <h1>Database</h1>
@@ -112,16 +143,16 @@ otherwise is used very little directly.</p>
 <div class="system-messages section">
 <h1>Docutils System Messages</h1>
 <div class="system-message" id="id1">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 17); <em><a href="#id2">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 19); <em><a href="#id2">backlink</a></em></p>
 Unknown target name: &quot;transaction&quot;.</div>
 <div class="system-message" id="id3">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 19); <em><a href="#id4">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 21); <em><a href="#id4">backlink</a></em></p>
 Unknown target name: &quot;localstore&quot;.</div>
 <div class="system-message" id="id5">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 21); <em><a href="#id6">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 23); <em><a href="#id6">backlink</a></em></p>
 Unknown target name: &quot;credentials&quot;.</div>
 <div class="system-message" id="id7">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 23); <em><a href="#id8">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 25); <em><a href="#id8">backlink</a></em></p>
 Unknown target name: &quot;syncstore&quot;.</div>
 </div>
 </div>
