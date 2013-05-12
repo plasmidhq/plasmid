@@ -65,10 +65,12 @@ with the Plasmid Sync server.</p>
     <a href="start_plasmidsync.html">Learn how to keep your app's data in sync</a>
 </section>
 
-<p><em>Together, Plasmid.js and Plasmid Sync</em> make building amazing, data-rich
-web applications effortless. The pair are ideal for building web apps and web-based
-installed applications. You can target all major platforms and users can enjoy
-their data at their fingertips wherever they are.</p>
+<section>
+    <p><em>Together, Plasmid.js and Plasmid Sync</em> make building amazing, data-rich
+    web applications effortless. The pair are ideal for building web apps and web-based
+    installed applications. You can target all major platforms and users can enjoy
+    their data at their fingertips wherever they are.</p>
+</section>
 
 
             </content>
