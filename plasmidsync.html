@@ -1,0 +1,178 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<title>Plasmid Sync - Plasmid</title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+
+	<link rel="stylesheet" href="http://ironfroggy.github.io/plasmid/css/style.css">
+
+    <script src="http://ironfroggy.github.io/plasmidjs/libs/modernizr-2.0.6.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="http://ironfroggy.github.io/plasmid/css/pygments.css">
+    <link rel="stylesheet/less" type="text/css" href="http://ironfroggy.github.io/plasmid/css/site.less">
+    <script type="text/javascript" src="http://ironfroggy.github.io/plasmid/js/less-1.3.0.min.js"></script>
+    <link href="http://ironfroggy.github.io/plasmid/atom.xml" type="application/atom+xml" rel="alternate" title="Plasmid ATOM feed" />
+
+</head>
+<body>
+
+<div id="container">
+	<header>
+        
+    <h1><a href="http://ironfroggy.github.io/plasmid">Plasmid Sync</a></h1>
+    
+        <h3>Local data doesn't have to stay that way</h3>
+    
+
+	</header>
+	<div id="main" role="main">
+        
+
+    <div class=left-column>
+        <ul class=list>
+        
+            <li>
+                <a href="http://ironfroggy.github.io/plasmid/">Plasmid</a><br />
+            </li>
+        
+            <li>
+                <a href="http://ironfroggy.github.io/plasmid/downloads.html">Downloads</a><br />
+            </li>
+        
+            <li>
+                <a href="http://ironfroggy.github.io/plasmid/plasmidjs.html">Plasmid.js</a><br />
+            </li>
+        
+            <li>
+                <a href="http://ironfroggy.github.io/plasmid/plasmidsync.html">Plasmid Sync</a><br />
+            </li>
+        
+        </ul>
+    </div>
+
+    <div class=right-column>
+        
+    <article>
+        <div class="document">
+<div class="section" id="about-sync">
+<h1>About Sync</h1>
+<p>Browser-side data storage is amazing, but we can't escape that these are web applications
+we're building. With Plasmid Sync, <em>users can keep their offline-first data syncronized
+across all their devices</em>. You run a small service and Plasmid.js coordinates everything
+on the frontend.</p>
+<p>Plasmid Sync runs on your server and manages the updates from all the devices your users
+load your app on. It is not a backend data server, but only serves to syncronize the data
+between these devices, while the application continues to work completely on the device.</p>
+</div>
+<div class="section" id="getting-started">
+<h1>Getting Started</h1>
+<p>In this early stage, the setup procedure is not really present. Simply checkout a copy of
+from Plasmid's git repository on Github and run the <cite>plasmidctl.py</cite> script to begin the
+process. Of course, you'll want to setup an account on the server to actually utilize it.</p>
+<p>To experiment with Plasmid Sync, setup a pair of test credentials to use.</p>
+<div class="highlight"><pre>./plasmidctl.py --set-secret <span class="nb">test </span>secret123
+./plasmidctl.py --grant-permission <span class="nb">test</span> <span class="s2">&quot;*&quot;</span> <span class="s2">&quot;*&quot;</span>
+</pre></div>
+<p>The test credentials now have unlimited access to all databases created in this instance
+of the service. Run the Plasmid Sync server and it will create a &quot;hub&quot; directory to
+contain your databases and run the service at <cite>localhost:8880/plasmid/</cite></p>
+<div class="highlight"><pre>./plasmidctl.py
+</pre></div>
+<p>A directory named <cite>hub</cite> will be created in the current directory, containing any databases
+created.</p>
+<p>From Plasmid.js, you may create a <cite>Database</cite> with an <cite>api</cite> value in its options, pointing
+to the location of the running Plasmid Sync server, and a <cite>credentials</cite> value as an instance
+of the Plasmid.js <cite>Credentials</cite> type. This database instance will have <cite>pull()</cite> and <cite>push()</cite>
+methods to update the local database from the Sync server and to push new changes back to it,
+respectively.</p>
+<div class="highlight"><pre><span class="nx">plasmid_api</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">protocol</span> <span class="o">+</span> <span class="s1">&#39;//&#39;</span> <span class="o">+</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">host</span> <span class="o">+</span> <span class="s1">&#39;/v1/&#39;</span><span class="p">;</span>
+
+<span class="nx">credentials</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">plasmid</span><span class="p">.</span><span class="nx">Credentials</span><span class="p">({</span>
+    <span class="nx">api</span><span class="o">:</span> <span class="nx">plasmid_api</span><span class="p">,</span>
+    <span class="nx">access</span><span class="o">:</span> <span class="s2">&quot;playground-user&quot;</span><span class="p">,</span>
+    <span class="nx">secret</span><span class="o">:</span> <span class="s2">&quot;playground-secret&quot;</span>
+<span class="p">});</span>
+
+<span class="nx">playground</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">plasmid</span><span class="p">.</span><span class="nx">Database</span><span class="p">({</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&quot;playground-db&quot;</span><span class="p">,</span>
+    <span class="nx">remotename</span><span class="o">:</span> <span class="s2">&quot;playground-db&quot;</span><span class="p">,</span>
+    <span class="nx">api</span><span class="o">:</span> <span class="nx">plasmid_api</span><span class="p">,</span>
+    <span class="nx">schema</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">version</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nx">stores</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">things</span><span class="o">:</span> <span class="p">{</span><span class="nx">sync</span><span class="o">:</span> <span class="kc">true</span><span class="p">},</span>
+            <span class="kr">private</span><span class="o">:</span> <span class="p">{</span><span class="nx">sync</span><span class="o">:</span> <span class="kc">false</span><span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nx">credentials</span><span class="o">:</span> <span class="nx">credentials</span>
+<span class="p">});</span>
+
+<span class="nx">playground</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;opensuccess&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="nx">playground</span><span class="p">.</span><span class="nx">pull</span><span class="p">();</span> <span class="c1">// Update from the server</span>
+
+    <span class="nx">playground</span><span class="p">.</span><span class="nx">push</span><span class="p">();</span> <span class="c1">// Push local updates to the server</span>
+
+    <span class="nx">playground</span><span class="p">.</span><span class="nx">sync</span><span class="p">();</span> <span class="c1">// Pull, then push</span>
+
+<span class="p">});</span>
+</pre></div>
+<p>Plasmid.js will periodically request updates for a database from the Sync server, sending
+the updates that have
+been made since the last update that was made. When the user has made changes in the browser
+side which need to be syncronized with the server, the new objects will be pushed back to the
+server and <em>only accepted if there are no un-pulled changes.</em></p>
+<p>The server is, essentially, designed to be afraid. No conflicts in the data happen on the
+backend. Instead, conflicts are only possible inside the application itself, inside the browser,
+where the application can deal with these conflicts as is appropriate for its own data, and
+with the opportunity to involve the user in resolutions which cannot be safely automated.</p>
+</div>
+</div>
+
+    </article>
+
+    
+
+    </div>
+
+
+	</div>
+	<footer>
+        
+    copyright 2013 Calvin Spealman
+
+	</footer>
+</div> <!--! end of #container -->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/libs/jquery-1.7.2.min.js"><\/script>')</script>
+
+<!-- scripts concatenated and minified via ant build script-->
+<script src="js/plugins.js"></script>
+<script src="js/script.js"></script>
+<!-- end scripts-->
+
+<script>
+	var _gaq=[['_setAccount','UA-953592-23'],['_trackPageview']]; // Change UA-XXXXX-X to be your site's ID
+	(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.async=1;
+	g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+	s.parentNode.insertBefore(g,s)}(document,'script'));
+</script>
+
+<!--[if lt IE 7 ]>
+	<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.min.js"></script>
+	<script>window.attachEvent("onload",function(){CFInstall.check({mode:"overlay"})})</script>
+<![endif]-->
+
+    
+</body>
+</html>

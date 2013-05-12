@@ -58,11 +58,11 @@ with the Plasmid Sync server.</p>
 </section>
 
 <section class=col-50>
-    <a href="start_plasmidjs.html">Get started quick with offline-first apps</a>
+    <a href="plasmidjs.html">Get started quick with offline-first apps</a>
 </section>
 
 <section class=col-50>
-    <a href="start_plasmidsync.html">Learn how to keep your app's data in sync</a>
+    <a href="plasmidsync.html">Learn how to keep your app's data in sync</a>
 </section>
 
 <div class=clearboth></div>
@@ -72,6 +72,8 @@ with the Plasmid Sync server.</p>
     web applications effortless. The pair are ideal for building web apps and web-based
     installed applications. You can target all major platforms and users can enjoy
     their data at their fingertips wherever they are.</p>
+
+    <p><a herf=downloads.html">Download and try Plasmid today!</a></p>
 </section>
 
 

@@ -7,7 +7,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title>Downloads - Plasmid</title>
+	<title>Plasmid.js - Plasmid</title>
 	<meta name="description" content="">
 	<meta name="author" content="">
 
@@ -28,9 +28,9 @@
 <div id="container">
 	<header>
         
-    <h1><a href="http://ironfroggy.github.io/plasmid">Downloads</a></h1>
+    <h1><a href="http://ironfroggy.github.io/plasmid">Plasmid.js</a></h1>
     
-        <h3>Get the library, the server, or both</h3>
+        <h3>Browser side storage has never been easier</h3>
     
 
 	</header>
@@ -62,18 +62,85 @@
     <div class=right-column>
         
     <article>
-        <section class=col-50>
-  <h1>Plasmid.js</h1>
-  <li><a href="downloads/plasmid-0.1.0.min.js">Download the stand alone JS file</a>
-  <li><a href="downloads/plasmid-0.1.0-modules.js">or, optimized modules for RequireJS</a>
-</section>
+        <style>
+    .note {
+        font-style: italic;
+        color: #333;
+        margin-top: 0px;
+        margin-bottom: 1em;
+    }
+    pre {
+        margin-top: 0px;
+        margin-bottom: 1em;
+    }
+</style>
 
-<section class=col-50>
-  <h1>Plasmid Sync</h1>
-  <li><a href="https://github.com/ironfroggy/plasmid/zipball/master">Download .zip</a>
-  <li><a href="https://github.com/ironfroggy/plasmid/tarball/master">Download .tar.gz</a>
-  <li><a href="https://github.com/ironfroggy/plasmid">View on GitHub</a>
-</section>
+<h1>What is Plasmid.js?</h1>
+
+<p>Plasmid.js makes working with browser-side storage easy. It eases the effort in working with the IndexedDB API across different browsers and devices.</p>
+
+<h1>Getting Started<a name=getting-started></a></h1>
+
+<div>
+<code class=col-50><pre>
+var database = new Database({
+  name: 'todo',
+  schema: {
+    version: 1,
+</pre></code>
+
+<div class="note col-50">
+We create a local database very easily, with a name and begin defining the first
+version of the schema.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50>
+<pre>
+    stores: {
+      todo: {
+</pre></code>
+
+<div class="note col-50">
+The schema defines the stores in the database, each of which we can fill with data objects.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50><pre>
+        indexes: {
+          todo: {
+</pre></code>
+
+<div class="note col-50">
+Optionally, we can define indexes on these stores.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50><pre>
+            key: "todo",
+            unique: false,
+            multi: false
+          }
+        }
+      },
+    },
+  }
+});
+</pre></code>
+
+<div class="note col-50">
+Our index is defined by a key on a property path into the objects we'll
+put in the store, and flags to determine if we enforce uniqueness and
+index arrays as one or multiple values.
+</div>
+<div style="clear:both;"></div>
+</div>
 
     </article>
 
