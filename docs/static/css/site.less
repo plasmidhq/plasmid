@@ -107,21 +107,34 @@ footer {
     .pagePadding;
 }
 
-.col-25 {
-    width: 23%;
-    margin-right: 2%;
+.clearboth {
+    clear: both;
+}
+
+.col {
     float: left;
+}
+
+.col-25 {
+    .col;
+    width: 25%;
     position: relative;
 }
 
 .col-50 {
+    .col;
     width: 50%;
-    float: left;
+    display: inline-block;
+
+    p {
+        padding-right: 1em;
+    }
 }
 
 .col-75 {
+    .col;
     width: 75%;
-    float: left;
+    display: inline-block;
 }
 
 ul.list {
