@@ -142,7 +142,28 @@ index arrays as one or multiple values.
 <div style="clear:both;"></div>
 </div>
 
-<p>Now, you've setup a local database and you can start using it.</p>
+<p>Now, you've setup a local database and you can start working with your data.</p>
+
+<code class=col-50><pre>
+    var todos = database.stores.todo;
+    todos.put(null, {
+        text: "Learn how to use Plasmid.js!",
+        completed: false
+    })
+</pre></code>
+
+<div class="note col-50">
+    We can use any store defined in our database.<br />
+    Here, we're putting our first object into the todo store, and we're
+    passing <code>null</code> as the key, so Plasmid will generate one
+    for us randomly.
+</div>
+
+<code class=col-50><pre>
+    .then(function(key, value) {
+        console.log("I saved my first todo item this key: ");
+    });
+</pre></code>
 
     </article>
 
