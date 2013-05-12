@@ -144,6 +144,7 @@ index arrays as one or multiple values.
 
 <p>Now, you've setup a local database and you can start working with your data.</p>
 
+<div>
 <code class=col-50><pre>
     var todos = database.stores.todo;
     todos.put(null, {
@@ -156,7 +157,10 @@ index arrays as one or multiple values.
     passing <code>null</code> as the key, so Plasmid will generate one
     for us randomly.
 </div>
+<div style="clear:both;"></div>
+</div>
 
+<div>
 <code class=col-50><pre>
     .then(
         function ok(key, value) {
@@ -167,7 +171,10 @@ index arrays as one or multiple values.
     When our <code>put()</code> request is done, we'll be given the key and
     value that were used,
 </div>
+<div style="clear:both;"></div>
+</div>
 
+<div>
 <code class=col-50><pre>
         function error(msg) {
             console.error("Could not save: " + msg);
@@ -176,6 +183,8 @@ index arrays as one or multiple values.
 </pre></code>
 <div class="note col-50">
     and we handle an error, if it happens.
+</div>
+<div style="clear:both;"></div>
 </div>
 
     </article>
