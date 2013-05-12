@@ -20,7 +20,7 @@
         <ul class=list>
         {% for bundle in engine.get_bundles_by("order", "asc") %}
             <li>
-                <a href="http://{{ config.domain }}{{ bundle.url() }}">{{ bundle.meta.title }}</a><br />
+                <a href="http://{{ config.domain }}{{ bundle.url() }}">{{ bundle.meta.link_title or bundle.meta.title }}</a><br />
             </li>
         {% endfor %}
         </ul>

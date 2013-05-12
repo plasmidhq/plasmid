@@ -62,8 +62,11 @@ define(function(require, exports, module) {
     };
     Promise.prototype = new EventListener();
 
-    Promise.prototype.then = function(handler) {
-        return this.on('success', handler);
+    Promise.prototype.then = function(onsuccess, onerror) {
+        if (!!onerror) {
+            this.on('error', onerror);
+        }
+        return this.on('success', onsuccess);
     };
     Promise.prototype.ok = function(result) {
         this.result = result;

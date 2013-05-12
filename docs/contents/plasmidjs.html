@@ -77,3 +77,87 @@ index arrays as one or multiple values.
 </div>
 <div style="clear:both;"></div>
 </div>
+
+<p>Now, you've setup a local database and you can start working with your data.</p>
+
+<div>
+<code class=col-50><pre>
+    var todos = database.stores.todo;
+    todos.put(null, {
+        text: "Learn how to use Plasmid.js!",
+        completed: false
+    })
+</pre></code><div class="note col-50">
+    We can use any store defined in our database.<br />
+    Here, we're putting our first object into the todo store, and we're
+    passing <code>null</code> as the key, so Plasmid will generate one
+    for us randomly.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50><pre>
+    .then(
+        function ok(key, value) {
+            console.log("I saved my first todo item this key: ");
+        },
+</pre></code>
+<div class="note col-50">
+    When our <code>put()</code> request is done, we'll be given the key and
+    value that were used,
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50><pre>
+        function error(msg) {
+            console.error("Could not save: " + msg);
+        }
+    )
+</pre></code>
+<div class="note col-50">
+    and we handle an error, if it happens.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<p>Eventually, you'll learn how to use Plasmid.js and will need to check off this
+item. You'll need to fetch the current version of the object, update the <code>completed</code>
+property, and put it back into the store.</p>
+
+<p>If you know anything about using a database, you're wondering if this two-step operation
+can be atomic.</p>
+
+<div>
+<code class=col-50><pre>
+    var txn = database.transaction('todo', 'readwrite');
+    var todos = txn.stores.todo;
+</pre></code>
+<div class="note col-50">
+    Plasmid supports transactions, which have the same API as a database that contains
+    only the stores involved in the transaction. The <code>'readwrite'</code> mode tells
+    the underlying IndexedDB system this transaction involves both reading and writing
+    the stores involved.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<div>
+<code class=col-50><pre>
+    todos.get(key).then(update);
+
+    function update(todo) {
+        todo.completed = true;
+        todos.put(key, todo);
+    }
+</pre></code>
+<div class="note col-50">
+    Actually updating the item is simple, and should be self explainatory.
+</div>
+<div style="clear:both;"></div>
+</div>
+
+<p>Of course, you won't be checking that item as completed until after you've read
+through the <a herf="plasmidjs_api.html">complete Plasmid.js API Reference</a>.</p>

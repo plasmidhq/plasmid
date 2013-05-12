@@ -19,14 +19,6 @@ define(function(require, exports, module) {
     };
     SyncStore.prototype = new LocalStore();
 
-    SyncStore.clone = function(name, url) {
-        // Clone a remote URL into a new, local store
-    };
-
-    SyncStore.prototype.onupdate = function() {
-        //this.push();
-    }
-
     SyncStore.prototype.resolve = function(e, key, local, remote) {
 
         var resolve_puts = [];
