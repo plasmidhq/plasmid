@@ -107,16 +107,21 @@ footer {
     .pagePadding;
 }
 
+.col {
+    display: inline-block;
+}
+
 .col-25 {
+    .col;
     width: 23%;
     margin-right: 2%;
-    float: left;
     position: relative;
 }
 
 .col-50 {
+    .col;
     width: 50%;
-    float: left;
+    display: inline-block;
 
     p {
         padding-right: 1em;
@@ -124,8 +129,9 @@ footer {
 }
 
 .col-75 {
+    .col;
     width: 75%;
-    float: left;
+    display: inline-block;
 }
 
 ul.list {
