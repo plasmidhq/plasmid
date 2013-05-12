@@ -79,10 +79,10 @@ document is organized.</p>
 <p><a class="reference internal" href="#eventlistener">EventListener</a></p>
 <p><a class="reference internal" href="#promise">Promise</a></p>
 <p><a class="reference internal" href="#database">Database</a></p>
-<p><a href="#id1"><span class="problematic" id="id2">Transaction_</span></a></p>
-<p><a href="#id3"><span class="problematic" id="id4">LocalStore_</span></a></p>
-<p><a href="#id5"><span class="problematic" id="id6">Credentials_</span></a></p>
-<p><a href="#id7"><span class="problematic" id="id8">SyncStore_</span></a></p>
+<p><a class="reference internal" href="#transaction">Transaction</a></p>
+<p><a class="reference internal" href="#localstore">LocalStore</a></p>
+<p><a class="reference internal" href="#credentials">Credentials</a></p>
+<p><a class="reference internal" href="#syncstore">SyncStore</a></p>
 </div>
 <div class="section" id="eventlistener">
 <h1>EventListener</h1>
@@ -150,7 +150,7 @@ array of all the results in the same order as the promises were given.</p>
 primarily as a container of stores and our interface to initiating transactions, but
 otherwise is used very little directly.</p>
 <div class="section" id="database-transaction-stores-mode">
-<h2>Database.transaction(<cite>stores</cite>, <cite>[mode]</cite>)</h2>
+<span id="transaction"></span><h2>Database.transaction(<cite>stores</cite>, <cite>[mode]</cite>)</h2>
 <blockquote>
 <p>Begins a transaction involving one or more stores. <cite>stores</cite> is the name of a single
 store or an array of store names. <cite>mode</cite> is optional, defaulting to <cite>&quot;readonly&quot;</cite>.</p>
@@ -158,7 +158,7 @@ store or an array of store names. <cite>mode</cite> is optional, defaulting to <
 updating data in the contained stores.</p>
 <p>If you do not need to group multiple operations in a transaction, the database will
 automatically create and commit appropriate single-operation transactions.</p>
-<p>The <a href="#id9"><span class="problematic" id="id10">Transaction_</span></a> API defines a <a href="#id11"><span class="problematic" id="id12">`Transaction.abort()`_</span></a> method, and otherwise inherits
+<p>The <a class="reference internal" href="#transaction">Transaction</a> API defines a <a class="reference internal" href="#transaction-abort">Transaction.abort()</a> method, and otherwise inherits
 the rest of the Database API defined here.</p>
 </blockquote>
 </div>
@@ -220,26 +220,158 @@ data.</p>
 </blockquote>
 </div>
 </div>
+<div class="section" id="id1">
+<h1>Transaction</h1>
+<blockquote>
+<p>The transaction is created by the <a class="reference internal" href="#transaction">transaction</a> method on the <a class="reference internal" href="#database">Database</a>.</p>
+<p>Transaction inherits from its own <a class="reference internal" href="#database">Database</a> and inherits all of its methods.</p>
+<p>The transaction will commit when it is garbage collected, if it was not aborted.</p>
+</blockquote>
+<div class="section" id="transaction-abort">
+<h2>Transaction.abort()</h2>
+<blockquote>
+Rejects all changes made in this transaction.</blockquote>
+</div>
+<div class="section" id="transaction-commit">
+<h2>Transaction.commit()</h2>
+<blockquote>
+Removes local references to the internal transaction object, which allows the
+automatic commit behavior to trigger.</blockquote>
+</div>
+</div>
+<div class="section" id="localstore">
+<h1>LocalStore</h1>
+<blockquote>
+The <a class="reference internal" href="#database">Database</a> contains one or more stores, where you place your data. The
+<a class="reference internal" href="#localstore">LocalStore</a> makes working with these IndexedDB constructs easier, and they are the
+primary interface you'll use.</blockquote>
+<div class="section" id="localstore-count">
+<h2>LocalStore.count()</h2>
+<blockquote>
+Request the total number of objects currently saved in the store.</blockquote>
+</div>
+<div class="section" id="localstore-walk">
+<h2>LocalStore.walk()</h2>
+<blockquote>
+<p>Request an array of all objects in the store.</p>
+<p>The result is an array of objects with <cite>key</cite> and <cite>value</cite> properties.</p>
+</blockquote>
+</div>
+<div class="section" id="localstore-walk-indexname">
+<h2>LocalStore.walk(<cite>indexname</cite>)</h2>
+<blockquote>
+<p>Request an array of all the objects in a named index defined on the store.</p>
+<p>The indexed are defined as part of the schema during <a href="#id2"><span class="problematic" id="id3">Databaase_</span></a> creation,
+can only be created or changed in schema upgrades, and they are only way to
+filter store contents by anything other than the <cite>key</cite>.</p>
+</blockquote>
+</div>
+<div class="section" id="localstore-add-key-value">
+<h2>LocalStore.add(<cite>key</cite>, <cite>value</cite>)</h2>
+<blockquote>
+<p>Saves a value in the store, and fails if a value with the same key exists.</p>
+<p>The new value is queued for the next <a class="reference internal" href="#push">push</a>.</p>
+</blockquote>
+</div>
+<div class="section" id="localstore-put-key-value">
+<h2>LocalStore.put(<cite>key</cite>, <cite>value</cite>)</h2>
+<blockquote>
+<p>Saves a value in the store, and replaces any value currently stored at the
+same key.</p>
+<p>The new value is queued for the next <a class="reference internal" href="#push">push</a>.</p>
+</blockquote>
+</div>
+<div class="section" id="localstore-putmany-many">
+<h2>LocalStore.putmany(<cite>many</cite>)</h2>
+<blockquote>
+<p>If you need to update many objects together, this method is helpful. It
+takes an array of objects with <cite>key</cite> and <cite>value</cite> properties, and puts all of
+them into the store in a single transaction.</p>
+<p>There is no varient to &quot;add many&quot;, however.</p>
+</blockquote>
+</div>
+</div>
+<div class="section" id="syncstore">
+<h1>SyncStore</h1>
+<blockquote>
+The SyncStore offers no special API for public use, but implements some internal
+pieces to coordinate <a class="reference internal" href="#push">push</a> and <a class="reference internal" href="#pull">pull</a> requests with the <a class="reference internal" href="#database">Database</a>.</blockquote>
+</div>
+<div class="section" id="credentials">
+<h1>Credentials</h1>
+<blockquote>
+Access and secret token pairs are housed in a <a class="reference internal" href="#credentials">Credentials</a> object.</blockquote>
+<div class="section" id="credentials-self-cred">
+<h2>Credentials.self_cred()</h2>
+<blockquote>
+<p>The credentials will from this point forward authenticate API requests with themselves.</p>
+<p>Credentials are used for all interactions with the Plasmid Sync service, including
+API calls to inspect the permissions a particular set of credentials has. For this
+reason, it may be common to make credential requests authenticated with another pair.</p>
+<p>For example, an initial account is created for a user by creating their new Device
+Credentials with a pair of Bootstrap Credentials.</p>
+<p>Self Credentials are both the actor and target of their own API calls.</p>
+</blockquote>
+</div>
+<div class="section" id="credentials-complete">
+<h2>Credentials.complete()</h2>
+<blockquote>
+<p>Identifies the credentials as including a secret token, or only an access token.</p>
+<p>Returns <cite>true</cite> or <cite>false</cite>.</p>
+</blockquote>
+</div>
+<div class="section" id="credentials-list">
+<h2>Credentials.list()</h2>
+<blockquote>
+Fetches a list of permissions granted to these credentials.</blockquote>
+</div>
+<div class="section" id="credentials-grant-resource-permission-value">
+<h2>Credentials.grant(<cite>resource</cite>, <cite>permission</cite>, <cite>value</cite>)</h2>
+<blockquote>
+<p>Grant new permissions to these credentials.</p>
+<p>This method is obviously useless for Self-authenticating Credentials, as they can only
+grant permissions they already have.</p>
+<p>Any credentials may be grant any of their own permissions to another credentials pair.</p>
+<p>Full explaination of permissions will be added in a separate document.</p>
+</blockquote>
+</div>
+<div class="section" id="credentials-create-type">
+<h2>Credentials.create(<cite>type</cite>)</h2>
+<blockquote>
+<p>Creates a new set of credentials, and populates this object with the new access and secret.</p>
+<p>For example, this would create a new Device Credential Pair, authenticated with Bootstrap
+Credentials capable only of creating new accounts.</p>
+<div class="highlight"><pre><span class="nx">bootstrap_credentials</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">plasmid</span><span class="p">.</span><span class="nx">Credentials</span><span class="p">({</span>
+    <span class="nx">access</span><span class="o">:</span> <span class="s2">&quot;guest-creator&quot;</span><span class="p">,</span>
+    <span class="nx">secret</span><span class="o">:</span> <span class="s2">&quot;knock-knock&quot;</span>
+<span class="p">});</span>
+<span class="nx">my_credentials</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Credentials</span><span class="p">({</span>
+    <span class="nx">credentials</span><span class="o">:</span> <span class="nx">bootstrap_credentials</span><span class="p">,</span>
+<span class="p">});</span>
+<span class="nx">my_credentials</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="s1">&#39;guest&#39;</span><span class="p">)</span>
+<span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;I have a new access token: &quot;</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">access</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;And a new remote database to sync with: &quot;</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">dbname</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;But, I&#39;m not telling you the value of data.secret&quot;</span><span class="p">);</span>
+
+    <span class="c1">// Remember the credentials to re-use later, and set the new remote name</span>
+
+    <span class="nx">self</span><span class="p">.</span><span class="nx">meta</span><span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="s1">&#39;credentials&#39;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">access</span><span class="o">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">access</span><span class="p">,</span>
+        <span class="nx">secret</span><span class="o">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">secret</span><span class="p">,</span>
+        <span class="nx">dbname</span><span class="o">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">dbname</span><span class="p">,</span>
+    <span class="p">});</span>
+    <span class="nx">database</span><span class="p">.</span><span class="nx">setRemote</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">dbname</span><span class="p">);</span>
+<span class="p">})</span>
+</pre></div>
+</blockquote>
+</div>
+</div>
 <div class="system-messages section">
 <h1>Docutils System Messages</h1>
-<div class="system-message" id="id1">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 19); <em><a href="#id2">backlink</a></em></p>
-Unknown target name: &quot;transaction&quot;.</div>
-<div class="system-message" id="id3">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 21); <em><a href="#id4">backlink</a></em></p>
-Unknown target name: &quot;localstore&quot;.</div>
-<div class="system-message" id="id5">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 23); <em><a href="#id6">backlink</a></em></p>
-Unknown target name: &quot;credentials&quot;.</div>
-<div class="system-message" id="id7">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 25); <em><a href="#id8">backlink</a></em></p>
-Unknown target name: &quot;syncstore&quot;.</div>
-<div class="system-message" id="id9">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 111); <em><a href="#id10">backlink</a></em></p>
-Unknown target name: &quot;transaction&quot;.</div>
-<div class="system-message" id="id11">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 111); <em><a href="#id12">backlink</a></em></p>
-Unknown target name: &quot;transaction.abort()&quot;.</div>
+<div class="system-message" id="id2">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 227); <em><a href="#id3">backlink</a></em></p>
+Unknown target name: &quot;databaase&quot;.</div>
 </div>
 </div>
 
