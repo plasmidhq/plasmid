@@ -76,11 +76,32 @@ and is not essential to utilizing Plasmid.js, will not be completed until it has
 been stabilized.</p>
 <p>Plasmid includes a number of important types with their own APIs, by which this
 document is organized.</p>
+<p><a class="reference internal" href="#eventlistener">EventListener</a></p>
 <p><a class="reference internal" href="#database">Database</a></p>
 <p><a href="#id1"><span class="problematic" id="id2">Transaction_</span></a></p>
 <p><a href="#id3"><span class="problematic" id="id4">LocalStore_</span></a></p>
 <p><a href="#id5"><span class="problematic" id="id6">Credentials_</span></a></p>
 <p><a href="#id7"><span class="problematic" id="id8">SyncStore_</span></a></p>
+</div>
+<div class="section" id="eventlistener">
+<h1>EventListener</h1>
+<p>Almost every object in Plasmid is an <a class="reference internal" href="#eventlistener">EventListener</a>, so this section is important
+to understand the base of all the other types.</p>
+<div class="section" id="eventlistener-on">
+<h2>EventListener.on()</h2>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">&lt;string&gt;</tt>, line 32)</p>
+<p>Title underline too short.</p>
+<pre class="literal-block">
+EventListener.on()
+-----------------
+</pre>
+</div>
+<p>EventListener.on(<cite>eventname</cite>, <cite>handler</cite>)</p>
+<blockquote>
+Registers <cite>handler</cite> to be called when <cite>eventname</cite> is triggered on this object.
+It will be called bound to this object.</blockquote>
+</div>
 </div>
 <div class="section" id="database">
 <h1>Database</h1>
@@ -91,16 +112,16 @@ otherwise is used very little directly.</p>
 <div class="system-messages section">
 <h1>Docutils System Messages</h1>
 <div class="system-message" id="id1">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 15); <em><a href="#id2">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 17); <em><a href="#id2">backlink</a></em></p>
 Unknown target name: &quot;transaction&quot;.</div>
 <div class="system-message" id="id3">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 17); <em><a href="#id4">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 19); <em><a href="#id4">backlink</a></em></p>
 Unknown target name: &quot;localstore&quot;.</div>
 <div class="system-message" id="id5">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 19); <em><a href="#id6">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 21); <em><a href="#id6">backlink</a></em></p>
 Unknown target name: &quot;credentials&quot;.</div>
 <div class="system-message" id="id7">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 21); <em><a href="#id8">backlink</a></em></p>
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">&lt;string&gt;</tt>, line 23); <em><a href="#id8">backlink</a></em></p>
 Unknown target name: &quot;syncstore&quot;.</div>
 </div>
 </div>
