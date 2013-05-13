@@ -43,7 +43,7 @@ it easy to build, utilize, and manage your browser-side databases.</p>
 Plasmid was built from the ground up to support synroncizing these databases
 with the Plasmid Sync server.</p>
 
-<section>
+<div>
     <div class=col-50>
         <h1>Plasmid.js</h1>
 
@@ -59,9 +59,9 @@ with the Plasmid Sync server.</p>
         load your app on. It is not a backend data server, but only serves to syncronize the data
         between these devices, while the application continues to work completely on the device.</p>
     </div>
-</section>
+</div>
 
-<section>
+<div>
     <div class=col-50>
         <a href="plasmidjs.html">Get started quick with offline-first apps</a>
     </div>
@@ -69,7 +69,7 @@ with the Plasmid Sync server.</p>
     <div class=col-50>
         <a href="plasmidsync.html">Learn how to keep your app's data in sync</a>
     </div>
-</section>
+</div>
 
 <div class=clearboth></div>
 
