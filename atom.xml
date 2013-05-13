@@ -43,20 +43,22 @@ it easy to build, utilize, and manage your browser-side databases.</p>
 Plasmid was built from the ground up to support synroncizing these databases
 with the Plasmid Sync server.</p>
 
-<section class=col-50>
-    <h1>Plasmid.js</h1>
+<section>
+    <div class=col-50>
+        <h1>Plasmid.js</h1>
 
-    <p>Plasmid.js makes working with browser-side storage easy. It eases the effort in working with the IndexedDB API across different browsers and devices.</p>
+        <p>Plasmid.js makes working with browser-side storage easy. It eases the effort in working with the IndexedDB API across different browsers and devices.</p>
 
-    <p>You don't need our backend to take advantage of how easy Plasmid.js makes offline-first web development.</p>
-</section>
+        <p>You don't need our backend to take advantage of how easy Plasmid.js makes offline-first web development.</p>
+    </div>
 
-<section class=col-50>
-    <h1>Plasmid Sync</h1>
+    <div class=col-50>
+        <h1>Plasmid Sync</h1>
 
-    <p>Plasmid Sync runs on your server and manages the updates from all the devices your users
-    load your app on. It is not a backend data server, but only serves to syncronize the data
-    between these devices, while the application continues to work completely on the device.</p>
+        <p>Plasmid Sync runs on your server and manages the updates from all the devices your users
+        load your app on. It is not a backend data server, but only serves to syncronize the data
+        between these devices, while the application continues to work completely on the device.</p>
+    </div>
 </section>
 
 <section>
