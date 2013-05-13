@@ -59,12 +59,14 @@ with the Plasmid Sync server.</p>
     between these devices, while the application continues to work completely on the device.</p>
 </section>
 
-<section class=col-50>
-    <a href="plasmidjs.html">Get started quick with offline-first apps</a>
-</section>
+<section>
+    <div class=col-50>
+        <a href="plasmidjs.html">Get started quick with offline-first apps</a>
+    </div>
 
-<section class=col-50>
-    <a href="plasmidsync.html">Learn how to keep your app's data in sync</a>
+    <div class=col-50>
+        <a href="plasmidsync.html">Learn how to keep your app's data in sync</a>
+    </div>
 </section>
 
 <div class=clearboth></div>
