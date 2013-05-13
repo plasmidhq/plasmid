@@ -63,4 +63,4 @@ And data is easily updated
         todos.put(key, todo);
     });
 
-You can read a lot more at the [API Reference](http://ironfroggy.github.io/plasmid/).
+You can read a lot more at the [API Reference](http://ironfroggy.github.io/plasmid/plasmid_api.html).
