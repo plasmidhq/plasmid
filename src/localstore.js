@@ -40,13 +40,43 @@ define(function(require, exports, module) {
     /* LocalStore.walk()
      * triggers 'each' on each value in the store
      */
-    LocalStore.prototype.walk = function(indexname) {
+    LocalStore.prototype.walk = function() {
         var request = new Promise(this);
         var store = this;
         var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
-        var results = []
-        var idbreq;
+        var results = [];
+        var idbreq, range, indexname;
+        if (arguments) {
+            if (arguments.length === 1 && typeof arguments[0] === 'string') {
+                indexname = filter;
+            } else {
+                indexname = filter.indexname;
+                /*
+                All keys ≤ x    IDBKeyRange.upperBound(x)
+                All keys < x    IDBKeyRange.upperBound(x, true)
+                All keys ≥ y    IDBKeyRange.lowerBound(y)
+                All keys > y    IDBKeyRange.lowerBound(y, true)
+                All keys ≥ x && ≤ y     IDBKeyRange.bound(x, y)
+                All keys > x &&< y  IDBKeyRange.bound(x, y, true, true)
+                All keys > x && ≤ y     IDBKeyRange.bound(x, y, true, false)
+                All keys ≥ x &&< y  IDBKeyRange.bound(x, y, false, true)
+                The key = z     IDBKeyRange.only(z)
+                */
+                if (filter.upto) {
+                    range = IDBKeyRange.upperBound(filter.upto, filter.exclusive);
+                } else if (filter.downto) {
+                    range = IDBKeyRange.lowerBound(filter.upto, filter.exclusive);
+                } else if (filter.between) {
+                    range = IDBKeyRange.bound(
+                        filter.between[0],
+                        filter.between[1],
+                        filter.exclusive[0],
+                        filter.exclusive[1]
+                        );
+                }
+            }
+        }
         if (indexname) {
             idbreq = idbstore.index(indexname).openCursor();
         } else {

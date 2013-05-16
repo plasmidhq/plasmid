@@ -63,14 +63,22 @@ define(function(require, exports, module) {
     Promise.prototype = new EventListener();
 
     Promise.prototype.then = function(onsuccess, onerror) {
-        if (!!onerror) {
-            this.on('error', onerror);
+        if (typeof this.result === 'undefined') {
+            if (!!onerror) {
+                this.on('error', onerror);
+            }
+            return this.on('success', onsuccess);
+        } else {
+            onsuccess(this.result);
         }
-        return this.on('success', onsuccess);
     };
     Promise.prototype.ok = function(result) {
-        this.result = result;
-        this.trigger('success', result);
+        if (typeof this.result === 'undefined') {
+            this.result = result;
+            this.trigger('success', result);
+        } else {
+            throw "promise already fulfilled";
+        }
     };
 
     Promise.chain = function(promises) {
