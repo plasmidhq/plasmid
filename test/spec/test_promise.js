@@ -69,5 +69,45 @@ define(['promise'], function(promise) {
       }).toThrow();
     })
 
+    it('chains multiple promises together', function() {
+      var p1 = new promise.Promise();
+      var p2 = new promise.Promise();
+      var c = promise.Promise.chain([p1, p2]);
+
+      var r = 0;
+      c.then(function(results) {
+        expect(results.length).toBe(2);
+
+        r += results[0];
+        r += results[1];
+      });
+
+      p1.ok(1);
+      expect(r).toBe(0);
+      p2.ok(2);
+      expect(r).toBe(3);
+    })
+
+    it('chains multiple promises together, handling an error', function() {
+      var p1 = new promise.Promise();
+      var p2 = new promise.Promise();
+      var c = promise.Promise.chain([p1, p2]);
+
+      var r = 0;
+      c.then(function(results) {
+        expect(results.length).toBe(2);
+
+        r += results[0];
+        r += results[1];
+      }, function() {
+        r = 'BAD';    
+      });
+
+      p1.ok(1);
+      expect(r).toBe(0);
+      p2.error();
+      expect(r).toBe('BAD');
+    })
+
   })
 })
