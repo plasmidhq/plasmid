@@ -6,9 +6,6 @@ define(function(require, exports, module) {
     ,   util = require('utilities')
     ;
 
-    // Local IndexedDB Store Helper
-    // Local IndexedDB Store Helper
-
     /* LocalStore
      *
      * Provides common helpers to work with data in an IndexedDB store
@@ -45,7 +42,6 @@ define(function(require, exports, module) {
         var store = this;
         var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
-        var results = [];
         var idbreq, range, indexname;
         if (arguments) {
             if (arguments.length === 1 && typeof arguments[0] === 'string') {
@@ -85,18 +81,32 @@ define(function(require, exports, module) {
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
             if (cursor) {
-                results.push(cursor.value);
                 request.trigger('each', cursor.value);
                 cursor.continue();
             } else {
-                request.trigger('success', results);
+                request.trigger('success');
             }
         };
         idbreq.onerror = function(event) {
             request.trigger('error');
         };
         return request;
-    }
+    };
+
+    LocalStore.prototype.fetch = function() {
+        var results = [];
+        var promise = new Promise();
+
+        this.walk.apply(this, arguments)
+        .on('each', function(obj) {
+            results.push(obj);
+        })
+        .then(function(){
+            promise.ok(results);
+        });
+
+        return promise;
+    };
 
     LocalStore.prototype._get_item = function(key) {
         var request = new Promise(this);

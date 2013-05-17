@@ -44,9 +44,6 @@ define(function(require, exports, module) {
         }
         return this;
     };
-    EventListener.prototype.error = function(handler) {
-        return this.on('error', handler);
-    };
     EventListener.prototype.onerror = function() {
         console.error('Unhandled error', arguments);
     };
@@ -59,6 +56,7 @@ define(function(require, exports, module) {
     
     function Promise(target) {
         this.target = target; 
+        this._status = 'waiting';
     };
     Promise.prototype = new EventListener();
 
@@ -73,11 +71,21 @@ define(function(require, exports, module) {
         }
     };
     Promise.prototype.ok = function(result) {
-        if (typeof this.result === 'undefined') {
+        if (this._status === 'waiting') {
             this.result = result;
+            this._status = 'fulfilled';
             this.trigger('success', result);
         } else {
-            throw "promise already fulfilled";
+            throw "promise already " + this._status;
+        }
+    };
+    Promise.prototype.error = function(e) {
+        if (this._status === 'waiting') {
+            this._error = e;
+            this._status = 'error';
+            return this.trigger('error', e);
+        } else {
+            throw "promise already " + this._status;
         }
     };
 

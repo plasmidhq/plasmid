@@ -260,8 +260,7 @@ define(function(require, exports, module) {
                             store.put(key, value, revision)
                                 .then(function(){
                                     database.meta.put('last_revision', revision).then(next);
-                                })
-                                .error(function(){
+                                }, function(){
                                     console.error(arguments);
                                 })
                             ;
