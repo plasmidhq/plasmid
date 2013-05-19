@@ -11,7 +11,9 @@ define(['plasmid'], function(plasmid) {
     });
 
     afterEach(function () {
-      indexedDB.deleteDatabase(DB.idb.name);
+      if (DB.idb !== null) {
+        indexedDB.deleteDatabase(DB.idb.name);
+      }
     });
 
     it('creates a database', function () {
@@ -33,6 +35,29 @@ define(['plasmid'], function(plasmid) {
         expect(DB.idb.name).toBe('test');
       });
       
+    })
+
+    it('triggers openerror', function () {
+      runs(function(){
+        DB = new plasmid.Database({
+          name: 'test',
+          schema: {version: 1/0},
+        })
+        .on('opensuccess', function() {
+          ready = "success";
+        })
+        .on('openerror', function() {
+          ready = "error";
+        })
+      });
+
+      waitsFor(function(){
+        return ready.length>0;
+      });
+
+      runs(function(){
+        expect(ready).toBe("error");
+      });
     })
   })
 })

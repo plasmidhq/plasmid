@@ -27,71 +27,78 @@ define(function(require, exports, module) {
             });
         }
 
-        var req = indexedDB.open(this.localname, options.schema.version);
+        try {
+            var req = indexedDB.open(this.localname, options.schema.version);
+        } catch (e) {
+            db.trigger('openerror', e);
+            db.idb = null;
+        }
 
-        req.onerror = function(event) {
-            db.trigger('openerror', event);
-        };
-        req.onsuccess = function(event) {
-            db.idb = event.target.result;
+        if (req) {
+            req.onerror = function(event) {
+                db.trigger('openerror', event);
+            };
+            req.onsuccess = function(event) {
+                db.idb = event.target.result;
 
 
-            if (options.autoSync) {
-                db.autoSync(options.autoSync);
-            }
-
-            if (!db.remotename) {
-                db.meta.get('remotename').then(set_remote);
-            } else {
-                set_remote(db.remotename);
-            }
-
-            function set_remote(remotename) {
-                db.remotename = remotename;
-            }
-            db.trigger('opensuccess')
-        };
-        req.onupgradeneeded = function(event) {
-            var idb = event.target.result;
-            var txn = event.target.transaction;
-            var storename, indexname, idbstore, indexopt;
-
-            db.idb = idb;
-
-            // Meta storage
-            if (!idb.objectStoreNames.contains('meta')) {
-                var metastore = idb.createObjectStore('meta', {keyPath: 'key'});
-                metastore.createIndex('key', 'key', {unique: true});
-
-                metastore.add({key: "last_revision", value: 1});
-                metastore.add({key: "plasmid_schema_version", value: 1});
-                metastore.add({key: "remote_url", value: db._getRemoteEndpoint()});
-            }
-
-            // Data storage
-            for (storename in options.schema.stores) {
-                if (!idb.objectStoreNames.contains(storename)) {
-                    var idbstore = idb.createObjectStore(storename, {keyPath: 'key'});
-                    idbstore.createIndex('revision', 'revision', {unique: false});
-                } else {
-                    idbstore = txn.objectStore(storename);
+                if (options.autoSync) {
+                    db.autoSync(options.autoSync);
                 }
-                for (indexname in options.schema.stores[storename].indexes) {
-                    indexopt = options.schema.stores[storename].indexes[indexname];
-                    if (indexopt) {
-                        idbstore.createIndex(indexname, "value." + indexopt.key,
-                            {unique: indexopt.unique, multi: indexopt.multi}
-                        );
+
+                if (!db.remotename) {
+                    db.meta.get('remotename').then(set_remote);
+                } else {
+                    set_remote(db.remotename);
+                }
+
+                function set_remote(remotename) {
+                    db.remotename = remotename;
+                }
+                db.trigger('opensuccess')
+            };
+            req.onupgradeneeded = function(event) {
+                var idb = event.target.result;
+                var txn = event.target.transaction;
+                var storename, indexname, idbstore, indexopt;
+
+                db.idb = idb;
+
+                // Meta storage
+                if (!idb.objectStoreNames.contains('meta')) {
+                    var metastore = idb.createObjectStore('meta', {keyPath: 'key'});
+                    metastore.createIndex('key', 'key', {unique: true});
+
+                    metastore.add({key: "last_revision", value: 1});
+                    metastore.add({key: "plasmid_schema_version", value: 1});
+                    metastore.add({key: "remote_url", value: db._getRemoteEndpoint()});
+                }
+
+                // Data storage
+                for (storename in options.schema.stores) {
+                    if (!idb.objectStoreNames.contains(storename)) {
+                        var idbstore = idb.createObjectStore(storename, {keyPath: 'key'});
+                        idbstore.createIndex('revision', 'revision', {unique: false});
+                    } else {
+                        idbstore = txn.objectStore(storename);
+                    }
+                    for (indexname in options.schema.stores[storename].indexes) {
+                        indexopt = options.schema.stores[storename].indexes[indexname];
+                        if (indexopt) {
+                            idbstore.createIndex(indexname, "value." + indexopt.key,
+                                {unique: indexopt.unique, multi: indexopt.multi}
+                            );
+                        }
                     }
                 }
-            }
-        };
+            };
 
-        this.meta = new LocalStore({
-            db: this
-        ,   storename: 'meta'
-        });
-        this.stores.meta = this.meta;
+            this.meta = new LocalStore({
+                db: this
+            ,   storename: 'meta'
+            });
+            this.stores.meta = this.meta;
+        }
     };
     Database.prototype = new EventListener();
 
