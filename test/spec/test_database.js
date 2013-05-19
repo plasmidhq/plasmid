@@ -59,5 +59,6 @@ define(['plasmid'], function(plasmid) {
         expect(ready).toBe("error");
       });
     })
+
   })
 })
