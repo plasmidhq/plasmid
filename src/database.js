@@ -58,6 +58,7 @@ define(function(require, exports, module) {
                 db.trigger('opensuccess')
             };
             req.onupgradeneeded = function(event) {
+                console.log("upgrading...");
                 var idb = event.target.result;
                 var txn = event.target.transaction;
                 var storename, indexname, idbstore, indexopt;

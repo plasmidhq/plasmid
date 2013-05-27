@@ -37,7 +37,7 @@ define(function(require, exports, module) {
     /* LocalStore.walk()
      * triggers 'each' on each value in the store
      */
-    LocalStore.prototype.walk = function() {
+    LocalStore.prototype.walk = function(filter) {
         var request = new Promise(this);
         var store = this;
         var idbstore = this.db._getIDBTrans(this.storename)
@@ -62,7 +62,7 @@ define(function(require, exports, module) {
                 if (filter.upto) {
                     range = IDBKeyRange.upperBound(filter.upto, filter.exclusive);
                 } else if (filter.downto) {
-                    range = IDBKeyRange.lowerBound(filter.upto, filter.exclusive);
+                    range = IDBKeyRange.lowerBound(filter.downto, filter.exclusive);
                 } else if (filter.between) {
                     range = IDBKeyRange.bound(
                         filter.between[0],
@@ -74,9 +74,10 @@ define(function(require, exports, module) {
             }
         }
         if (indexname) {
-            idbreq = idbstore.index(indexname).openCursor();
+            console.log(filter, indexname, range.upper);
+            idbreq = idbstore.index(indexname).openCursor(range);
         } else {
-            idbreq = idbstore.openCursor();
+            idbreq = idbstore.openCursor(range);
         }
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
@@ -145,6 +146,7 @@ define(function(require, exports, module) {
         var store = this;
         var request = new Promise(this);
         var t = this.db._getIDBTrans([this.storename], "readwrite");
+        var key = (key===null) ? util.random_token(16) : key;
         var idbreq = t.objectStore(this.storename).add({
             key: key,
             value: value,
