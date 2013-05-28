@@ -125,8 +125,6 @@ define(['plasmid'], function(plasmid) {
     };
 
     it('walks over indices', function () {
-      var one = 1; // new Date(2000, 0, 1);
-      var two = 2; // new Date(2000, 0, 2);
 
       make_database(2, indexed_schema);
       waitsFor(function(){
@@ -135,13 +133,15 @@ define(['plasmid'], function(plasmid) {
 
       // create fixtures
       make_fixtures('notes', [
-        {created: one, text: 'one'},
-        {created: two, text: 'two'},
+        {created: 1, text: 'one'},
+        {created: 2, text: 'two'},
+        {created: 3, text: 'three'},
+        {created: 4, text: 'four'},
       ]);
 
       var upto = make_queries(
         function() {
-          return DB.stores.notes.fetch({indexname: 'created', upto: two, exclusive: true})
+          return DB.stores.notes.fetch({indexname: 'created', upto: 2, exclusive: true})
         }
       );
       runs(function() {
@@ -152,13 +152,37 @@ define(['plasmid'], function(plasmid) {
 
       var downto = make_queries(
         function() {
-          return DB.stores.notes.fetch({indexname: 'created', downto: one, exclusive: true})
+          return DB.stores.notes.fetch({indexname: 'created', downto: 2, exclusive: true})
         }
       );
       runs(function() {
         // expect on data
-        expect(downto.result.length).toBe(1);
-        expect(downto.result[0].value.text, "two");
+        expect(downto.result.length).toBe(2);
+        expect(downto.result[0].value.text, "three");
+        expect(downto.result[1].value.text, "four");
+      });
+
+      var uptoinc = make_queries(
+        function() {
+          return DB.stores.notes.fetch({indexname: 'created', upto: 2, exclusive: false})
+        }
+      );
+      runs(function() {
+        // expect on data
+        expect(uptoinc.result.length).toBe(2);
+        expect(uptoinc.result[0].value.text, "one");
+        expect(uptoinc.result[1].value.text, "two");
+      });
+
+      var between = make_queries(
+        function() {
+          return DB.stores.notes.fetch({indexname: 'created', between: [1, 3], exclusive: [true, false]})
+        }
+      );
+      runs(function() {
+        expect(between.result.length).toBe(2);
+        expect(between.result[0].value.text).toBe("two");
+        expect(between.result[1].value.text).toBe("three");
       });
 
     })
