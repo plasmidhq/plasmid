@@ -124,7 +124,7 @@ define(['plasmid'], function(plasmid) {
         }
     };
 
-    it('walks over indices >', function () {
+    it('walks over indices', function () {
       var one = 1; // new Date(2000, 0, 1);
       var two = 2; // new Date(2000, 0, 2);
 
@@ -139,16 +139,26 @@ define(['plasmid'], function(plasmid) {
         {created: two, text: 'two'},
       ]);
 
-      var values = make_queries(
+      var upto = make_queries(
         function() {
           return DB.stores.notes.fetch({indexname: 'created', upto: two, exclusive: true})
         }
       );
-
       runs(function() {
         // expect on data
-        expect(values.result.length).toBe(1);
-        expect(values.result[0].value.text, "one");
+        expect(upto.result.length).toBe(1);
+        expect(upto.result[0].value.text, "one");
+      });
+
+      var downto = make_queries(
+        function() {
+          return DB.stores.notes.fetch({indexname: 'created', downto: one, exclusive: true})
+        }
+      );
+      runs(function() {
+        // expect on data
+        expect(downto.result.length).toBe(1);
+        expect(downto.result[0].value.text, "two");
       });
 
     })
