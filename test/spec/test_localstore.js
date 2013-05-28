@@ -21,8 +21,9 @@ define(['plasmid'], function(plasmid) {
     });
 
     function make_database(name, schema) {
+      var out = new plasmid.Promise();
       names.push(name);
-      return function() {
+      runs(function(){
         console.log("Making database...", name, !!DB);
         ready = false;
         DB = new plasmid.Database({
@@ -32,22 +33,47 @@ define(['plasmid'], function(plasmid) {
         .on('opensuccess', function() {
           console.log("opened database");
           ready = true;
+          out.ok(DB);
         })
         .on('openerror', function() {
           console.error("Could not open database");
           ready = true;
+          out.error();
         })
-      }
+      });
+      waitsFor(function(){
+        return out._status !== 'waiting';
+      }, 'database to be ready', 1500);
+      return out;
     }
     function wait_database() {
       return ready;
     }
 
+
+    function make_fixtures(store, objects) {
+      var out = new plasmid.Promise();
+      runs(function(){
+        var promises = [], p;
+        for (var i=0; i < objects.length; i++) {
+          p = DB.stores[store].add(null, objects[i]);
+          promises.push(p);
+        }
+        plasmid.Promise.chain(promises)
+        .then(function(value){
+          out.ok(value);
+        });
+      });
+      out.toBeDone = function() {
+        return typeof out.result !== 'undefined';
+      }
+      return out;
+    }
+
     it('adds objects with unique keys', function () {
-      runs(make_database(1, {
+      make_database(1, {
         version: 1,
-      }));
-      waitsFor(wait_database);
+      });
 
       var key = null;
       runs(function(){
@@ -88,30 +114,11 @@ define(['plasmid'], function(plasmid) {
         }
     };
 
-    function make_fixtures(store, objects) {
-      var out = new plasmid.Promise();
-      runs(function(){
-        var promises = [], p;
-        for (var i=0; i < objects.length; i++) {
-          p = DB.stores[store].add(null, objects[i]);
-          promises.push(p);
-        }
-        plasmid.Promise.chain(promises)
-        .then(function(value){
-          out.ok(value);
-        });
-      });
-      out.toBeDone = function() {
-        return typeof out.result !== 'undefined';
-      }
-      return out;
-    }
-
     it('walks over indices >', function () {
       var one = 1; // new Date(2000, 0, 1);
       var two = 2; // new Date(2000, 0, 2);
 
-      runs(make_database(2, indexed_schema));
+      make_database(2, indexed_schema);
       waitsFor(function(){
         console.log('db open?', ready);
         return ready;    
