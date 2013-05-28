@@ -67,6 +67,7 @@ define(['plasmid'], function(plasmid) {
       out.toBeDone = function() {
         return typeof out.result !== 'undefined';
       }
+      waitsFor(out.toBeDone, "fixtures to be made", 1000);
       return out;
     }
 
@@ -125,11 +126,10 @@ define(['plasmid'], function(plasmid) {
       }, "Database didn't open in time", 1000);
 
       // create fixtures
-      var fixtures = make_fixtures('notes', [
+      make_fixtures('notes', [
         {created: one, text: 'one'},
         {created: two, text: 'two'},
       ]);
-      waitsFor(fixtures.toBeDone, "fixtures to be created", 1000);
 
       // query data
       var done = false;
