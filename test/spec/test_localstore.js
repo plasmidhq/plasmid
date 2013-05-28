@@ -69,6 +69,25 @@ define(['plasmid'], function(plasmid) {
       return out;
     }
 
+    function make_queries() {
+      var f, p, c = [], a = arguments, l = arguments.length, r = new plasmid.Promise();
+      runs(function(){
+        for (var i = 0; i < l; i++) {
+            f = a[i];
+            p = f();
+            c.push(p);
+        }
+        c = plasmid.Promise.chain(c);
+        c.then(function(v){
+          r.ok(v);
+        });
+      });
+      waitsFor(function() {
+        return c._status !== 'waiting';
+      }, "queries to be made", 1000);
+      return r;
+    }
+
     it('adds objects with unique keys', function () {
       make_database(1, {
         version: 1,
@@ -78,19 +97,15 @@ define(['plasmid'], function(plasmid) {
         "test 1 2 3",
       ]);
 
-      var done = false;
+      var values = make_queries(
+        function() {
+          return DB.meta.get(keys.result[0])
+        }
+      );
+  
       runs(function() {
-        DB.meta.get(keys.result[0])
-        .then(function(value) {
-          expect(value).toBe("test 1 2 3");
-          done = true;
-        });
+        expect(values.result[0]).toBe("test 1 2 3");
       });
-
-      waitsFor(function(){
-        return done;
-      });
-
     })
 
     var indexed_schema = {

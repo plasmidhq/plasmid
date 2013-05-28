@@ -105,7 +105,7 @@ define(function(require, exports, module) {
             }
         }
         if (waiting === 0) {
-            self.trigger('success', results);
+            self.ok(results);
         }
 
         return self;
@@ -118,9 +118,9 @@ define(function(require, exports, module) {
             function one_done(result) {
                 results[i] = result;
                 waiting = waiting - 1;
-                self.trigger('onedone', i, promises[i], result);
+                self.trigger('onedone', i, promises[i], result, waiting);
                 if (waiting === 0) {
-                    self.trigger('success', results);
+                    self.ok(results);
                 }
             }
             return one_done;

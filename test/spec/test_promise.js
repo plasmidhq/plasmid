@@ -69,6 +69,21 @@ define(['promise'], function(promise) {
       }).toThrow();
     })
 
+    it('chains a single promise', function() {
+      var p1 = new promise.Promise();
+      var c = promise.Promise.chain([p1]);
+
+      var r = 0;
+      c.then(function(results) {
+        expect(results.length).toBe(1);
+
+        r += results[0];
+      });
+
+      p1.ok(1);
+      expect(r).toBe(1);
+    })
+
     it('chains multiple promises together', function() {
       var p1 = new promise.Promise();
       var p2 = new promise.Promise();
