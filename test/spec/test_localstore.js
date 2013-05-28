@@ -133,10 +133,10 @@ define(['plasmid'], function(plasmid) {
 
       // create fixtures
       make_fixtures('notes', [
-        {created: 1, text: 'one'},
         {created: 2, text: 'two'},
-        {created: 3, text: 'three'},
         {created: 4, text: 'four'},
+        {created: 1, text: 'one'},
+        {created: 3, text: 'three'},
       ]);
 
       var upto = make_queries(
