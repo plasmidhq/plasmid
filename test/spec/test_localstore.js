@@ -4,7 +4,6 @@ define(['plasmid'], function(plasmid) {
   describe('Plasmid: LocalStore', function () {
 
     var DB
-    ,   ready = false
     ,   names = [];
     ;
 
@@ -20,22 +19,21 @@ define(['plasmid'], function(plasmid) {
       }
     });
 
-    function make_database(name, schema) {
+    var db_counter = 0;
+    function make_database(schema) {
       var out = new plasmid.Promise();
+      var name = db_counter++;
       names.push(name);
       runs(function(){
-        ready = false;
         DB = new plasmid.Database({
           name: name,
           schema: schema
         })
         .on('opensuccess', function() {
-          ready = true;
           out.ok(DB);
         })
         .on('openerror', function() {
           console.error("Could not open database");
-          ready = true;
           out.error();
         })
       });
@@ -44,10 +42,6 @@ define(['plasmid'], function(plasmid) {
       }, 'database to be ready', 1500);
       return out;
     }
-    function wait_database() {
-      return ready;
-    }
-
 
     function make_fixtures(store, objects) {
       var out = new plasmid.Promise();
@@ -93,7 +87,7 @@ define(['plasmid'], function(plasmid) {
     }
 
     it('adds objects with unique keys', function () {
-      make_database(1, {
+      make_database({
         version: 1,
       });
 
@@ -124,75 +118,84 @@ define(['plasmid'], function(plasmid) {
         }
     };
 
-    it('walks over indices', function () {
+    describe('walks over indices', function () {
 
-      make_database(2, indexed_schema);
-      waitsFor(function(){
-        return ready;    
-      }, "Database didn't open in time", 1000);
+      beforeEach(function(){
+          make_database(indexed_schema);
 
-      // create fixtures
-      make_fixtures('notes', [
-        {created: 2, text: 'two'},
-        {created: 4, text: 'four'},
-        {created: 1, text: 'one'},
-        {created: 3, text: 'three'},
-      ]);
-
-      var upto = make_queries(
-        function() {
-          return DB.stores.notes.by('created').fetch({lt: 2})
-        }
-      );
-      runs(function() {
-        // expect on data
-        expect(upto.result.length).toBe(1);
-        expect(upto.result[0].value.text, "one");
+          // create fixtures
+          make_fixtures('notes', [
+            {created: 2, text: 'two'},
+            {created: 4, text: 'four'},
+            {created: 1, text: 'one'},
+            {created: 3, text: 'three'},
+          ]);
       });
 
-      var downto = make_queries(
-        function() {
-          return DB.stores.notes.by('created').fetch({gt: 2})
-        }
-      );
-      runs(function() {
-        // expect on data
-        expect(downto.result.length).toBe(2);
-        expect(downto.result[0].value.text, "three");
-        expect(downto.result[1].value.text, "four");
+      it('filters by <', function(){
+          var upto = make_queries(
+            function() {
+              return DB.stores.notes.by('created').fetch({lt: 2})
+            }
+          );
+          runs(function() {
+            // expect on data
+            expect(upto.result.length).toBe(1);
+            expect(upto.result[0].value.text, "one");
+          });
       });
 
-      var uptoinc = make_queries(
-        function() {
-          return DB.stores.notes.by('created').fetch({lte: 2})
-        }
-      );
-      runs(function() {
-        // expect on data
-        expect(uptoinc.result.length).toBe(2);
-        expect(uptoinc.result[0].value.text, "one");
-        expect(uptoinc.result[1].value.text, "two");
+      it('filters by >', function(){
+          var downto = make_queries(
+            function() {
+              return DB.stores.notes.by('created').fetch({gt: 2})
+            }
+          );
+          runs(function() {
+            // expect on data
+            expect(downto.result.length).toBe(2);
+            expect(downto.result[0].value.text, "three");
+            expect(downto.result[1].value.text, "four");
+          });
       });
 
-      var between = make_queries(
-        function() {
-          return DB.stores.notes.by('created').fetch({gt: 1, lte: 3});
-        }
-      );
-      runs(function() {
-        expect(between.result.length).toBe(2);
-        expect(between.result[0].value.text).toBe("two");
-        expect(between.result[1].value.text).toBe("three");
+      it('filters by <=', function(){
+          var uptoinc = make_queries(
+            function() {
+              return DB.stores.notes.by('created').fetch({lte: 2})
+            }
+          );
+          runs(function() {
+            // expect on data
+            expect(uptoinc.result.length).toBe(2);
+            expect(uptoinc.result[0].value.text, "one");
+            expect(uptoinc.result[1].value.text, "two");
+          });
       });
 
-      var exact = make_queries(
-        function() {
-          return DB.stores.notes.by('created').fetch(3);
-        }
-      );
-      runs(function() {
-        expect(exact.result.length).toBe(1);
-        expect(exact.result[0].value.text).toBe("three");
+      it('filters by > and <=', function(){
+          var between = make_queries(
+            function() {
+              return DB.stores.notes.by('created').fetch({gt: 1, lte: 3});
+            }
+          );
+          runs(function() {
+            expect(between.result.length).toBe(2);
+            expect(between.result[0].value.text).toBe("two");
+            expect(between.result[1].value.text).toBe("three");
+          });
+      });
+
+      it('filters by =', function(){
+          var exact = make_queries(
+            function() {
+              return DB.stores.notes.by('created').fetch(3);
+            }
+          );
+          runs(function() {
+            expect(exact.result.length).toBe(1);
+            expect(exact.result[0].value.text).toBe("three");
+          });
       });
 
     })
