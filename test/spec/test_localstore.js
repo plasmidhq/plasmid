@@ -141,7 +141,7 @@ define(['plasmid'], function(plasmid) {
 
       var upto = make_queries(
         function() {
-          return DB.stores.notes.fetch({indexname: 'created', upto: 2, exclusive: true})
+          return DB.stores.notes.by('created').fetch({upto: 2, exclusive: true})
         }
       );
       runs(function() {
@@ -152,7 +152,7 @@ define(['plasmid'], function(plasmid) {
 
       var downto = make_queries(
         function() {
-          return DB.stores.notes.fetch({indexname: 'created', downto: 2, exclusive: true})
+          return DB.stores.notes.by('created').fetch({downto: 2, exclusive: true})
         }
       );
       runs(function() {
@@ -164,7 +164,7 @@ define(['plasmid'], function(plasmid) {
 
       var uptoinc = make_queries(
         function() {
-          return DB.stores.notes.fetch({indexname: 'created', upto: 2, exclusive: false})
+          return DB.stores.notes.by('created').fetch({upto: 2, exclusive: false})
         }
       );
       runs(function() {
@@ -176,7 +176,7 @@ define(['plasmid'], function(plasmid) {
 
       var between = make_queries(
         function() {
-          return DB.stores.notes.fetch({indexname: 'created', between: [1, 3], exclusive: [true, false]})
+          return DB.stores.notes.by('created').fetch({between: [1, 3], exclusive: [true, false]})
         }
       );
       runs(function() {

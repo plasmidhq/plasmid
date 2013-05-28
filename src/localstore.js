@@ -34,6 +34,18 @@ define(function(require, exports, module) {
         return promise;
     };
 
+    /* LocalStore.by(indexname)
+     * Access the store through by an index
+     */
+    LocalStore.prototype.by = function(indexname) {
+        function Index(indexname) {
+            this.indexname = indexname;
+        }
+        Index.prototype = this;
+        return new Index(indexname);
+    };
+
+
     /* LocalStore.walk()
      * triggers 'each' on each value in the store
      */
@@ -42,39 +54,44 @@ define(function(require, exports, module) {
         var store = this;
         var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
-        var idbreq, range, indexname;
+        var idbreq, range;
         if (arguments) {
-            if (arguments.length === 1 && typeof arguments[0] === 'string') {
-                indexname = filter;
-            } else {
-                indexname = filter.indexname;
-                /*
-                All keys ≤ x    IDBKeyRange.upperBound(x)
-                All keys < x    IDBKeyRange.upperBound(x, true)
-                All keys ≥ y    IDBKeyRange.lowerBound(y)
-                All keys > y    IDBKeyRange.lowerBound(y, true)
-                All keys ≥ x && ≤ y     IDBKeyRange.bound(x, y)
-                All keys > x &&< y  IDBKeyRange.bound(x, y, true, true)
-                All keys > x && ≤ y     IDBKeyRange.bound(x, y, true, false)
-                All keys ≥ x &&< y  IDBKeyRange.bound(x, y, false, true)
-                The key = z     IDBKeyRange.only(z)
-                */
-                if (filter.upto) {
-                    range = IDBKeyRange.upperBound(filter.upto, filter.exclusive);
-                } else if (filter.downto) {
-                    range = IDBKeyRange.lowerBound(filter.downto, filter.exclusive);
-                } else if (filter.between) {
-                    range = IDBKeyRange.bound(
-                        filter.between[0],
-                        filter.between[1],
-                        filter.exclusive[0],
-                        filter.exclusive[1]
-                        );
-                }
+            /*
+            All keys ≤ x    IDBKeyRange.upperBound(x)
+            All keys < x    IDBKeyRange.upperBound(x, true)
+            All keys ≥ y    IDBKeyRange.lowerBound(y)
+            All keys > y    IDBKeyRange.lowerBound(y, true)
+            All keys ≥ x && ≤ y     IDBKeyRange.bound(x, y)
+            All keys > x &&< y  IDBKeyRange.bound(x, y, true, true)
+            All keys > x && ≤ y     IDBKeyRange.bound(x, y, true, false)
+            All keys ≥ x &&< y  IDBKeyRange.bound(x, y, false, true)
+            The key = z     IDBKeyRange.only(z)
+
+            {gt: X}
+            {gte: X}
+            {lt: X}
+            {lte: X}
+            {gt: X, lt: Y}
+            {gt: X, lte: Y}
+            {gte: X, lt: Y}
+            {gte: X, lte: Y}
+
+            */
+            if (filter.upto) {
+                range = IDBKeyRange.upperBound(filter.upto, filter.exclusive);
+            } else if (filter.downto) {
+                range = IDBKeyRange.lowerBound(filter.downto, filter.exclusive);
+            } else if (filter.between) {
+                range = IDBKeyRange.bound(
+                    filter.between[0],
+                    filter.between[1],
+                    filter.exclusive[0],
+                    filter.exclusive[1]
+                    );
             }
         }
-        if (indexname) {
-            idbreq = idbstore.index(indexname).openCursor(range);
+        if (this.indexname) {
+            idbreq = idbstore.index(this.indexname).openCursor(range);
         } else {
             idbreq = idbstore.openCursor(range);
         }
