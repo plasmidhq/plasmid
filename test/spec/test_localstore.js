@@ -79,7 +79,11 @@ define(['plasmid'], function(plasmid) {
         }
         c = plasmid.Promise.chain(c);
         c.then(function(v){
-          r.ok(v);
+          if (l === 1) {
+            r.ok(v[0]);
+          } else {
+            r.ok(v);
+          }
         });
       });
       waitsFor(function() {
@@ -104,7 +108,7 @@ define(['plasmid'], function(plasmid) {
       );
   
       runs(function() {
-        expect(values.result[0]).toBe("test 1 2 3");
+        expect(values.result).toBe("test 1 2 3");
       });
     })
 
@@ -135,24 +139,16 @@ define(['plasmid'], function(plasmid) {
         {created: two, text: 'two'},
       ]);
 
-      // query data
-      var done = false;
-      var length;
-      runs(function() {
-        DB.stores.notes.fetch({indexname: 'created', upto: two, exclusive: true})
-        .then(function(value) {
-          // expect on data
-          expect(value.length).toBe(1);
-          expect(value[0].value.text, "one");
-          done = true;
-        }, function(e) {
-          expect(true).toBe(false);
-          done = true;    
-        });
-      });
+      var values = make_queries(
+        function() {
+          return DB.stores.notes.fetch({indexname: 'created', upto: two, exclusive: true})
+        }
+      );
 
-      waitsFor(function(){
-          return done;
+      runs(function() {
+        // expect on data
+        expect(values.result.length).toBe(1);
+        expect(values.result[0].value.text, "one");
       });
 
     })
