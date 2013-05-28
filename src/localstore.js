@@ -77,17 +77,20 @@ define(function(require, exports, module) {
             {gte: X, lte: Y}
 
             */
-            if (filter.upto) {
-                range = IDBKeyRange.upperBound(filter.upto, filter.exclusive);
-            } else if (filter.downto) {
-                range = IDBKeyRange.lowerBound(filter.downto, filter.exclusive);
-            } else if (filter.between) {
+            var low = filter.gt || filter.gte;
+            var high = filter.lt || filter.lte;
+            if (low && high) {
                 range = IDBKeyRange.bound(
-                    filter.between[0],
-                    filter.between[1],
-                    filter.exclusive[0],
-                    filter.exclusive[1]
-                    );
+                    low, high,
+                    typeof filter.gt !== 'undefined',
+                    typeof filter.lt !== 'undefined'
+                );
+            } else if (high) {
+                range = IDBKeyRange.upperBound(high, typeof filter.lt !== 'undefined');
+            } else if (low) {
+                range = IDBKeyRange.lowerBound(low, typeof filter.gt !== 'undefined');
+            } else {
+                range = IDBKeyRange.only(filter);
             }
         }
         if (this.indexname) {
