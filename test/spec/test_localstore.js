@@ -88,7 +88,8 @@ define(['plasmid'], function(plasmid) {
         }
     };
 
-    function make_fixtures(out, store, objects) {
+    function make_fixtures(store, objects) {
+      var out = new plasmid.Promise();
       runs(function(){
         var promises = [], p;
         for (var i=0; i < objects.length; i++) {
@@ -100,6 +101,10 @@ define(['plasmid'], function(plasmid) {
           out.ok(value);
         });
       });
+      out.toBeDone = function() {
+        return typeof out.result !== 'undefined';
+      }
+      return out;
     }
 
     it('walks over indices >', function () {
@@ -113,14 +118,11 @@ define(['plasmid'], function(plasmid) {
       }, "Database didn't open in time", 1000);
 
       // create fixtures
-      var fixtures = new plasmid.Promise();
-      make_fixtures(fixtures, 'notes', [
+      var fixtures = make_fixtures('notes', [
         {created: one, text: 'one'},
         {created: two, text: 'two'},
       ]);
-      waitsFor(function(){
-          return typeof fixtures.result !== 'undefined'; }
-      , "fixtures to be created", 1000);
+      waitsFor(fixtures.toBeDone, "fixtures to be created", 1000);
 
       // query data
       var done = false;
