@@ -74,7 +74,6 @@ define(function(require, exports, module) {
             }
         }
         if (indexname) {
-            console.log(filter, indexname, range.upper);
             idbreq = idbstore.index(indexname).openCursor(range);
         } else {
             idbreq = idbstore.openCursor(range);

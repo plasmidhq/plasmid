@@ -24,14 +24,12 @@ define(['plasmid'], function(plasmid) {
       var out = new plasmid.Promise();
       names.push(name);
       runs(function(){
-        console.log("Making database...", name, !!DB);
         ready = false;
         DB = new plasmid.Database({
           name: name,
           schema: schema
         })
         .on('opensuccess', function() {
-          console.log("opened database");
           ready = true;
           out.ok(DB);
         })
@@ -113,7 +111,6 @@ define(['plasmid'], function(plasmid) {
 
       make_database(2, indexed_schema);
       waitsFor(function(){
-        console.log('db open?', ready);
         return ready;    
       }, "Database didn't open in time", 1000);
 
@@ -142,13 +139,10 @@ define(['plasmid'], function(plasmid) {
       waitsFor(function(){
           return done;
       });
-      runs(function() {
-      });
 
     })
 
     runs(function(){
-      console.log("DONE");
       for (var i=0; i < names.length; i++) {
         var close = indexedDB.deleteDatabase(name[i]);
         close.onsuccess = function() {
