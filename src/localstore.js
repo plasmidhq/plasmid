@@ -154,7 +154,7 @@ define(function(require, exports, module) {
         });
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
-                request.trigger('success', event.target.result.value);
+                request.ok(key);
                 store.trigger('update', key, event.target.result.value);
             } else {
                 request.trigger('missing', key);
@@ -178,7 +178,7 @@ define(function(require, exports, module) {
         });
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
-                request.trigger('success', key, event.target.result.value);
+                request.ok(key);
                 store.trigger('update', key, event.target.result.value);
             } else {
                 request.trigger('missing', key);

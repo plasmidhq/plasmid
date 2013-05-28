@@ -76,21 +76,13 @@ define(['plasmid'], function(plasmid) {
         version: 1,
       });
 
-      var key = null;
-      runs(function(){
-        DB.meta.put(null, "test 1 2 3")
-        .then(function(_key, value) {
-          key = _key;
-        });
-      });
-
-      waitsFor(function(){
-        return key !== null;
-      });
+      var keys = make_fixtures('meta', [
+        "test 1 2 3",
+      ]);
 
       var done = false;
       runs(function() {
-        DB.meta.get(key)
+        DB.meta.get(keys.result[0])
         .then(function(value) {
           expect(value).toBe("test 1 2 3");
           done = true;
