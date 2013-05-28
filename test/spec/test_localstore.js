@@ -185,6 +185,16 @@ define(['plasmid'], function(plasmid) {
         expect(between.result[1].value.text).toBe("three");
       });
 
+      var exact = make_queries(
+        function() {
+          return DB.stores.notes.by('created').fetch(3);
+        }
+      );
+      runs(function() {
+        expect(exact.result.length).toBe(1);
+        expect(exact.result[0].value.text).toBe("three");
+      });
+
     })
 
     runs(function(){
