@@ -1,0 +1,17 @@
+Release 0.1.1 - May 29, 2013
+----------------------------
+
+Fleshed out some basic test setup on the JS side, and cleaned up promises and filters.
+
+- Deal with errors caused by invalid parameters opening a database, trigger errback
+- Access an index wrapper by calling store.by(indexname). Indexes have the same API as stores,
+  for reading.
+- walk() no longer takes an index name
+- walk() no longer results in an array, it only triggers each events on individual results
+- fetch() captures all the results in an array
+- walk() and fetch() take a filter value with gt (>), lt (<), gte (>=), or lte (<=) keys, or a
+  combination, or a single value to filter equal to on the key or index.
+- saving objects results in their (possibly randomized) key for retreival
+- Added Promise.error() to set an error state on a promise
+- Promises can only be resolved once, with ok() or error()
+
