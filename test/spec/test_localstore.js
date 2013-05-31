@@ -132,6 +132,25 @@ define(['plasmid'], function(plasmid) {
           ]);
       });
 
+      it('walks over all', function(){
+          var p = make_queries(
+            function() {
+              return DB.stores.notes.by('created').fetch();
+            },
+            function() {
+              return DB.stores.notes.fetch();
+            },
+            function() {
+              return DB.stores.notes.by('created').fetch({});
+            }
+          );
+          runs(function() {
+            expect(p.result[0].length).toBe(4);
+            expect(p.result[1].length).toBe(4);
+            expect(p.result[2].length).toBe(4);
+          });
+      });
+
       it('filters by <', function(){
           var upto = make_queries(
             function() {

@@ -55,7 +55,13 @@ define(function(require, exports, module) {
         var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
         var idbreq, range;
-        if (arguments) {
+
+        var source = idbstore;
+        if (this.indexname) {
+            source = idbstore.index(this.indexname);
+        }
+
+        if (!!filter) {
             /*
             All keys ≤ x    IDBKeyRange.upperBound(x)
             All keys < x    IDBKeyRange.upperBound(x, true)
@@ -89,22 +95,24 @@ define(function(require, exports, module) {
                 range = IDBKeyRange.upperBound(high, typeof filter.lt !== 'undefined');
             } else if (low) {
                 range = IDBKeyRange.lowerBound(low, typeof filter.gt !== 'undefined');
-            } else {
+            } else if (typeof filter !== 'object') {
                 range = IDBKeyRange.only(filter);
             }
         }
-        if (this.indexname) {
-            idbreq = idbstore.index(this.indexname).openCursor(range);
+
+        if (typeof range !== 'undefined') {
+            idbreq = source.openCursor(range);
         } else {
-            idbreq = idbstore.openCursor(range);
+            idbreq = source.openCursor();
         }
+
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
             if (cursor) {
                 request.trigger('each', cursor.value);
                 cursor.continue();
             } else {
-                request.trigger('success');
+                request.ok();
             }
         };
         idbreq.onerror = function(event) {
