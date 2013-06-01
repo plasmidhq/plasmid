@@ -1,3 +1,9 @@
+Release 0.1.2 - May 30, 2013
+----------------------------
+
+Fixed a bug when calling walk() or fetch() without any filter value, or with an empty
+object as a filter object. Can now use them in this way to walk or fetch all objects.
+
 Release 0.1.1 - May 29, 2013
 ----------------------------
 
