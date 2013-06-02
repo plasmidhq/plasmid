@@ -55,6 +55,7 @@ define(function(require, exports, module) {
         var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
         var idbreq, range;
+        var index = 0;
 
         var source = idbstore;
         if (this.indexname) {
@@ -98,7 +99,10 @@ define(function(require, exports, module) {
             } else if (typeof filter !== 'object') {
                 range = IDBKeyRange.only(filter);
             }
+        } else {
+            filter = {};
         }
+        filter.start = !!filter.start ? filter.start : 0;
 
         if (typeof range !== 'undefined') {
             idbreq = source.openCursor(range);
@@ -109,7 +113,10 @@ define(function(require, exports, module) {
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
             if (cursor) {
-                request.trigger('each', cursor.value);
+                if (index >= filter.start && index < filter.stop || !filter.stop) {
+                    request.trigger('each', cursor.value);
+                }
+                index++;
                 cursor.continue();
             } else {
                 request.ok();
@@ -121,8 +128,26 @@ define(function(require, exports, module) {
         return request;
     };
 
-    LocalStore.prototype.fetch = function() {
-        var results = [];
+    function FetchResults(results, source, filter) {
+        Array.call(this, results);
+        this.source = source;
+        this.filter = filter;
+    }
+    FetchResults.prototype = new Array();
+    FetchResults.prototype.next = function() {
+        var filter = {};
+
+        for (k in this.filter) {
+            filter[k] = this.filter[k];
+        }
+        filter.start = this.filter.stop;
+        filter.stop = this.filter.stop + (this.filter.stop - this.filter.start);
+
+        return this.source.fetch(filter);
+    }
+
+    LocalStore.prototype.fetch = function(filter) {
+        var results = new FetchResults([], this, filter);
         var promise = new Promise();
 
         this.walk.apply(this, arguments)

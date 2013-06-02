@@ -132,6 +132,43 @@ define(['plasmid'], function(plasmid) {
           ]);
       });
 
+      it('allows paging of fetch results', function(){
+        var p = make_queries(
+          function() {
+            return DB.stores.notes.by('created').fetch({start: 0, stop: 2});
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(2);
+          expect(p.result[0].value.text).toBe("one");
+          expect(p.result[1].value.text).toBe("two");
+        });
+
+        var p2 = make_queries(
+          function() {
+            return p.result.next();
+          }
+        );
+        runs(function(){
+          expect(p2.result.length).toBe(2);
+          expect(p2.result[0].value.text).toBe("three");
+          expect(p2.result[1].value.text).toBe("four");
+        });
+      });
+
+      it('walks over a limit', function(){
+        var p = make_queries(
+          function() {
+            return DB.stores.notes.by('created').fetch({start: 1, stop: 3});
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(2);
+          expect(p.result[0].value.text).toBe("two");
+          expect(p.result[1].value.text).toBe("three");
+        });
+      });
+
       it('walks over all', function(){
           var p = make_queries(
             function() {
