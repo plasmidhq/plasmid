@@ -245,6 +245,8 @@ LocalStore.walk(`filter`)
         An index into the results to begin
     stop
         An index into the results to stop. The given index will not be included.
+    reverse
+        If true, the results will be given in reverse order
 
     A non-object value for `filter` will find all objects with a key exactly equal to it.
 

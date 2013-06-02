@@ -254,6 +254,21 @@ define(['plasmid'], function(plasmid) {
           });
       });
 
+      it('can walk in reverse', function(){
+          var p = make_queries(
+            function() {
+              return DB.stores.notes.by('created').fetch({reverse: true});
+            }
+          );
+          runs(function() {
+            expect(p.result.length).toBe(4);
+            expect(p.result[0].value.text).toBe("four");
+            expect(p.result[1].value.text).toBe("three");
+            expect(p.result[2].value.text).toBe("two");
+            expect(p.result[3].value.text).toBe("one");
+          });
+      });
+
     })
 
     runs(function(){

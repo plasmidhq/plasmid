@@ -54,8 +54,11 @@ define(function(require, exports, module) {
         var store = this;
         var idbstore = this.db._getIDBTrans(this.storename)
             .objectStore(this.storename);
-        var idbreq, range;
-        var index = 0;
+        var idbreq
+        ,   range = null
+        ,   order = IDBCursor.NEXT
+        ,   index = 0
+        ;
 
         var source = idbstore;
         if (this.indexname) {
@@ -99,16 +102,16 @@ define(function(require, exports, module) {
             } else if (typeof filter !== 'object') {
                 range = IDBKeyRange.only(filter);
             }
+
+            if (filter.reverse) {
+                order = IDBCursor.PREV;
+            }
         } else {
             filter = {};
         }
         filter.start = !!filter.start ? filter.start : 0;
 
-        if (typeof range !== 'undefined') {
-            idbreq = source.openCursor(range);
-        } else {
-            idbreq = source.openCursor();
-        }
+        idbreq = source.openCursor(range, order);
 
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
