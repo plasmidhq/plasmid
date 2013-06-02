@@ -1,9 +1,13 @@
-Release 0.1.3 - FUTURE
-----------------------
+Release 0.1.3 - June 1, 2013
+----------------------------
 
 - Added start and stop parameters to walk and fetch methods.
   start is inclusive, stop is exclusive. Both take indexes to skip an offset and stop once
   a limit is hit.
+- Added a reverse parameter to walk and fetch filters, which when true reverses the result order
+- The result of fetch()'s promise now has a next() method, which used in conjunction with
+  the start and stop options will let you step over result pages. Every call to next() is a new
+  fetch of results beginning with the next result in order.
 
 Release 0.1.2 - May 30, 2013
 ----------------------------
