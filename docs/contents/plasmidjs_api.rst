@@ -254,7 +254,9 @@ LocalStore.fetch(`filter`)
     Request an array of all objects in the store, accepting the same `filter` parameter
     as the `walk()` method above.
 
-    The result is an array of objects with `key` and `value` properties.
+    The result is an array of objects with `key` and `value` properties, with a single method
+    `next()` which, if fetch() had been called with `start` and `stop` parameters, will fetch
+    the next page of results.
 
 LocalStore.add(`key`, `value`)
 ------------------------------
