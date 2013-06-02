@@ -212,21 +212,49 @@ LocalStore.count()
 
     Request the total number of objects currently saved in the store.
 
-LocalStore.walk()
------------------
+LocalStore.by(`indexname`)
+--------------------------
 
-    Request an array of all objects in the store.
+    Access a named index, where query operations can be done against the indexed property.
 
-    The result is an array of objects with `key` and `value` properties.
-
-LocalStore.walk(`indexname`)
-----------------------------
-
-    Request an array of all the objects in a named index defined on the store.
+    The index is a version of the key using the indexed property as te key to identify stored
+    objects by.
 
     The indexed are defined as part of the schema during Database_ creation,
     can only be created or changed in schema upgrades, and they are only way to
     filter store contents by anything other than the `key`.
+
+LocalStore.walk(`filter`)
+-------------------------
+
+    Request objects from the store, triggering an 'each' event on the promise for every
+    object found. Does not collect the objects into any array. This method is memory efficient.
+
+    The `filter` parameter controls which objects are returned. The follow keys are allowed,
+    including combinations.
+
+    gt
+        Only find keys greater than a given value
+    gte
+        Only find keys greater or equal to a given value
+    lt
+        Only find keys less than a given value
+    lte
+        Only find keys less than or equal to a given value
+    start
+        An index into the results to begin
+    stop
+        An index into the results to stop. The given index will not be included.
+
+    A non-object value for `filter` will find all objects with a key exactly equal to it.
+
+LocalStore.fetch(`filter`)
+--------------------------
+
+    Request an array of all objects in the store, accepting the same `filter` parameter
+    as the `walk()` method above.
+
+    The result is an array of objects with `key` and `value` properties.
 
 LocalStore.add(`key`, `value`)
 ------------------------------
