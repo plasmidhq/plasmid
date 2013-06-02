@@ -250,20 +250,36 @@ primary interface you'll use.</blockquote>
 <blockquote>
 Request the total number of objects currently saved in the store.</blockquote>
 </div>
-<div class="section" id="localstore-walk">
-<h2>LocalStore.walk()</h2>
+<div class="section" id="localstore-by-indexname">
+<h2>LocalStore.by(<cite>indexname</cite>)</h2>
 <blockquote>
-<p>Request an array of all objects in the store.</p>
-<p>The result is an array of objects with <cite>key</cite> and <cite>value</cite> properties.</p>
-</blockquote>
-</div>
-<div class="section" id="localstore-walk-indexname">
-<h2>LocalStore.walk(<cite>indexname</cite>)</h2>
-<blockquote>
-<p>Request an array of all the objects in a named index defined on the store.</p>
+<p>Access a named index, where query operations can be done against the indexed property.</p>
+<p>The index is a version of the key using the indexed property as te key to identify stored
+objects by.</p>
 <p>The indexed are defined as part of the schema during <a class="reference internal" href="#database">Database</a> creation,
 can only be created or changed in schema upgrades, and they are only way to
 filter store contents by anything other than the <cite>key</cite>.</p>
+</blockquote>
+</div>
+<div class="section" id="localstore-walk">
+<h2>LocalStore.walk()</h2>
+<blockquote>
+Request objects from the store, triggering an 'each' event on the promise for every
+object found. Does not collect the objects into any array. This method is memory efficient.</blockquote>
+</div>
+<div class="section" id="localstore-fetch">
+<h2>LocalStore.fetch()</h2>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">&lt;string&gt;</tt>, line 234)</p>
+<p>Title underline too short.</p>
+<pre class="literal-block">
+LocalStore.fetch()
+-----------------
+</pre>
+</div>
+<blockquote>
+<p>Request an array of all objects in the store.</p>
+<p>The result is an array of objects with <cite>key</cite> and <cite>value</cite> properties.</p>
 </blockquote>
 </div>
 <div class="section" id="localstore-add-key-value">
