@@ -290,7 +290,9 @@ including combinations.</p>
 <blockquote>
 <p>Request an array of all objects in the store, accepting the same <cite>filter</cite> parameter
 as the <cite>walk()</cite> method above.</p>
-<p>The result is an array of objects with <cite>key</cite> and <cite>value</cite> properties.</p>
+<p>The result is an array of objects with <cite>key</cite> and <cite>value</cite> properties, with a single method
+<cite>next()</cite> which, if fetch() had been called with <cite>start</cite> and <cite>stop</cite> parameters, will fetch
+the next page of results.</p>
 </blockquote>
 </div>
 <div class="section" id="localstore-add-key-value">
