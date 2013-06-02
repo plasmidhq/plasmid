@@ -261,16 +261,27 @@ can only be created or changed in schema upgrades, and they are only way to
 filter store contents by anything other than the <cite>key</cite>.</p>
 </blockquote>
 </div>
-<div class="section" id="localstore-walk">
-<h2>LocalStore.walk()</h2>
+<div class="section" id="localstore-walk-filter">
+<h2>LocalStore.walk(<cite>filter</cite>)</h2>
 <blockquote>
-Request objects from the store, triggering an 'each' event on the promise for every
-object found. Does not collect the objects into any array. This method is memory efficient.</blockquote>
+<p>Request objects from the store, triggering an 'each' event on the promise for every
+object found. Does not collect the objects into any array. This method is memory efficient.</p>
+<p>The <cite>filter</cite> parameter controls which objects are returned. The follow keys are allowed,
+including combinations.</p>
+<p><cite>gt</cite>: Only find keys greater than a given value
+<cite>gte</cite>: Only find keys greater or equal to a given value
+<cite>lt</cite>: Only find keys less than a given value
+<cite>lte</cite>: Only find keys less than or equal to a given value
+<cite>start</cite>: An index into the results to begin
+<cite>stop</cite>: An index into the results to stop. The given index will not be included.</p>
+<p>A non-object value for <cite>filter</cite> will find all objects with a key exactly equal to it.</p>
+</blockquote>
 </div>
-<div class="section" id="localstore-fetch">
-<h2>LocalStore.fetch()</h2>
+<div class="section" id="localstore-fetch-filter">
+<h2>LocalStore.fetch(<cite>filter</cite>)</h2>
 <blockquote>
-<p>Request an array of all objects in the store.</p>
+<p>Request an array of all objects in the store, accepting the same <cite>filter</cite> parameter
+as the <cite>walk()</cite> method above.</p>
 <p>The result is an array of objects with <cite>key</cite> and <cite>value</cite> properties.</p>
 </blockquote>
 </div>
