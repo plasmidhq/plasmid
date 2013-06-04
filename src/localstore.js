@@ -3,6 +3,7 @@ define(function(require, exports, module) {
     var promise = require('promise')
     ,   Promise = promise.Promise
     ,   EventListener = promise.EventListener
+    ,   Results = require('results').Results
     ,   util = require('utilities')
     ;
 
@@ -131,26 +132,8 @@ define(function(require, exports, module) {
         return request;
     };
 
-    function FetchResults(results, source, filter) {
-        Array.call(this, results);
-        this.source = source;
-        this.filter = filter;
-    }
-    FetchResults.prototype = new Array();
-    FetchResults.prototype.next = function() {
-        var filter = {};
-
-        for (k in this.filter) {
-            filter[k] = this.filter[k];
-        }
-        filter.start = this.filter.stop;
-        filter.stop = this.filter.stop + (this.filter.stop - this.filter.start);
-
-        return this.source.fetch(filter);
-    }
-
     LocalStore.prototype.fetch = function(filter) {
-        var results = new FetchResults([], this, filter);
+        var results = new Results(this, filter);
         var promise = new Promise();
 
         this.walk.apply(this, arguments)
