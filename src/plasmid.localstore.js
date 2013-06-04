@@ -3,8 +3,8 @@ define(function(require, exports, module) {
     var promise = require('promise')
     ,   Promise = promise.Promise
     ,   EventListener = promise.EventListener
-    ,   Results = require('results').Results
-    ,   util = require('utilities')
+    ,   Results = require('plasmid.results').Results
+    ,   util = require('plasmid.utilities')
     ;
 
     /* LocalStore

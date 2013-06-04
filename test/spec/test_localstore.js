@@ -1,6 +1,6 @@
 'use strict';
 
-define(['plasmid'], function(plasmid) {
+define(['plasmid.core'], function(plasmid) {
   describe('Plasmid: LocalStore', function () {
 
     var DB

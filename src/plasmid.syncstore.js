@@ -1,7 +1,7 @@
 define(function(require, exports, module) {
 
     var Promise = require('promise').Promise
-    ,   LocalStore = require('localstore').LocalStore
+    ,   LocalStore = require('plasmid.localstore').LocalStore
     ;
 
     // SyncStore

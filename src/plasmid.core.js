@@ -5,10 +5,11 @@ define(function(require, exports, module) {
     ,   promise = require('promise')
     ,   Promise = promise.Promise
     ,   EventListener = promise.EventListener
-    ,   Database = require('database').Database
-    ,   LocalStore = require('localstore').LocalStore
-    ,   SyncStore = require('syncstore').SyncStore
-    ,   util = require('utilities')
+
+    ,   Database = require('plasmid.database').Database
+    ,   LocalStore = require('plasmid.localstore').LocalStore
+    ,   SyncStore = require('plasmid.syncstore').SyncStore
+    ,   util = require('plasmid.utilities')
     ;
 
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;

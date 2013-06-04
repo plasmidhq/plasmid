@@ -1,6 +1,6 @@
 'use strict';
 
-define(['plasmid'], function(plasmid) {
+define(['plasmid.core'], function(plasmid) {
   describe('Plasmid: Database', function () {
 
     var DB, ready = false;

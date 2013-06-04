@@ -3,9 +3,9 @@ define(function(require, exports, module) {
     var promise = require('promise')
     ,   Promise = promise.Promise
     ,   EventListener = promise.EventListener
-    ,   LocalStore = require('localstore').LocalStore
-    ,   SyncStore = require('syncstore').SyncStore
-    ,   util = require('utilities')
+    ,   LocalStore = require('plasmid.localstore').LocalStore
+    ,   SyncStore = require('plasmid.syncstore').SyncStore
+    ,   util = require('plasmid.utilities')
     ;
 
     var Database = function Database(options) {
