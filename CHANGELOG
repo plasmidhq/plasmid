@@ -11,6 +11,7 @@ TODO: This will be a meaty release with a lot of new features around queries
 - Default values for store objects
 - Meta data API for objects
 - Multi-property indexes
+- Expose meta data extract callbacks
 
 Release 0.1.3 - June 1, 2013
 ----------------------------
