@@ -62,10 +62,18 @@ define(function(require, exports, module) {
 
     Promise.prototype.then = function(onsuccess, onerror) {
         if (typeof this.result === 'undefined') {
-            if (!!onerror) {
-                this.on('error', onerror);
+            if (typeof onerror === 'function') {
+                if (this._status === 'error') {
+                    onerror.call(this, this._error);
+                } else {
+                    this.on('error', onerror);
+                }
             }
-            return this.on('success', onsuccess);
+            if (this._status === 'fulfilled') {
+                onsuccess.call(this, this.result);
+            } else {
+                return this.on('success', onsuccess);
+            }
         } else {
             onsuccess(this.result);
         }
@@ -76,6 +84,7 @@ define(function(require, exports, module) {
             this._status = 'fulfilled';
             this.trigger('success', result);
         } else {
+            console.log('ok', result, this._status, this._error.toString());
             throw "promise already " + this._status;
         }
     };
@@ -85,6 +94,7 @@ define(function(require, exports, module) {
             this._status = 'error';
             return this.trigger('error', e);
         } else {
+            console.log('error', this._status, this._error);
             throw "promise already " + this._status;
         }
     };
@@ -95,13 +105,12 @@ define(function(require, exports, module) {
         var i;
         var results = [];
         for (i = 0; i < promises.length; i++) {
-            if (promises[i].hasOwnProperty('result')) {
+            if (promises[i]._status !== 'waiting') {
                 waiting = waiting - 1;
                 results[i] = promises[i].result;
                 self.trigger('onedone', i, promises[i], promises[i].result);
             } else {
-                promises[i].then(create_result_handler(i));
-                promises[i].on('error', cancel);
+                create_result_handler(i, promises[i])
             }
         }
         if (waiting === 0) {
@@ -110,20 +119,22 @@ define(function(require, exports, module) {
 
         return self;
 
-        function cancel() {
-            self.error();
-        };
-
-        function create_result_handler(i) {
+        function create_result_handler(i, promise) {
             function one_done(result) {
                 results[i] = result;
                 waiting = waiting - 1;
                 self.trigger('onedone', i, promises[i], result, waiting);
-                if (waiting === 0) {
+                if (waiting === 0 && self._status === 'waiting') {
                     self.ok(results);
                 }
             }
-            return one_done;
+
+            function one_error(e) {
+                waiting = waiting - 1;
+                self.error(e);
+            }
+
+            promise.then(one_done, one_error);
         }
     };
 

@@ -15,7 +15,7 @@ def main(argv):
     parser.add_argument('--grant-permission', dest='grant_permission', nargs=4)
     parser.add_argument('--revoke-permission', dest='revoke_permission', nargs=3)
     parser.add_argument('-p', '--hub-path', dest='hub_path', default='hub')
-    parser.add_argument('--port', dest='port', default=DEFAULT)
+    parser.add_argument('--port', dest='port', default=config.port)
     ns = parser.parse_args(argv[1:])
 
     configure(

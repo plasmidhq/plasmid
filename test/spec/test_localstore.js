@@ -64,25 +64,52 @@ define(['plasmid.core'], function(plasmid) {
     }
 
     function make_queries() {
-      var f, p, c = [], a = arguments, l = arguments.length, r = new plasmid.Promise();
+      var n, f, p, c = [], a, l, r = new plasmid.Promise();
+      if (typeof arguments[0] !== 'function') {
+        n = Array.prototype.shift.apply(arguments);
+      } else {
+        n = '(queries)';
+      }
+      l = arguments.length;
+      a = Array.prototype.slice.apply(arguments);
       runs(function(){
         for (var i = 0; i < l; i++) {
-            f = a[i];
-            p = f();
-            c.push(p);
+          f = a[i];
+          p = f();
+          c.push(p);
+          p.then(function() {
+            //  
+          }, function(e) {
+            r.error('chained promise failed: ' + e);
+          });
         }
         c = plasmid.Promise.chain(c);
         c.then(function(v){
-          if (l === 1) {
-            r.ok(v[0]);
+          if (r._status === 'waiting') {
+            if (l === 1) {
+              r.ok(v[0]);
+            } else {
+              r.ok(v);
+            }
           } else {
-            r.ok(v);
+            //
+          }
+        }, function(e) {
+          console.log("query error, " + n + ": " + e);    
+          //console.log(["chain status:", c._status, "for", n].join(' '));
+          if (r._status === 'waiting') {
+            r.error('chain fail: ' + e);
+          } else if (r._status === 'fulfilled') {
+            console.error("Promise chain found error after fulfillment!");
+          } else {
+            console.log(["ignoring error...", n, e, r._status, r._error].join(' '));
           }
         });
       });
       waitsFor(function() {
+        //console.log(["waiting status:", c._status, "for", n].join(' '));
         return c._status !== 'waiting';
-      }, "queries to be made", 1000);
+      }, n, 1000);
       return r;
     }
 
@@ -133,7 +160,7 @@ define(['plasmid.core'], function(plasmid) {
       });
 
       it('allows paging of fetch results', function(){
-        var p = make_queries(
+        var p = make_queries("paging 1",
           function() {
             return DB.stores.notes.by('created').fetch({start: 0, stop: 2});
           }
@@ -144,7 +171,7 @@ define(['plasmid.core'], function(plasmid) {
           expect(p.result[1].value.text).toBe("two");
         });
 
-        var p2 = make_queries(
+        var p2 = make_queries("paging 2",
           function() {
             return p.result.next();
           }
@@ -154,6 +181,38 @@ define(['plasmid.core'], function(plasmid) {
           expect(p2.result[0].value.text).toBe("three");
           expect(p2.result[1].value.text).toBe("four");
         });
+
+        var p3 = make_queries("paging 3",
+          function() {
+            return p2.result.next();
+          }
+        );
+        runs(function(){
+          expect(p3.result).toBe(undefined);
+          expect(p3._error).toMatch(/NoSuchPage$/);
+        });
+
+        var p4 = make_queries("paging 4",
+          function() {
+            return p2.result.previous();
+          }
+        );
+        runs(function(){
+          expect(p4.result.length).toBe(2);
+          expect(p4.result[0].value.text).toBe("one");
+          expect(p4.result[1].value.text).toBe("two");
+        });
+
+        var p5 = make_queries("paging 5",
+          function() {
+            return p4.result.previous();
+          }
+        );
+        runs(function(){
+          expect(p5.result).toBe(undefined);
+          expect(p5._error).toMatch(/NoSuchPage$/);
+        });
+
       });
 
       it('walks over a limit', function(){

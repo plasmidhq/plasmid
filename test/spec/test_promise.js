@@ -114,13 +114,13 @@ define(['promise'], function(promise) {
 
         r += results[0];
         r += results[1];
-      }, function() {
-        r = 'BAD';    
+      }, function(e) {
+        r = e;    
       });
 
       p1.ok(1);
       expect(r).toBe(0);
-      p2.error();
+      p2.error('BAD');
       expect(r).toBe('BAD');
     })
 

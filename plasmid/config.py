@@ -20,3 +20,4 @@ def configure(**params):
     for key in params:
         if params[key] is not DEFAULT:
             globals()[key] = params[key]
+    return globals()

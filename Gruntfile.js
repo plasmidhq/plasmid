@@ -123,7 +123,7 @@ module.exports = function (grunt) {
         files: {
           '<%= yeoman.dist %>/<%= yeoman.name %>-<%= yeoman.version %>.min.js': [
             '<%= yeoman.dist %>/<%= yeoman.name %>-<%= yeoman.version %>.js'
-          ]
+          ],
         }
       }
     },
