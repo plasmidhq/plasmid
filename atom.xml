@@ -4,11 +4,11 @@
         Plasmid
     </title>
     
-    <link href="http://ironfroggy.github.io/plasmid/atom.xml" rel="self" />
+    <link href="http://plasmidhq.github.io/plasmid/atom.xml" rel="self" />
     
 
     
-    <link href="http://ironfroggy.github.io/plasmid/"/>
+    <link href="http://plasmidhq.github.io/plasmid/"/>
     
 
     
@@ -24,7 +24,7 @@
         <entry>
             <title type="html">Plasmid</title>
             <author><name>Calvin Spealman &lt;ironfroggy@github.com&gt;</name></author>
-            <link href="http://ironfroggy.github.io/plasmid/"/>
+            <link href="http://plasmidhq.github.io/plasmid/"/>
             <updated>2012-06-23T10:00:00Z</updated>
             <published>2012-06-23T10:00:00Z</published>
             <id>index</id>
