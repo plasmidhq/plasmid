@@ -82,6 +82,9 @@ between these devices, while the application continues to work completely on the
 <p>In this early stage, the setup procedure is not really present. Simply checkout a copy of
 from Plasmid's git repository on Github and run the <cite>plasmidctl.py</cite> script to begin the
 process. Of course, you'll want to setup an account on the server to actually utilize it.</p>
+<p>Plasmid Sync depends on a backend server, currently available in the
+<a class="reference external" href="http://github.com/plasmidhq/plasmid-python">plasmid-python</a> repository. Sync is considered
+alpha, and while usable, is only a prototype.</p>
 <p>To experiment with Plasmid Sync, setup a pair of test credentials to use.</p>
 <div class="highlight"><pre>./plasmidctl.py --set-secret <span class="nb">test </span>secret123
 ./plasmidctl.py --grant-permission <span class="nb">test</span> <span class="s2">&quot;*&quot;</span> <span class="s2">&quot;*&quot;</span>
