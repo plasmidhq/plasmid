@@ -177,13 +177,35 @@ define(['plasmid.core'], function(plasmid) {
         var p2 = make_queries("refresh 2",
           function() {
             var item = p.result[0];
-            item.value.text = "ONE";
-            return DB.stores.notes.put(item.key, item.value);
+            console.log('changing value', item.key);
+            var put = DB.stores.notes.put(item.key, {created: 1, text: "ONE"});
+            var refresh = new plasmid.Promise();
+            put.then(function() {
+              console.log('saved new value', item.key, arguments);
+              p.result.refresh().then(function(){
+                console.log('refresh done', this === p.result);
+                refresh.ok('done');
+              });
+            });
+            return refresh;
           }
         );
         runs(function(){
           expect(p.result.length).toBe(1);
+          console.log('did update?', p.result[0].key);
           expect(p.result[0].value.text).toBe("ONE");
+        });
+        return;
+
+        it('does not allow multiple refreshes at the same time', function(){
+          var p3 = make_queries("refresh 3",
+            function() {
+            }
+          );
+          runs(function(){
+            expect(p.result.length).toBe(1);
+            expect(p.result[0].value.text).toBe("ONE");
+          });
         });
       });
 

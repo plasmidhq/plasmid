@@ -15,7 +15,7 @@ define(function(require, exports, module) {
 
     Results.prototype.refresh = function(filter, cb) {
         var self = this;
-        var p = new promise.Promise();
+        var p = new promise.Promise(this);
         var results = [0, 0];
         var cb = cb || function(p, results){ return results; };
         if (!!filter) {
@@ -29,6 +29,7 @@ define(function(require, exports, module) {
         }
         this.source.walk(filter)
         .on('each', function(obj) {
+            console.log('refreshing...', results[1]+1, obj.key, obj.value);
             results.push(obj);
             results[1]++;
         })
@@ -37,8 +38,8 @@ define(function(require, exports, module) {
             if (p._status === 'waiting') {
                 cb_results.splice(0, 0, results[0], results[1]);
                 self.filter = filter;
-                Array.prototype.splice.apply(self, results);
-                p.ok(this);
+                Array.prototype.splice.apply(self, cb_results);
+                p.ok();
             }
         });
         return p;
