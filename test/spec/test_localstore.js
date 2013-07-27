@@ -159,6 +159,51 @@ define(['plasmid.core'], function(plasmid) {
           ]);
       });
 
+      it('allows the result window to be set', function(){
+        var p = make_queries("result window 1",
+          function() {
+            return DB.stores.notes.by('created').fetch({start: 0, stop: 1});
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(1);
+          expect(p.result[0].value.text).toBe("one");
+        });
+
+        var p2 = make_queries("result window 2",
+          function() {
+            return p.result.setWindow(1, 2);
+          }
+        );
+        runs(function(){
+          expect(p2.result.length).toBe(1);
+          expect(p2.result[0].value.text).toBe("two");
+        });
+      });
+
+      it('allows the result limit to be cahnged', function(){
+        var p = make_queries("result limit 1",
+          function() {
+            return DB.stores.notes.by('created').fetch({start: 0, stop: 1});
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(1);
+          expect(p.result[0].value.text).toBe("one");
+        });
+
+        var p2 = make_queries("result limit 2",
+          function() {
+            return p.result.addLimit(1);
+          }
+        );
+        runs(function(){
+          expect(p2.result.length).toBe(2);
+          expect(p2.result[0].value.text).toBe("one");
+          expect(p2.result[1].value.text).toBe("two");
+        });
+      });
+
       it('allows paging of fetch results', function(){
         var p = make_queries("paging 1",
           function() {
@@ -316,7 +361,8 @@ define(['plasmid.core'], function(plasmid) {
       it('can walk in reverse', function(){
           var p = make_queries(
             function() {
-              return DB.stores.notes.by('created').fetch({reverse: true});
+              var r = DB.stores.notes.by('created');
+              return r.fetch({reverse: true});
             }
           );
           runs(function() {

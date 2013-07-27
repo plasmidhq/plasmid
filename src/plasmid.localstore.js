@@ -105,14 +105,19 @@ define(function(require, exports, module) {
             }
 
             if (filter.reverse) {
-                order = IDBCursor.PREV;
+                order = IDBCursor.PREV || 'prev';
             }
         } else {
             filter = {};
         }
         filter.start = !!filter.start ? filter.start : 0;
 
-        idbreq = source.openCursor(range, order);
+
+        if (typeof order !== 'undefined') {
+            idbreq = source.openCursor(range, order);
+        } else {
+            idbreq = source.openCursor(range);
+        }
 
         idbreq.onsuccess = function(event) {
             var cursor = event.target.result;
