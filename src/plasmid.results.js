@@ -13,19 +13,33 @@ define(function(require, exports, module) {
 
     /* Refresh the changes */
 
-    Results.prototype.refresh = function() {
+    Results.prototype.refresh = function(filter, cb) {
         var self = this;
         var p = new promise.Promise();
         var results = [0, 0];
-        this.source.walk(this.filter)
+        var cb = cb || function(p, results){ return results; };
+        if (!!filter) {
+            for (key in this.filter) {
+                if (!filter.hasOwnProperty(key)) {
+                    filter[key] = this.filter[key];
+                }
+            }
+        } else {
+            var filter = this.filter;
+        }
+        this.source.walk(filter)
         .on('each', function(obj) {
             results.push(obj);
             results[1]++;
         })
         .then(function(){
-            Array.prototype.splice.apply(self, results);
-            console.log('refresh', self[0].value);
-            p.ok(this);
+            var cb_results = cb(p, results.slice(2));
+            if (p._status === 'waiting') {
+                cb_results.splice(0, 0, results[0], results[1]);
+                self.filter = filter;
+                Array.prototype.splice.apply(self, results);
+                p.ok(this);
+            }
         });
         return p;
     };
@@ -42,65 +56,43 @@ define(function(require, exports, module) {
     
     Results.prototype.addLimit = function(n) {
         this.filter.stop = this.filter.stop + n;
-
-        var p = new promise.Promise();
-        var r = this.source.fetch(this.filter);
-        r.then(function(results) {
-            if (results.length === 0) {
-                p.error('NoSuchPage');
-            } else {
-                p.ok(results);
-            }
-        }, function(e) {
-            p.error(e);    
-        });
-        return p;
+        return this.refresh();
     };
 
     /* Shift the result set forward one page */
 
     Results.prototype.next = function() {
-        var filter = {};
+        var start = this.filter.start;
+        var stop = this.filter.stop;
+        var filter = this.filter;
+        var new_stop = stop + (stop - start);
+        var new_start = stop;
 
-        for (k in this.filter) {
-            filter[k] = this.filter[k];
-        }
-        filter.start = this.filter.stop;
-        filter.stop = this.filter.stop + (this.filter.stop - this.filter.start);
-
-        var p = new promise.Promise();
-        var r = this.source.fetch(filter);
-        r.then(function(results) {
+        return this.refresh({start: new_start, stop: new_stop}, function(p, results) {
             if (results.length === 0) {
                 p.error('NoSuchPage');
-            } else {
-                p.ok(results);
             }
-        }, function(e) {
-            p.error(e);    
+            return results;
         });
-        return p;
     }
 
     /* Shift the result set backward one page */
 
     Results.prototype.previous = function() {
-        var filter = {};
+        var start = this.filter.start;
+        var stop = this.filter.stop;
+        var new_start = start - (stop - start);
+        var new_stop = start;
 
-        for (k in this.filter) {
-            filter[k] = this.filter[k];
-        }
-
-        filter.stop = this.filter.start;
-        filter.start = this.filter.start - (this.filter.stop - this.filter.start);
-
-        if (filter.start < 0) {
+        if (new_start >= 0) {
+            this.filter.start = new_start;
+            this.filter.stop = new_stop;
+            return this.refresh();
+        } else {
             var p = new promise.Promise();
-            p.error('NoSuchPage');
+            p.error("NoSuchPage");
             return p;
         }
-
-        return this.source.fetch(filter);
     }
 
     exports.Results = Results;

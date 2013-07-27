@@ -77,6 +77,10 @@ define(['plasmid.core'], function(plasmid) {
           f = a[i];
           p = f();
           c.push(p);
+          if (typeof p === 'undefined') {
+              console.log("ERROR make_queries():", n, f);
+              throw "query function did not return a promise!";
+          }
           p.then(function() {
             //  
           }, function(e) {
@@ -201,7 +205,6 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          console.log("refreshed?", p.result.refreshed);
           expect(p.result[0].value.text).toBe("two");
         });
       });
@@ -223,9 +226,9 @@ define(['plasmid.core'], function(plasmid) {
           }
         );
         runs(function(){
-          expect(p2.result.length).toBe(2);
-          expect(p2.result[0].value.text).toBe("one");
-          expect(p2.result[1].value.text).toBe("two");
+          expect(p.result.length).toBe(2);
+          expect(p.result[0].value.text).toBe("one");
+          expect(p.result[1].value.text).toBe("two");
         });
       });
 
@@ -247,35 +250,35 @@ define(['plasmid.core'], function(plasmid) {
           }
         );
         runs(function(){
-          expect(p2.result.length).toBe(2);
-          expect(p2.result[0].value.text).toBe("three");
-          expect(p2.result[1].value.text).toBe("four");
+          expect(p.result.length).toBe(2);
+          expect(p.result[0].value.text).toBe("three");
+          expect(p.result[1].value.text).toBe("four");
         });
 
         var p3 = make_queries("paging 3",
           function() {
-            return p2.result.next();
+            return p.result.next();
           }
         );
         runs(function(){
-          expect(p3.result).toBe(undefined);
           expect(p3._error).toMatch(/NoSuchPage$/);
+          expect(p3.result).toBe(undefined);
         });
 
         var p4 = make_queries("paging 4",
           function() {
-            return p2.result.previous();
+            return p.result.previous();
           }
         );
         runs(function(){
-          expect(p4.result.length).toBe(2);
-          expect(p4.result[0].value.text).toBe("one");
-          expect(p4.result[1].value.text).toBe("two");
+          expect(p.result.length).toBe(2);
+          expect(p.result[0].value.text).toBe("one");
+          expect(p.result[1].value.text).toBe("two");
         });
 
         var p5 = make_queries("paging 5",
           function() {
-            return p4.result.previous();
+            return p.result.previous();
           }
         );
         runs(function(){
