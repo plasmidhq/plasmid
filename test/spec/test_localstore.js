@@ -178,9 +178,9 @@ define(['plasmid.core'], function(plasmid) {
           function() {
             var item = p.result[0];
             console.log('changing value', item.key);
-            var put = DB.stores.notes.put(item.key, {created: 1, text: "ONE"});
             var refresh = new plasmid.Promise();
-            put.then(function() {
+            var put = p.result.source.db.stores.notes.put(item.key, {created: 1, text: "ONE"})
+            .then(function() {
               console.log('saved new value', item.key, arguments);
               p.result.refresh().then(function(){
                 console.log('refresh done', this === p.result);
