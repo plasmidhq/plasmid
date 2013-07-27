@@ -11,26 +11,31 @@ define(function(require, exports, module) {
 
     Results.prototype = new Array();
 
+    /* Refresh the changes */
+
+    Results.prototype.refresh = function() {
+        var self = this;
+        var p = new promise.Promise();
+        var results = [0, 0];
+        this.source.walk(this.filter)
+        .on('each', function(obj) {
+            results.push(obj);
+            results[1]++;
+        })
+        .then(function(){
+            Array.prototype.splice.apply(self, results);
+            console.log('refresh', self[0].value);
+            p.ok(this);
+        });
+        return p;
+    };
+
     /* Change the result set window */
 
     Results.prototype.setWindow = function(start, stop) {
-        filter = {
-            start: start,
-            stop: stop,
-        };
-
-        var p = new promise.Promise();
-        var r = this.source.fetch(filter);
-        r.then(function(results) {
-            if (results.length === 0) {
-                p.error('NoSuchPage');
-            } else {
-                p.ok(results);
-            }
-        }, function(e) {
-            p.error(e);    
-        });
-        return p;
+        this.filter.start = start;
+        this.filter.stop = stop;
+        return this.refresh();
     };
 
     /* Change the size of the result set, but not the starting position */

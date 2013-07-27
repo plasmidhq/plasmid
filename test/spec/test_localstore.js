@@ -158,6 +158,30 @@ define(['plasmid.core'], function(plasmid) {
             {created: 3, text: 'three'},
           ]);
       });
+      
+      it('allows the results to be refreshed', function(){
+        var p = make_queries("refresh 1",
+          function() {
+            return DB.stores.notes.by('created').fetch({start: 0, stop: 1});
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(1);
+          expect(p.result[0].value.text).toBe("one");
+        });
+
+        var p2 = make_queries("refresh 2",
+          function() {
+            var item = p.result[0];
+            item.value.text = "ONE";
+            return DB.stores.notes.put(item.key, item.value);
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(1);
+          expect(p.result[0].value.text).toBe("ONE");
+        });
+      });
 
       it('allows the result window to be set', function(){
         var p = make_queries("result window 1",
@@ -176,12 +200,13 @@ define(['plasmid.core'], function(plasmid) {
           }
         );
         runs(function(){
-          expect(p2.result.length).toBe(1);
-          expect(p2.result[0].value.text).toBe("two");
+          expect(p.result.length).toBe(1);
+          console.log("refreshed?", p.result.refreshed);
+          expect(p.result[0].value.text).toBe("two");
         });
       });
 
-      it('allows the result limit to be cahnged', function(){
+      it('allows the result limit to be changed', function(){
         var p = make_queries("result limit 1",
           function() {
             return DB.stores.notes.by('created').fetch({start: 0, stop: 1});
