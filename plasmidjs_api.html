@@ -81,6 +81,7 @@ document is organized.</p>
 <p><a class="reference internal" href="#database">Database</a></p>
 <p><a class="reference internal" href="#transaction">Transaction</a></p>
 <p><a class="reference internal" href="#localstore">LocalStore</a></p>
+<p><a class="reference internal" href="#results">Results</a></p>
 <p><a class="reference internal" href="#credentials">Credentials</a></p>
 <p><a class="reference internal" href="#syncstore">SyncStore</a></p>
 </div>
@@ -319,6 +320,43 @@ same key.</p>
 takes an array of objects with <cite>key</cite> and <cite>value</cite> properties, and puts all of
 them into the store in a single transaction.</p>
 <p>There is no varient to &quot;add many&quot;, however.</p>
+</blockquote>
+</div>
+</div>
+<div class="section" id="results">
+<h1>Results</h1>
+<blockquote>
+Stores results from a fetch() call, and allows a number of useful operations on them.</blockquote>
+<div class="section" id="results-watch">
+<h2>Results.watch()</h2>
+<blockquote>
+When the source store is updated, update the resutl set with new data.</blockquote>
+</div>
+<div class="section" id="results-refresh">
+<h2>Results.refresh()</h2>
+<blockquote>
+Repeat the query and update the results with current data.</blockquote>
+</div>
+<div class="section" id="results-addlimit-n">
+<h2>Results.addLimit(n)</h2>
+<blockquote>
+<p>Increase the limit on the number of results to object, and load the new items.</p>
+<p>NOTE: Because this refreshes the query, even existing results from the original limit
+could change.</p>
+</blockquote>
+</div>
+<div class="section" id="results-next">
+<h2>Results.next()</h2>
+<blockquote>
+<p>Shift to the next page of results, of the same length as the current.</p>
+<p>Causes a NoSuchPage error, if this results in no data.</p>
+</blockquote>
+</div>
+<div class="section" id="results-previous">
+<h2>Results.previous()</h2>
+<blockquote>
+<p>Shift to the previous page of results, of the same length as the current.</p>
+<p>Causes a NoSuchPage error, if this results in no data.</p>
 </blockquote>
 </div>
 </div>
