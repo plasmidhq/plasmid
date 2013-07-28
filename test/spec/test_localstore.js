@@ -178,7 +178,6 @@ define(['plasmid.core'], function(plasmid) {
           function() {
             var item = p.result[0];
             var refresh = new plasmid.Promise();
-            //var put = p.result.getSource().db.stores.notes.put(item.key, {created: 1, text: "ONE"})
             DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
             .then(function() {
               setTimeout(function(){
@@ -196,7 +195,6 @@ define(['plasmid.core'], function(plasmid) {
         });
       });
 
-      /*
       it('refreshes live results on changes', function(){
         var p = make_queries("live 1",
           function() {
@@ -207,8 +205,26 @@ define(['plasmid.core'], function(plasmid) {
           expect(p.result.length).toBe(1);
           expect(p.result[0].value.text).toBe("one");
         });
+
+        var p2 = make_queries("live 2",
+          function() {
+            p.result.watch();
+            var item = p.result[0];
+            var refresh = new plasmid.Promise();
+            DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
+            .then(function() {
+              setTimeout(function(){
+                refresh.ok('done');
+              },800);
+            });
+            return refresh;
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(1);
+          expect(p.result[0].value.text).toBe("ONE");
+        });
       });
-      */
 
       it('allows the result window to be set', function(){
         var p = make_queries("result window 1",

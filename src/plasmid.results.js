@@ -22,6 +22,16 @@ define(function(require, exports, module) {
         }
     }
 
+    /* Watch for updates from the store */
+
+    Results.prototype.watch = function() {
+        var results = this;
+        var store = this.db.stores[this.storename];
+        store.on('update', function(key, value) {
+            results.refresh();
+        });
+    };
+
     /* Refresh the changes */
 
     Results.prototype.refresh = function(filter, cb) {
@@ -40,7 +50,6 @@ define(function(require, exports, module) {
         }
         this.getSource().walk(filter)
         .on('each', function(obj) {
-            console.log('refreshing...', results[1]+1, obj.key, obj.value);
             results.push(obj);
             results[1]++;
         })
