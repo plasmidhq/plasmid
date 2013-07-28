@@ -138,7 +138,7 @@ define(function(require, exports, module) {
     };
 
     LocalStore.prototype.fetch = function(filter) {
-        var results = new Results(this, filter);
+        var results = new Results(this.db, this.storename, this.indexname, filter);
         var promise = new Promise();
 
         this.walk.apply(this, arguments)

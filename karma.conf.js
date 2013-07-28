@@ -49,7 +49,7 @@ autoWatch = false;
 // - PhantomJS
 // - IE (only Windows)
 browsers = [
-//    'Firefox',
+    'Firefox',
     '/usr/bin/chromium-browser',
 ];
 

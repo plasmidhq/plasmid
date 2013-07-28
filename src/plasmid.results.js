@@ -3,13 +3,24 @@ define(function(require, exports, module) {
     var promise = require('promise')
     ;
 
-    function Results(source, filter) {
+    function Results(db, storename, indexname, filter) {
         Array.call(this, []);
-        this.source = source;
         this.filter = filter;
+        this.db = db;
+        this.storename = storename;
+        this.indexname = indexname;
     }
 
     Results.prototype = new Array();
+
+    Results.prototype.getSource = function() {
+        var store = this.db.stores[this.storename];
+        if (this.indexname) {
+            return store.by(this.indexname);
+        } else {
+            return store;
+        }
+    }
 
     /* Refresh the changes */
 
@@ -27,7 +38,7 @@ define(function(require, exports, module) {
         } else {
             var filter = this.filter;
         }
-        this.source.walk(filter)
+        this.getSource().walk(filter)
         .on('each', function(obj) {
             console.log('refreshing...', results[1]+1, obj.key, obj.value);
             results.push(obj);

@@ -177,37 +177,38 @@ define(['plasmid.core'], function(plasmid) {
         var p2 = make_queries("refresh 2",
           function() {
             var item = p.result[0];
-            console.log('changing value', item.key);
             var refresh = new plasmid.Promise();
-            var put = p.result.source.db.stores.notes.put(item.key, {created: 1, text: "ONE"})
+            //var put = p.result.getSource().db.stores.notes.put(item.key, {created: 1, text: "ONE"})
+            DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
             .then(function() {
-              console.log('saved new value', item.key, arguments);
+              setTimeout(function(){
               p.result.refresh().then(function(){
-                console.log('refresh done', this === p.result);
                 refresh.ok('done');
               });
+              },0);
             });
             return refresh;
           }
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          console.log('did update?', p.result[0].key);
           expect(p.result[0].value.text).toBe("ONE");
         });
-        return;
+      });
 
-        it('does not allow multiple refreshes at the same time', function(){
-          var p3 = make_queries("refresh 3",
-            function() {
-            }
-          );
-          runs(function(){
-            expect(p.result.length).toBe(1);
-            expect(p.result[0].value.text).toBe("ONE");
-          });
+      /*
+      it('refreshes live results on changes', function(){
+        var p = make_queries("live 1",
+          function() {
+            return DB.stores.notes.by('created').fetch({start: 0, stop: 1});
+          }
+        );
+        runs(function(){
+          expect(p.result.length).toBe(1);
+          expect(p.result[0].value.text).toBe("one");
         });
       });
+      */
 
       it('allows the result window to be set', function(){
         var p = make_queries("result window 1",
