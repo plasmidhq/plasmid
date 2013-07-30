@@ -20,6 +20,8 @@ Transaction_
 
 LocalStore_
 
+Results_
+
 Credentials_
 
 SyncStore_
@@ -284,6 +286,42 @@ LocalStore.putmany(`many`)
 
     There is no varient to "add many", however.
 
+Results
+#######
+
+    Stores results from a fetch() call, and allows a number of useful operations on them.
+
+Results.watch()
+---------------
+
+    When the source store is updated, update the resutl set with new data.
+
+Results.refresh()
+-----------------
+
+    Repeat the query and update the results with current data.
+
+Results.addLimit(n)
+-------------------
+
+    Increase the limit on the number of results to object, and load the new items.
+
+    NOTE: Because this refreshes the query, even existing results from the original limit
+    could change.
+
+Results.next()
+--------------
+
+    Shift to the next page of results, of the same length as the current.
+
+    Causes a NoSuchPage error, if this results in no data.
+
+Results.previous()
+------------------
+
+    Shift to the previous page of results, of the same length as the current.
+
+    Causes a NoSuchPage error, if this results in no data.
 
 SyncStore
 #########

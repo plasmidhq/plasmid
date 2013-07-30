@@ -1,6 +1,6 @@
 {
   "name": "plasmid",
-  "version": "0.1.4-dev",
+  "version": "0.1.4",
   "repository": {
     "type": "git",
     "url": "git://github.com/ironfroggy/plasmid.git"

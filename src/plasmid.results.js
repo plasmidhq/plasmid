@@ -28,6 +28,7 @@ define(function(require, exports, module) {
         var results = this;
         var store = this.db.stores[this.storename];
         store.on('update', function(key, value) {
+            console.log('saw a change!', key, JSON.stringify(value));
             results.refresh();
         });
     };

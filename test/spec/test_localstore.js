@@ -208,9 +208,9 @@ define(['plasmid.core'], function(plasmid) {
 
         var p2 = make_queries("live 2",
           function() {
-            p.result.watch();
             var item = p.result[0];
             var refresh = new plasmid.Promise();
+            p.result.watch();
             DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
             .then(function() {
               setTimeout(function(){
