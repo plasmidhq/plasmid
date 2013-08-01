@@ -185,52 +185,48 @@ define(function(require, exports, module) {
         return value_request;
     };
 
-    LocalStore.prototype.add = function(key, value) {
-        var store = this;
+    /* Common helper for add/put methods */
+
+    LocalStore.prototype._set_item = function(action, key, value, revision) {
         var request = new Promise(this);
-        var t = this.db._getIDBTrans([this.storename], "readwrite");
-        var key = (key===null) ? util.random_token(16) : key;
-        var idbreq = t.objectStore(this.storename).add({
-            key: key,
-            value: value,
-            revision: null
-        });
-        idbreq.onsuccess = function(event) {
-            if (event.target.result) {
-                request.ok(key);
-                store.trigger('update', key, event.target.result.value);
-            } else {
-                request.trigger('missing', key);
-            }
-        };
-        idbreq.onerror = function(event) {
-            request.trigger('error', 'unknown');
-        };
+        if (action !== 'put' && action !== 'add') {
+            request.error("Action must be one of 'put' or 'add'");
+        } else {
+            var store = this;
+            var key = (key===null) ? util.random_token(16) : key;
+            var t = this.db._getIDBTrans([this.storename], "readwrite");
+            var idbstore = t.objectStore(this.storename)
+            var method = idbstore[action];
+            var idbreq = method.call(idbstore, {
+                key: key,
+                value: value,
+                revision: revision||'queue'
+            });
+            idbreq.onsuccess = function(event) {
+                if (event.target.result) {
+                    request.ok(key);
+                    store.trigger('update', key, event.target.result.value);
+                } else {
+                    request.trigger('missing', key);
+                }
+            };
+            idbreq.onerror = function(event) {
+                request.trigger('error', 'unknown');
+            };
+        }
         return request;
     };
+
+    /* Add a new object to the store. Fails if the key already exists. */
+
+    LocalStore.prototype.add = function(key, value) {
+        return this._set_item('add', key, value);
+    };
+
+    /* Put an object into the store. Overwrites the key if it already exists. */
+
     LocalStore.prototype.put = function(key, value, _revision) {
-        var store = this;
-        var autopush = this.autopush;
-        var request = new Promise(this);
-        var t = this.db._getIDBTrans([this.storename], "readwrite");
-        var key = (key===null) ? util.random_token(16) : key;
-        var idbreq = t.objectStore(this.storename).put({
-            key: key,
-            value: value,
-            revision: _revision||"queue"
-        });
-        idbreq.onsuccess = function(event) {
-            if (event.target.result) {
-                request.ok(key);
-                store.trigger('update', key, event.target.result.value);
-            } else {
-                request.trigger('missing', key);
-            }
-        };
-        idbreq.onerror = function(event) {
-            request.trigger('error', 'unknown');
-        };
-        return request;
+        return this._set_item('put', key, value, _revision);
     };
     LocalStore.prototype.putmany = function(many) {
         var store = this;
