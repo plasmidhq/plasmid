@@ -159,7 +159,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
-    //'jshint',
     'test',
     'requirejs',
     'concat:combine',
@@ -172,7 +171,6 @@ module.exports = function (grunt) {
     'requirejs',
     'concat:combine',
     'copy',
-    'uglify',
   ]);
 
   grunt.registerTask('default', ['build']);

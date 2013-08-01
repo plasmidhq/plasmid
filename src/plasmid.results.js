@@ -3,12 +3,21 @@ define(function(require, exports, module) {
     var promise = require('promise')
     ;
 
-    function Results(db, storename, indexname, filter) {
+    function Results(db, storename, indexname, filter, watching) {
         Array.call(this, []);
         this.filter = filter;
         this.db = db;
         this.storename = storename;
         this.indexname = indexname;
+        this.watching = !!watching;
+
+        var results = this;
+        var store = this.db.stores[this.storename];
+        store.on('update', function(key, value) {
+            if (results.watching) {
+                results.refresh();
+            }
+        });
     }
 
     Results.prototype = new Array();
@@ -22,15 +31,14 @@ define(function(require, exports, module) {
         }
     }
 
-    /* Watch for updates from the store */
+    /* Start watching for changes */
 
-    Results.prototype.watch = function() {
-        var results = this;
-        var store = this.db.stores[this.storename];
-        store.on('update', function(key, value) {
-            console.log('saw a change!', key, JSON.stringify(value));
-            results.refresh();
-        });
+    Results.prototype.watch = function(immediately) {
+        var immediately = (typeof immediately === 'undefined') ? true : immediately;
+        this.watching = true;
+        if (immediately) {
+            this.refresh();
+        }
     };
 
     /* Refresh the changes */
