@@ -291,15 +291,21 @@ Results
 
     Stores results from a fetch() call, and allows a number of useful operations on them.
 
-Results.watch()
+Results.watch(immediately)
 ---------------
 
     When the source store is updated, update the resutl set with new data.
+
+    The `immediately` parameter specifies if the results should be immediately refreshed
+    to catch any changes made before it started watching, or should only update on the next
+    update event. `immediately` defaults to `true`.
 
 Results.refresh()
 -----------------
 
     Repeat the query and update the results with current data.
+
+    The result set is only updated if the query succeeds.
 
 Results.addLimit(n)
 -------------------
