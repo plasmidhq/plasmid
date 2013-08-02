@@ -151,16 +151,26 @@ define(['plasmid.core'], function(plasmid) {
 
     describe('walks over indices', function () {
 
+      var fixtures = {};
+
       beforeEach(function(){
           make_database(indexed_schema);
 
-          // create fixtures
-          make_fixtures('notes', [
+          fixtures = {};
+          var fixture_data = [
             {created: 2, text: 'two'},
             {created: 4, text: 'four'},
             {created: 1, text: 'one'},
             {created: 3, text: 'three'},
-          ]);
+          ];
+
+          // create fixtures
+          make_fixtures('notes', fixture_data)
+          .then(function(keys) {
+            for (var i=0; i<keys.length; i++) {
+              fixtures[keys[i]] = fixture_data[i];
+            }
+          });
       });
       
       it('allows the results to be refreshed', function(){
@@ -439,6 +449,26 @@ define(['plasmid.core'], function(plasmid) {
             expect(p.result[2].value.text).toBe("two");
             expect(p.result[3].value.text).toBe("one");
           });
+      });
+
+      if('can access meta data', function() {
+        for (var key in fixtures) { break ; }
+        var p = make_queries(
+          function() {
+            return DB.stores.notes.meta(key, 'metafield', 123);
+          }
+        );
+        runs(function(){
+          expect(typeof p.error).toBe('undefined');
+        });
+        var p2 = make_queries(
+          function() {
+            return DB.stores.notes.meta(key, 'metafield');
+          }
+        );
+        runs(function() {
+          expect(p2.result).toBe(123)
+        })
       });
 
     })

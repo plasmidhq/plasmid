@@ -228,6 +228,7 @@ define(function(require, exports, module) {
     LocalStore.prototype.put = function(key, value, _revision) {
         return this._set_item('put', key, value, _revision);
     };
+
     LocalStore.prototype.putmany = function(many) {
         var store = this;
         var autopush = this.autopush;
@@ -262,6 +263,33 @@ define(function(require, exports, module) {
         put_next();
 
         return request;
+    };
+
+    LocalStore.prototype.meta = function(key, metaname, metavalue) {
+        var t = this.db.transaction([this.storename], 'readwrite');
+        var data = t.stores[this.storename]._get_item(key);
+        var p = new Promise(this);
+        function get_error() {
+            p.error('No such key to access meta data on');
+        }
+        if (arguments.length === 2) {
+            function work(item) {
+                p.ok(item.meta.metaname);
+            }
+        } else if (arguments.length === 3) {
+            function work(item) {
+                item.meta = item.meta || {};
+                item.meta[metaname] = metavalue;
+                this.stores[this.storename]._set_item(key, item)
+                .then(function() {
+                    p.ok();
+                }, function() {
+                    p.error();
+                });
+            }
+        }
+        data.then(work, get_error);
+        return p;
     };
 
     LocalStore.prototype._remove = function(key) {
