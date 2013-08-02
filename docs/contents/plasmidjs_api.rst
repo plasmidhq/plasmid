@@ -286,6 +286,15 @@ LocalStore.putmany(`many`)
 
     There is no varient to "add many", however.
 
+LocalStore.meta(`key`, `metaname`, `(metavalue)`)
+-------------------------------------------------
+
+    If `metavalue` is missing, retreive the meta data associated with `key` named
+    `metaname`. However, if `metavalue` is present, change the value for this
+    meta data.
+
+    Any number of arbitrary meta fields may be associated with an object.
+
 Results
 #######
 

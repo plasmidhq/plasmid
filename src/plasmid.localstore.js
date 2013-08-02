@@ -18,6 +18,14 @@ define(function(require, exports, module) {
     };
     LocalStore.prototype = new EventListener();
 
+    LocalStore.prototype.resolvePath = function(path) {
+        if (path.match(/^meta:/) !== null) {
+            return 'meta.' + path.slice(5);
+        } else {
+            return 'value.' + path;
+        }
+    };
+
     /* LocalStore.count()
      * success result is the number of objects in the store
      */

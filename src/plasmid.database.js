@@ -60,7 +60,7 @@ define(function(require, exports, module) {
             req.onupgradeneeded = function(event) {
                 var idb = event.target.result;
                 var txn = event.target.transaction;
-                var storename, indexname, idbstore, indexopt;
+                var storename, indexname, idbstore, indexopt, path;
 
                 db.idb = idb;
 
@@ -85,7 +85,8 @@ define(function(require, exports, module) {
                     for (indexname in options.schema.stores[storename].indexes) {
                         indexopt = options.schema.stores[storename].indexes[indexname];
                         if (indexopt) {
-                            idbstore.createIndex(indexname, "value." + indexopt.key,
+                            path = db.stores[storename].resolvePath(indexopt.key);
+                            idbstore.createIndex(indexname, path,
                                 {unique: indexopt.unique, multi: indexopt.multi}
                             );
                         }
