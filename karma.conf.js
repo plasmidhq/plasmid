@@ -12,6 +12,9 @@ files = [
 
   {pattern: 'src/*.js', included: false},
   {pattern: 'src/**/*.js', included: false},
+
+  {pattern: 'test/util/*.js'},
+
   {pattern: 'test/spec/test_*.js', included: false},
 
   'test/main.js',

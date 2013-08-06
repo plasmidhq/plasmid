@@ -11,12 +11,28 @@ define(function(require, exports, module) {
      *
      * Provides common helpers to work with data in an IndexedDB store
      */
-    var LocalStore = function LocalStore(options) {
-        var options = options || {};
-        this.db = options.db;
-        this.storename = options.storename;
+    var LocalStore = function LocalStore(db, storename, options) {
+        if (arguments.length > 0) {
+            var options = options || {};
+            this.db = db;
+            this.storename = storename;
+            this.options = options;
+
+            if (options.extensions) {
+                for (var i=0; i < options.extensions.length; i++) {
+                    var ext = options.extensions[i];
+                    ext.extendStore(this);
+                }
+            }
+        } else {
+            // I am a prototype
+        }
     };
     LocalStore.prototype = new EventListener();
+
+    LocalStore.prototype.toString = function() {
+        return "<LocalStore " + this.storename + ">";
+    };
 
     LocalStore.prototype.resolvePath = function(path) {
         if (path.match(/^meta:/) !== null) {
@@ -25,6 +41,13 @@ define(function(require, exports, module) {
             return 'value.' + path;
         }
     };
+    LocalStore.prototype.setAtPath = function(obj, path, value) {
+        var path_parts = path.split('.');
+        while (path_parts.length > 1) {
+            obj = obj[path_parts.splice(0, 1)[0]];
+        }
+        obj[path_parts[0]] = value;
+    }
 
     /* LocalStore.count()
      * success result is the number of objects in the store
@@ -205,15 +228,17 @@ define(function(require, exports, module) {
             var t = this.db._getIDBTrans([this.storename], "readwrite");
             var idbstore = t.objectStore(this.storename)
             var method = idbstore[action];
-            var idbreq = method.call(idbstore, {
+            var item = {
                 key: key,
                 value: value,
                 revision: revision||'queue'
-            });
+            };
+            store.trigger('preupdate', action, key, value);
+            var idbreq = method.call(idbstore, item);
             idbreq.onsuccess = function(event) {
                 if (event.target.result) {
                     request.ok(key);
-                    store.trigger('update', key, event.target.result.value);
+                    store.trigger('update', action, key, value);
                 } else {
                     request.trigger('missing', key);
                 }

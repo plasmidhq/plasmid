@@ -6,14 +6,14 @@ define(function(require, exports, module) {
 
     // SyncStore
 
-    var SyncStore = function SyncStore(options) {
+    var SyncStore = function SyncStore(db, storename, options) {
         LocalStore.apply(this, arguments);
 
         var store = this;
 
         this.options = options || {};
-        this.dbname = options.db.name;
-        this.storename = options.storename;
+        this.dbname = db.name;
+        this.storename = storename;
         this.autopush = options.autopush || false;
 
     };

@@ -3,14 +3,8 @@ define(function(require, exports, module) {
     // Promise and Event Helper
     
     function EventListener() {}
-    EventListener.prototype.trigger = function(type, args) {
-        if (arguments.length > 2) {
-            var args = Array.prototype.slice.call(arguments, 1);
-        } else if (arguments.length == 2) {
-            var args = [args];
-        } else {
-            var args = [];
-        }
+    EventListener.prototype.trigger = function(type) {
+        var args = Array.prototype.slice.call(arguments, 1);
         var onhandler = this['on' + type];
         this.__event_handlers = (this.__event_handlers || {});
         var handlers = (this.__event_handlers[type] || []);

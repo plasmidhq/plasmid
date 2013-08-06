@@ -18,13 +18,11 @@ define(function(require, exports, module) {
 
         var db = this;
         db.stores = {};
-        var st;
+        var st, stoptions;
         for (storename in options.schema.stores) {
-            st = options.schema.stores[storename].sync ? SyncStore : LocalStore;
-            db.stores[storename] = new st({
-                db: db,
-                storename: storename,
-            });
+            stoptions = options.schema.stores[storename];
+            st = stoptions.sync ? SyncStore : LocalStore;
+            db.stores[storename] = new st(db, storename, stoptions);
         }
 
         try {
@@ -94,10 +92,7 @@ define(function(require, exports, module) {
                 }
             };
 
-            this.meta = new LocalStore({
-                db: this
-            ,   storename: 'meta'
-            });
+            this.meta = new LocalStore(this, 'meta');
             this.stores.meta = this.meta;
         }
     };
@@ -144,11 +139,7 @@ define(function(require, exports, module) {
             }
 
             for (var i=0; i < stores.length; i++) {
-                this.stores[ stores[i] ] =
-                    new LocalStore({
-                        db: this,
-                        storename: stores[i]
-                    });
+                this.stores[ stores[i] ] = new LocalStore(db, stores[i]);
             }
         };
         TransactionFactory.prototype = this;
