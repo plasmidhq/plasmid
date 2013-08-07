@@ -161,6 +161,11 @@ updating data in the contained stores.</p>
 automatically create and commit appropriate single-operation transactions.</p>
 <p>The <a class="reference internal" href="#transaction">Transaction</a> API defines a <a class="reference internal" href="#transaction-abort">Transaction.abort()</a> method, and otherwise inherits
 the rest of the Database API defined here.</p>
+<p>Use the transaction object immediately. It does <em>not</em> return a Promise, and the
+transaction will be committed as soon as no operations are being made against it. If
+you need to perform multiple operations on the transaction in sequence, rather than
+in parallel, you <em>must</em> perform each next operation in the success callback of the
+previous, or the transaction will close.</p>
 </blockquote>
 </div>
 <div class="section" id="database-setremote-remotename">
@@ -322,20 +327,43 @@ them into the store in a single transaction.</p>
 <p>There is no varient to &quot;add many&quot;, however.</p>
 </blockquote>
 </div>
+<div class="section" id="localstore-meta-key-metaname-metavalue">
+<h2>LocalStore.meta(<cite>key</cite>, <cite>metaname</cite>, <cite>(metavalue)</cite>)</h2>
+<blockquote>
+<p>If <cite>metavalue</cite> is missing, retreive the meta data associated with <cite>key</cite> named
+<cite>metaname</cite>. However, if <cite>metavalue</cite> is present, change the value for this
+meta data.</p>
+<p>Any number of arbitrary meta fields may be associated with an object.</p>
+</blockquote>
+</div>
 </div>
 <div class="section" id="results">
 <h1>Results</h1>
 <blockquote>
 Stores results from a fetch() call, and allows a number of useful operations on them.</blockquote>
-<div class="section" id="results-watch">
-<h2>Results.watch()</h2>
+<div class="section" id="results-watch-immediately">
+<h2>Results.watch(immediately)</h2>
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">&lt;string&gt;</tt>, line 310)</p>
+<p>Title underline too short.</p>
+<pre class="literal-block">
+Results.watch(immediately)
+---------------
+</pre>
+</div>
 <blockquote>
-When the source store is updated, update the resutl set with new data.</blockquote>
+<p>When the source store is updated, update the resutl set with new data.</p>
+<p>The <cite>immediately</cite> parameter specifies if the results should be immediately refreshed
+to catch any changes made before it started watching, or should only update on the next
+update event. <cite>immediately</cite> defaults to <cite>true</cite>.</p>
+</blockquote>
 </div>
 <div class="section" id="results-refresh">
 <h2>Results.refresh()</h2>
 <blockquote>
-Repeat the query and update the results with current data.</blockquote>
+<p>Repeat the query and update the results with current data.</p>
+<p>The result set is only updated if the query succeeds.</p>
+</blockquote>
 </div>
 <div class="section" id="results-addlimit-n">
 <h2>Results.addLimit(n)</h2>
