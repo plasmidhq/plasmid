@@ -71,6 +71,7 @@ define(function(require, exports, module) {
                 p.ok();
             }
         });
+        self.__refreshing = p;
         return p;
     };
 

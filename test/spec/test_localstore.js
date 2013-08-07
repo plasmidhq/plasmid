@@ -219,17 +219,13 @@ define(['plasmid.core'], function(plasmid) {
         var p2 = make_queries("live 2",
           function() {
             var item = p.result[0];
-            var refresh = new plasmid.Promise();
             p.result.watch();
-            DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
-            .then(function() {
-              setTimeout(function(){
-                refresh.ok('done');
-              },800);
-            });
-            return refresh;
+            return DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
           }
         );
+        make_queries(function(){
+          return p.result.__refreshing;
+        });
         runs(function(){
           expect(p.result.length).toBe(1);
           expect(p.result[0].value.text).toBe("ONE");

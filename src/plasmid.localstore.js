@@ -212,8 +212,10 @@ define(function(require, exports, module) {
             });
             idbreq.onsuccess = function(event) {
                 if (event.target.result) {
-                    request.ok(key);
-                    store.trigger('update', key, event.target.result.value);
+                    setTimeout(function(){
+                        request.ok(key);
+                        store.trigger('update', key, event.target.result.value);
+                    });
                 } else {
                     request.trigger('missing', key);
                 }
