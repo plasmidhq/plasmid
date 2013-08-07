@@ -307,7 +307,7 @@ Results
     Stores results from a fetch() call, and allows a number of useful operations on them.
 
 Results.watch(immediately)
----------------
+--------------------------
 
     When the source store is updated, update the resutl set with new data.
 
