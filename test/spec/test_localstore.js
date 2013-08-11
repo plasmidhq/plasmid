@@ -4,13 +4,15 @@ define(['plasmid.core'], function(plasmid) {
   describe('Plasmid: LocalStore', function () {
 
     var DB
+    ,   DBprefix = parseInt(Math.random() * 1000000).toString() + '__'
     ,   names = [];
     ;
 
     afterEach(function () {
+        return;
       var closed = false;
     
-      console.debug("closing...");
+      console.log("closing...", DB.idb.name);
       if (!!DB && !!DB.idb) {
         var close = indexedDB.deleteDatabase(DB.idb.name);
         close.onsuccess = function() {
@@ -22,7 +24,7 @@ define(['plasmid.core'], function(plasmid) {
     var db_counter = 0;
     function make_database(schema) {
       var out = new plasmid.Promise();
-      var name = db_counter++;
+      var name = DBprefix + db_counter++;
       names.push(name);
       runs(function(){
         DB = new plasmid.Database({
@@ -59,7 +61,7 @@ define(['plasmid.core'], function(plasmid) {
       out.toBeDone = function() {
         return typeof out.result !== 'undefined';
       }
-      waitsFor(out.toBeDone, "fixtures to be made", 1000);
+      waitsFor(out.toBeDone, "fixtures to be made", 1500);
       return out;
     }
 
@@ -473,7 +475,7 @@ define(['plasmid.core'], function(plasmid) {
       for (var i=0; i < names.length; i++) {
         var close = indexedDB.deleteDatabase(name[i]);
         close.onsuccess = function() {
-          console.debug("closed");
+          console.log("closed");
         }
       }
     });

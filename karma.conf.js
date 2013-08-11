@@ -48,10 +48,17 @@ autoWatch = false;
 // - Safari (only Mac)
 // - PhantomJS
 // - IE (only Windows)
+
 browsers = [
     'Firefox',
-    '/usr/bin/chromium-browser',
 ];
+var isWin = !!process.platform.match(/^win/);
+if (isWin) {
+    browsers.push('IE');
+    browsers.push('Chrome');
+} else {
+    browsers.push('/usr/bin/chromium-browser');
+}
 
 // If browser does not capture in given timeout [ms], kill it
 captureTimeout = 30000;
