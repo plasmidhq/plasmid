@@ -4,28 +4,28 @@ define(['plasmid.core'], function(plasmid) {
   describe('Plasmid: LocalStore', function () {
 
     var DB
-    ,   DBprefix = parseInt(Math.random() * 1000000).toString() + '__'
+    ,   DBprefix = ""//parseInt(Math.random() * 1000000).toString() + '__'
     ,   names = [];
     ;
-
-    afterEach(function () {
-        return;
-      var closed = false;
-    
-      console.log("closing...", DB.idb.name);
-      if (!!DB && !!DB.idb) {
-        var close = indexedDB.deleteDatabase(DB.idb.name);
-        close.onsuccess = function() {
-          console.debug("closed");
-        }
-      }
-    });
 
     var db_counter = 0;
     function make_database(schema) {
       var out = new plasmid.Promise();
       var name = DBprefix + db_counter++;
       names.push(name);
+        
+      var deleted = false;
+      runs(function(){
+          var close = indexedDB.deleteDatabase(name);
+          close.onsuccess = function() {
+            deleted = true;
+          };
+          close.onerror = function() {
+            deleted = true;
+          };
+      });
+      waitsFor(function(){ return deleted; }, "deleting database...", 2000);
+        
       runs(function(){
         DB = new plasmid.Database({
           name: name,
