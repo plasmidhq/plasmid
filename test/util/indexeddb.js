@@ -9,15 +9,27 @@ var DB
 ,   make_queries
 ,   delete_databases
 
-,   db_prefix = Math.random().toString().slice(2);
 ;
 
 require(['plasmid'], function(plasmid) {
 
 make_database = function(schema) {
   var out = new plasmid.Promise();
-  var name = db_prefix + db_counter++;
+  var name = 'DB_' + db_counter++;
   names.push(name);
+    
+  var deleted = false;
+  runs(function(){
+      var close = indexedDB.deleteDatabase(name);
+      close.onsuccess = function() {
+        deleted = true;
+      };
+      close.onerror = function() {
+        deleted = true;
+      };
+  });
+  waitsFor(function(){ return deleted; }, "deleting database...", 2000);
+    
   runs(function(){
     DB = new plasmid.Database({
       name: name,
@@ -36,6 +48,7 @@ make_database = function(schema) {
   }, 'database to be ready', 1500);
   return out;
 }
+
 
 make_fixtures = function(store, objects) {
   var out = new plasmid.Promise();
@@ -109,17 +122,6 @@ make_queries = function() {
     return c._status !== 'waiting';
   }, n, 1000);
   return r;
-}
-
-delete_databases = function() {
-    runs(function(){
-      for (var i=0; i < names.length; i++) {
-        var close = indexedDB.deleteDatabase(name[i]);
-        close.onsuccess = function() {
-          console.debug("closed");
-        }
-      }
-    });
 }
 
 });

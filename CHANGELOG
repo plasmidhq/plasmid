@@ -1,14 +1,19 @@
-Release 0.1.4 - PLANNED
------------------------
+Release 0.2.0 - August 6, 2013
+------------------------------
+
+This marks the first stable release of the Plasmid JS library. The 0.2.x API should remain
+unchanged, and may receive bug fixes. Any breaking features will go into the new development
+branch and released in the 0.3.x line.
+
+- Added meta() to add and read meta data associated with entries
+- Added Result Watching, which causes query results to refresh when the store is updated
+- Cleaned up add/put code
+
+Release 0.1.4 - July 30, 2013
+-----------------------------
 
 - Cleaned up module layout
 - Add previous pagination to result sets, and sub-page scrolling through results
-
-TODO: This will be a meaty release with a lot of new features around queries
-
-- Possibly unify fetch and walk into query() with a cache flag
-- Allow Results to watch for updates and refresh itself accordingly
-- All changing the size of result sets
 
 Release 0.1.3 - June 1, 2013
 ----------------------------

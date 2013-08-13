@@ -237,8 +237,10 @@ define(function(require, exports, module) {
             var idbreq = method.call(idbstore, item);
             idbreq.onsuccess = function(event) {
                 if (event.target.result) {
-                    request.ok(key);
-                    store.trigger('update', action, key, value);
+                    setTimeout(function(){
+                        request.ok(key);
+                        store.trigger('update', action, key, event.target.result.value);
+                    });
                 } else {
                     request.trigger('missing', key);
                 }
@@ -282,7 +284,7 @@ define(function(require, exports, module) {
                 idbreq.onsuccess = function(event) {
                     if (event.target.result) {
                         put_next();
-                        store.trigger('update', key, event.target.result.value);
+                        store.trigger('update', 'put', key, event.target.result.value);
                     } else {
                         request.trigger('missing', key);
                     }

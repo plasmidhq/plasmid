@@ -17,6 +17,15 @@ define(function(require, exports, module) {
         this.remotename = options.remotename || null;
 
         var db = this;
+        
+        try {
+            var req = indexedDB.open(this.localname.toString(), options.schema.version);       
+        } catch (e) {
+            db.trigger('openerror', e);
+            db.idb = null;
+        }
+        
+       
         db.stores = {};
         var st, stoptions;
         for (storename in options.schema.stores) {
@@ -25,20 +34,18 @@ define(function(require, exports, module) {
             db.stores[storename] = new st(db, storename, stoptions);
         }
 
-        try {
-            var req = indexedDB.open(this.localname, options.schema.version);
-        } catch (e) {
-            db.trigger('openerror', e);
-            db.idb = null;
-        }
-
         if (req) {
             req.onerror = function(event) {
                 db.trigger('openerror', event);
             };
+            
+            req.onblocked = function(event) {
+                // For now, we don't support multiple tabs coordinating
+                db.trigger('openerror', event);
+            };
+            
             req.onsuccess = function(event) {
                 db.idb = event.target.result;
-
 
                 if (options.autoSync) {
                     db.autoSync(options.autoSync);

@@ -42,10 +42,10 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
           put_keys: [],
 
           updated: function(store, action, key, value){
-            watcher[action + '_keys'].push(key);
           },
 
           preupdated: function(store, action, key, value){
+            watcher[action + '_keys'].push(key);
           }
         };
 
@@ -71,8 +71,6 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
       });
 
     });
-
-    delete_databases();
 
   });
 

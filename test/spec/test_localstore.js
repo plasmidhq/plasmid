@@ -3,18 +3,6 @@
 define(['plasmid.core'], function(plasmid) {
   describe('Plasmid: LocalStore', function () {
 
-    afterEach(function () {
-      var closed = false;
-    
-      console.debug("closing...");
-      if (!!DB && !!DB.idb) {
-        var close = indexedDB.deleteDatabase(DB.idb.name);
-        close.onsuccess = function() {
-          console.debug("closed");
-        }
-      }
-    });
-
     it('adds objects with unique keys', function () {
       make_database({
         version: 1,
@@ -117,17 +105,13 @@ define(['plasmid.core'], function(plasmid) {
         var p2 = make_queries("live 2",
           function() {
             var item = p.result[0];
-            var refresh = new plasmid.Promise();
             p.result.watch();
-            DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
-            .then(function() {
-              setTimeout(function(){
-                refresh.ok('done');
-              },800);
-            });
-            return refresh;
+            return DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
           }
         );
+        make_queries(function(){
+          return p.result.__refreshing;
+        });
         runs(function(){
           expect(p.result.length).toBe(1);
           expect(p.result[0].value.text).toBe("ONE");
@@ -370,8 +354,6 @@ define(['plasmid.core'], function(plasmid) {
       });
 
     })
-
-    delete_databases();
 
   })
 })

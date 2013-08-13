@@ -115,6 +115,12 @@ Database.transaction(`stores`, `[mode]`)
     The Transaction_ API defines a `Transaction.abort()`_ method, and otherwise inherits
     the rest of the Database API defined here.
 
+    Use the transaction object immediately. It does *not* return a Promise, and the
+    transaction will be committed as soon as no operations are being made against it. If
+    you need to perform multiple operations on the transaction in sequence, rather than
+    in parallel, you *must* perform each next operation in the success callback of the
+    previous, or the transaction will close.
+
 Database.setRemote(`remotename`)
 --------------------------------
 
@@ -301,7 +307,7 @@ Results
     Stores results from a fetch() call, and allows a number of useful operations on them.
 
 Results.watch(immediately)
----------------
+--------------------------
 
     When the source store is updated, update the resutl set with new data.
 
