@@ -3,8 +3,13 @@
 define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
   describe('Plasmid: Extensions', function() {
 
-    var created = new ext.Timestamp('created', 'added', 'indexed');
-    var updated = new ext.Timestamp('updated', 'saved');
+    var C = 0;
+    function counter() {
+      return C++;
+    }
+
+    var created = new ext.Default('created', 'add', 'indexed', counter);
+    var updated = new ext.Default('updated', 'put', false, counter);
 
     var schema_ext = {
       version: 1,
@@ -13,7 +18,7 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
           sync: false,
           extensions: [
             created,
-          //  updated,
+            updated,
           ]
         }
       }
@@ -24,13 +29,13 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
       it('sets up event hooks for extension', function(){
 
         spyOn(created, 'extendStore');
-        //spyOn(updated, 'extendStore');
+        spyOn(updated, 'extendStore');
 
         make_database(schema_ext);
 
         runs(function(){
           expect(created.extendStore).toHaveBeenCalled();
-          //expect(updated.extendStore).toHaveBeenCalled();
+          expect(updated.extendStore).toHaveBeenCalled();
         });
       });
 
@@ -42,7 +47,7 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
           events.push({action:action, key:key, value:value});
         });
 
-        var p = make_queries('add X',
+        var p = make_queries('writes to track by extension',
           function () {
             return DB.stores.notes.add('X', {note: 123});
           },
@@ -62,6 +67,26 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
           expect(events[1].value.note).toBe('abc');
         });
 
+      });
+
+      it('injects dates', function(){
+
+        C = 0;
+        make_database(schema_ext);
+
+        make_queries('writes to track by extension',
+          function () {
+            return DB.stores.notes.add('X', {note: 123});
+          }
+        );
+        var p = make_queries('get saved value',
+          function() {
+            return DB.stores.notes.get('X');
+          }
+        );
+        runs(function(){
+          expect(C).toBe(1);
+        });
       });
 
     });

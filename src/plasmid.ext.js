@@ -20,11 +20,9 @@ define(function(require, exports, module) {
 
   };
 
-  exports.Timestamp = function(path, when, indexed) {
-    if (when !== 'added' && when != 'saved') {
-      throw "Timestamp second argument must be 'saved' or 'added'";
-    } else if (!!indexed && indexed != 'indexed') {
-      throw "Timestamp third argument must be missing or 'indexed'";
+  exports.Default = function(path, when, indexed, callback) {
+    if (!!indexed && indexed != 'indexed') {
+      throw "Default third argument must be missing or 'indexed'";
     }
     this.path = path;
     this.when = when;
@@ -32,10 +30,14 @@ define(function(require, exports, module) {
 
     this.on('storepreupdate', function(store, action, key, value) {
       if (action === when) {
-        store.setAtPath(value, path, new Date());
-        console.log('set', value);
+        store.setAtPath(value, path, callback());
       }
     });
+  };
+  exports.Default.prototype = new ExtensionBase();
+
+  exports.Timestamp = function(path, when, indexed) {
+    exports.Default.call(this, path, when, indexed, function(){ return new Date(); });
   };
   exports.Timestamp.prototype = new ExtensionBase();
 
