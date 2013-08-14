@@ -43,8 +43,13 @@ define(function(require, exports, module) {
     };
     LocalStore.prototype.setAtPath = function(obj, path, value) {
         var path_parts = path.split('.');
+        var seg;
         while (path_parts.length > 1) {
-            obj = obj[path_parts.splice(0, 1)[0]];
+            seg = path_parts.splice(0, 1)[0];
+            if (typeof obj[seg] === 'undefined') {
+                obj[seg] = {};
+            }
+            obj = obj[seg];
         }
         obj[path_parts[0]] = value;
     }
@@ -265,15 +270,19 @@ define(function(require, exports, module) {
     };
 
     LocalStore.prototype.meta = function(key, metaname, metavalue) {
-        var t = this.db.transaction([this.storename], 'readwrite');
-        var data = t.stores[this.storename]._get_item(key);
+        var data = this._get_item(key);
         var p = new Promise(this);
         function get_error() {
             p.error('No such key to access meta data on');
         }
-        if (arguments.length === 2) {
+        if (arguments.length < 3) {
             function work(item) {
-                p.ok(item.meta.metaname);
+                if (!!metaname) {
+                    p.ok(item.meta[metaname]);
+                } else {
+                    console.log('meta', key, JSON.stringify(item));
+                    p.ok(item.meta);
+                }
             }
         } else if (arguments.length === 3) {
             function work(item) {

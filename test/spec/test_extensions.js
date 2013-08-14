@@ -8,8 +8,8 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
       return C++;
     }
 
-    var created = new ext.Default('created', 'add', 'indexed', counter);
-    var updated = new ext.Default('updated', 'put', false, counter);
+    var created = new ext.Default('created', 'add', counter);
+    var updated = new ext.Default('updated', counter);
 
     var schema_ext = {
       version: 1,
@@ -85,7 +85,27 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
           }
         );
         runs(function(){
-          expect(C).toBe(1);
+          expect(C).toBe(2);
+          expect(p.result.created).toBe(0);
+          expect(p.result.updated).toBe(1);
+        });
+
+        make_queries('writes to track by extension',
+          function () {
+            var X = p.result;
+            X.note = 'abc';
+            return DB.stores.notes.put('X', X);
+          }
+        );
+        var p2 = make_queries('get saved value',
+          function() {
+            return DB.stores.notes.get('X');
+          }
+        );
+        runs(function(){
+          expect(C).toBe(3);
+          expect(p2.result.created).toBe(0);
+          expect(p2.result.updated).toBe(2);
         });
       });
 
