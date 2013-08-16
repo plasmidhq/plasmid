@@ -29,7 +29,7 @@ define(function(require, exports, module) {
     this.path = path;
     this.when = when;
 
-    this.on('storepreupdate', function(store, action, key, value) {
+    this.on('storepreupdate', function(store, action, value) {
       if (!when || action === when) {
         var inj = callback();
         store.setAtPath(value, path, inj);

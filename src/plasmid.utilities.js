@@ -2,6 +2,22 @@ define(function(require, exports, module) {
 
     exports.noop = function noop(){};
 
+    exports.extend = function(dest, src) {
+        for (var prop in src) {
+            if (src.hasOwnProperty(prop)) {
+                dest[prop] = src[prop];
+            }
+        }
+    };
+
+    exports.defaults = function(dest, src) {
+        for (var prop in src) {
+            if (src.hasOwnProperty(prop) && !dest.hasOwnProperty(prop)) {
+                dest[prop] = src[prop];
+            }
+        }
+    };
+
     exports.bind = function bind(ctx) {
         var args = Array.apply(this, arguments);
         var ctx = Array.prototype.shift.apply(args);

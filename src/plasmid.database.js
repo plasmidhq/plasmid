@@ -60,7 +60,15 @@ define(function(require, exports, module) {
                 function set_remote(remotename) {
                     db.remotename = remotename;
                 }
+
+                if (db._new) {
+                    db.meta.add({key: "last_revision", value: 1});
+                    db.meta.add({key: "plasmid_schema_version", value: 1});
+                    db.meta.add({key: "remote_url", value: db._getRemoteEndpoint()});
+                }
+
                 db.trigger('opensuccess')
+                db._new = false;
             };
             req.onupgradeneeded = function(event) {
                 var idb = event.target.result;
@@ -71,18 +79,18 @@ define(function(require, exports, module) {
 
                 // Meta storage
                 if (!idb.objectStoreNames.contains('meta')) {
+                    db._new = true;
                     var metastore = idb.createObjectStore('meta', {keyPath: 'key'});
                     metastore.createIndex('key', 'key', {unique: true});
 
-                    metastore.add({key: "last_revision", value: 1});
-                    metastore.add({key: "plasmid_schema_version", value: 1});
-                    metastore.add({key: "remote_url", value: db._getRemoteEndpoint()});
+                    db.meta = new LocalStore(db, 'meta');
+                    db.stores.meta = db.meta;
                 }
 
                 // Data storage
                 for (storename in options.schema.stores) {
                     if (!idb.objectStoreNames.contains(storename)) {
-                        var idbstore = idb.createObjectStore(storename, {keyPath: 'key'});
+                        var idbstore = idb.createObjectStore(storename, {keyPath: '_id'});
                         idbstore.createIndex('revision', 'revision', {unique: false});
                     } else {
                         idbstore = txn.objectStore(storename);
@@ -90,8 +98,7 @@ define(function(require, exports, module) {
                     for (indexname in options.schema.stores[storename].indexes) {
                         indexopt = options.schema.stores[storename].indexes[indexname];
                         if (indexopt) {
-                            path = db.stores[storename].resolvePath(indexopt.key);
-                            idbstore.createIndex(indexname, path,
+                            idbstore.createIndex(indexname, indexopt.key,
                                 {unique: indexopt.unique, multi: indexopt.multi}
                             );
                         }
@@ -99,11 +106,14 @@ define(function(require, exports, module) {
                 }
             };
 
-            this.meta = new LocalStore(this, 'meta');
             this.stores.meta = this.meta;
         }
     };
     Database.prototype = new EventListener();
+
+    Database.prototype.toString = function() {
+        return "<Database "+this.name+">";
+    };
 
     Database.prototype._getIDBTrans = function() {
         var idbt = this.idb.transaction.apply(this.idb, arguments);

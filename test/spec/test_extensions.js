@@ -42,28 +42,29 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
       it('triggers correct extension events', function() {
         make_database(schema_ext);
 
+        var X = {note: 123};
+        var Y = {note: 'abc'};
+
         var events = [];
-        created.on('storepreupdate', function(store, action, key, value) {
-          events.push({action:action, key:key, value:value});
+        created.on('storepreupdate', function(store, action, value) {
+          events.push({action:action, value:value});
         });
 
         var p = make_queries('writes to track by extension',
           function () {
-            return DB.stores.notes.add('X', {note: 123});
+            return DB.stores.notes.add(X);
           },
           function () {
-            return DB.stores.notes.put('Y', {note: 'abc'});
+            return DB.stores.notes.put(Y);
           }
         );
         runs(function() {
           expect(events.length).toBe(2);
 
           expect(events[0].action).toBe('add');
-          expect(events[0].key).toBe('X');
           expect(events[0].value.note).toBe(123);
 
           expect(events[1].action).toBe('put');
-          expect(events[1].key).toBe('Y');
           expect(events[1].value.note).toBe('abc');
         });
 
@@ -71,17 +72,18 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
 
       it('injects dates', function(){
 
+        var X = {note: 123};
         C = 0;
         make_database(schema_ext);
 
         make_queries('writes to track by extension',
           function () {
-            return DB.stores.notes.add('X', {note: 123});
+            return DB.stores.notes.add(X);
           }
         );
         var p = make_queries('get saved value',
           function() {
-            return DB.stores.notes.get('X');
+            return DB.stores.notes.get(X._id);
           }
         );
         runs(function(){
@@ -94,12 +96,12 @@ define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
           function () {
             var X = p.result;
             X.note = 'abc';
-            return DB.stores.notes.put('X', X);
+            return DB.stores.notes.put(X);
           }
         );
         var p2 = make_queries('get saved value',
           function() {
-            return DB.stores.notes.get('X');
+            return DB.stores.notes.get(X._id);
           }
         );
         runs(function(){

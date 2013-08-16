@@ -6,20 +6,23 @@ define(['plasmid.core'], function(plasmid) {
     it('adds objects with unique keys', function () {
       make_database({
         version: 1,
+        stores: {
+          notes: {sync: false}
+        }
       });
 
-      var keys = make_fixtures('meta', [
-        "test 1 2 3",
-      ]);
+      var X = {note: "test 1 2 3"};
+
+      var keys = make_fixtures('notes', [X]);
 
       var values = make_queries(
         function() {
-          return DB.meta.get(keys.result[0])
+          return DB.stores.notes.get(X._id)
         }
       );
   
       runs(function() {
-        expect(values.result).toBe("test 1 2 3");
+        expect(values.result.note).toBe("test 1 2 3");
       });
     })
 
@@ -67,14 +70,15 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          expect(p.result[0].value.text).toBe("one");
+          expect(p.result[0].text).toBe("one");
         });
 
         var p2 = make_queries("refresh 2",
           function() {
             var item = p.result[0];
             var refresh = new plasmid.Promise();
-            DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
+            item.text = "ONE"
+            DB.stores.notes.put(item)
             .then(function() {
               setTimeout(function(){
               p.result.refresh().then(function(){
@@ -87,7 +91,7 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          expect(p.result[0].value.text).toBe("ONE");
+          expect(p.result[0].text).toBe("ONE");
         });
       });
 
@@ -99,14 +103,15 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          expect(p.result[0].value.text).toBe("one");
+          expect(p.result[0].text).toBe("one");
         });
 
         var p2 = make_queries("live 2",
           function() {
             var item = p.result[0];
+            item.text = "ONE";
             p.result.watch();
-            return DB.stores.notes.put(item.key, {created: 1, text: "ONE"})
+            return DB.stores.notes.put(item);
           }
         );
         make_queries(function(){
@@ -114,7 +119,7 @@ define(['plasmid.core'], function(plasmid) {
         });
         runs(function(){
           expect(p.result.length).toBe(1);
-          expect(p.result[0].value.text).toBe("ONE");
+          expect(p.result[0].text).toBe("ONE");
         });
       });
 
@@ -126,7 +131,7 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          expect(p.result[0].value.text).toBe("one");
+          expect(p.result[0].text).toBe("one");
         });
 
         var p2 = make_queries("result window 2",
@@ -136,7 +141,7 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          expect(p.result[0].value.text).toBe("two");
+          expect(p.result[0].text).toBe("two");
         });
       });
 
@@ -148,7 +153,7 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(1);
-          expect(p.result[0].value.text).toBe("one");
+          expect(p.result[0].text).toBe("one");
         });
 
         var p2 = make_queries("result limit 2",
@@ -158,8 +163,8 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(2);
-          expect(p.result[0].value.text).toBe("one");
-          expect(p.result[1].value.text).toBe("two");
+          expect(p.result[0].text).toBe("one");
+          expect(p.result[1].text).toBe("two");
         });
       });
 
@@ -171,8 +176,8 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(2);
-          expect(p.result[0].value.text).toBe("one");
-          expect(p.result[1].value.text).toBe("two");
+          expect(p.result[0].text).toBe("one");
+          expect(p.result[1].text).toBe("two");
         });
 
         var p2 = make_queries("paging 2",
@@ -182,8 +187,8 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(2);
-          expect(p.result[0].value.text).toBe("three");
-          expect(p.result[1].value.text).toBe("four");
+          expect(p.result[0].text).toBe("three");
+          expect(p.result[1].text).toBe("four");
         });
 
         var p3 = make_queries("paging 3",
@@ -203,8 +208,8 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(2);
-          expect(p.result[0].value.text).toBe("one");
-          expect(p.result[1].value.text).toBe("two");
+          expect(p.result[0].text).toBe("one");
+          expect(p.result[1].text).toBe("two");
         });
 
         var p5 = make_queries("paging 5",
@@ -227,8 +232,8 @@ define(['plasmid.core'], function(plasmid) {
         );
         runs(function(){
           expect(p.result.length).toBe(2);
-          expect(p.result[0].value.text).toBe("two");
-          expect(p.result[1].value.text).toBe("three");
+          expect(p.result[0].text).toBe("two");
+          expect(p.result[1].text).toBe("three");
         });
       });
 
@@ -260,7 +265,7 @@ define(['plasmid.core'], function(plasmid) {
           runs(function() {
             // expect on data
             expect(upto.result.length).toBe(1);
-            expect(upto.result[0].value.text, "one");
+            expect(upto.result[0].text, "one");
           });
       });
 
@@ -273,8 +278,8 @@ define(['plasmid.core'], function(plasmid) {
           runs(function() {
             // expect on data
             expect(downto.result.length).toBe(2);
-            expect(downto.result[0].value.text, "three");
-            expect(downto.result[1].value.text, "four");
+            expect(downto.result[0].text, "three");
+            expect(downto.result[1].text, "four");
           });
       });
 
@@ -287,8 +292,8 @@ define(['plasmid.core'], function(plasmid) {
           runs(function() {
             // expect on data
             expect(uptoinc.result.length).toBe(2);
-            expect(uptoinc.result[0].value.text, "one");
-            expect(uptoinc.result[1].value.text, "two");
+            expect(uptoinc.result[0].text, "one");
+            expect(uptoinc.result[1].text, "two");
           });
       });
 
@@ -300,8 +305,8 @@ define(['plasmid.core'], function(plasmid) {
           );
           runs(function() {
             expect(between.result.length).toBe(2);
-            expect(between.result[0].value.text).toBe("two");
-            expect(between.result[1].value.text).toBe("three");
+            expect(between.result[0].text).toBe("two");
+            expect(between.result[1].text).toBe("three");
           });
       });
 
@@ -313,7 +318,7 @@ define(['plasmid.core'], function(plasmid) {
           );
           runs(function() {
             expect(exact.result.length).toBe(1);
-            expect(exact.result[0].value.text).toBe("three");
+            expect(exact.result[0].text).toBe("three");
           });
       });
 
@@ -326,10 +331,10 @@ define(['plasmid.core'], function(plasmid) {
           );
           runs(function() {
             expect(p.result.length).toBe(4);
-            expect(p.result[0].value.text).toBe("four");
-            expect(p.result[1].value.text).toBe("three");
-            expect(p.result[2].value.text).toBe("two");
-            expect(p.result[3].value.text).toBe("one");
+            expect(p.result[0].text).toBe("four");
+            expect(p.result[1].text).toBe("three");
+            expect(p.result[2].text).toBe("two");
+            expect(p.result[3].text).toBe("one");
           });
       });
 

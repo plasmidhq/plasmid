@@ -34,13 +34,6 @@ define(function(require, exports, module) {
         return "<LocalStore " + this.storename + ">";
     };
 
-    LocalStore.prototype.resolvePath = function(path) {
-        if (path.match(/^meta:/) !== null) {
-            return 'meta.' + path.slice(5);
-        } else {
-            return 'value.' + path;
-        }
-    };
     LocalStore.prototype.setAtPath = function(obj, path, value) {
         var path_parts = path.split('.');
         var seg;
@@ -198,7 +191,7 @@ define(function(require, exports, module) {
             if (event.target.result) {
                 request.trigger('success', event.target.result);
             } else {
-                request.trigger('missing', key);
+                request.trigger('missing', JSON.stringify(key));
             }
         };
         idbreq.onerror = function(event) {
@@ -212,7 +205,7 @@ define(function(require, exports, module) {
         var item_request = this._get_item(key);
         var value_request = new Promise(this);
         item_request.then(function(item) {
-            value_request.ok(item.value);
+            value_request.ok(item);
         }).on('error', function(e) {
             value_request.trigger('error', e);
         }).on('missing', function() {
@@ -223,31 +216,33 @@ define(function(require, exports, module) {
 
     /* Common helper for add/put methods */
 
-    LocalStore.prototype._set_item = function(action, key, value, revision) {
+    LocalStore.prototype._set_item = function(action, value) {
         var request = new Promise(this);
         if (action !== 'put' && action !== 'add') {
             request.error("Action must be one of 'put' or 'add'");
         } else {
             var store = this;
-            var key = (key===null) ? util.random_token(16) : key;
+            var key = util.random_token(16);
             var t = this.db._getIDBTrans([this.storename], "readwrite");
             var idbstore = t.objectStore(this.storename)
             var method = idbstore[action];
-            var item = {
-                key: key,
-                value: value,
-                revision: revision||'queue'
-            };
-            store.trigger('preupdate', action, key, value);
-            var idbreq = method.call(idbstore, item);
+
+            util.defaults(value, {
+                '_id': key,
+                '_revision': 'queue',
+            });
+            
+            store.trigger('preupdate', action, value);
+            console.log(action, JSON.stringify(value));
+            var idbreq = method.call(idbstore, value);
             idbreq.onsuccess = function(event) {
                 if (event.target.result) {
                     setTimeout(function(){
-                        request.ok(key);
-                        store.trigger('update', action, key, event.target.result.value);
+                        request.ok(value);
+                        store.trigger('update', action, value);
                     });
                 } else {
-                    request.trigger('missing', key);
+                    request.trigger('error', 'unknown');
                 }
             };
             idbreq.onerror = function(event) {
@@ -259,48 +254,17 @@ define(function(require, exports, module) {
 
     /* Add a new object to the store. Fails if the key already exists. */
 
-    LocalStore.prototype.add = function(key, value) {
-        return this._set_item('add', key, value);
+    LocalStore.prototype.add = function(value) {
+        return this._set_item('add', value);
     };
 
     /* Put an object into the store. Overwrites the key if it already exists. */
 
-    LocalStore.prototype.put = function(key, value, _revision) {
-        return this._set_item('put', key, value, _revision);
+    LocalStore.prototype.put = function(value) {
+        return this._set_item('put', value);
     };
 
-    LocalStore.prototype.meta = function(key, metaname, metavalue) {
-        var data = this._get_item(key);
-        var p = new Promise(this);
-        function get_error() {
-            p.error('No such key to access meta data on');
-        }
-        if (arguments.length < 3) {
-            function work(item) {
-                if (!!metaname) {
-                    p.ok(item.meta[metaname]);
-                } else {
-                    console.log('meta', key, JSON.stringify(item));
-                    p.ok(item.meta);
-                }
-            }
-        } else if (arguments.length === 3) {
-            function work(item) {
-                item.meta = item.meta || {};
-                item.meta[metaname] = metavalue;
-                this.stores[this.storename]._set_item(key, item)
-                .then(function() {
-                    p.ok();
-                }, function() {
-                    p.error();
-                });
-            }
-        }
-        data.then(work, get_error);
-        return p;
-    };
-
-    LocalStore.prototype._remove = function(key) {
+    LocalStore.prototype.remove = function(key) {
         var store = this;
         var request = new Promise(this);
         var t = this.db._getIDBTrans([this.storename], "readwrite");

@@ -55,7 +55,7 @@ make_fixtures = function(store, objects) {
   runs(function(){
     var promises = [], p;
     for (var i=0; i < objects.length; i++) {
-      p = DB.stores[store].add(null, objects[i]);
+      p = DB.stores[store].add(objects[i]);
       promises.push(p);
     }
     plasmid.Promise.chain(promises)
@@ -85,7 +85,7 @@ make_queries = function() {
       p = f();
       c.push(p);
       if (typeof p === 'undefined') {
-          console.log("ERROR make_queries():", n, f);
+          console.log("ERROR make_queries():", n, f.toString());
           throw "query function did not return a promise!";
       }
       p.then(function() {
