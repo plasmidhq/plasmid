@@ -1,23 +1,6 @@
-var tests = Object.keys(window.__karma__.files).filter(function (file) {
-      return /test_.*\.js$/.test(file);
-});
-
-requirejs.config({
-    // Karma serves files from '/base'
-    baseUrl: '/base/src',
-
-    paths: {
-    },
-
-    shim: {
-        'underscore': {
-            exports: '_'
-        }
-    },
-
-    // ask Require.js to load these files (all our tests)
-    deps: tests,
-
-    // start test run, once Require.js is done
-    callback: window.__karma__.start
-});
+var test_base64 = require('./spec/test_base64.js');
+var test_events = require('./spec/test_events.js');
+var test_promise = require('./spec/test_promise.js');
+var test_extensions = require('./spec/test_extensions.js');
+var test_localstore = require('./spec/test_localstore.js');
+var test_database = require('./spec/test_database.js');

@@ -65,8 +65,8 @@ var browserifyTask = function (options) {
 
   // Fire up Watchify when developing
   if (options.development) {
-    appBundler = watchify(appBundler);
-    appBundler.on('update', rebundle);
+    // appBundler = watchify(appBundler);
+    // appBundler.on('update', rebundle);
   }
 
   promise = rebundle();
@@ -77,21 +77,23 @@ var browserifyTask = function (options) {
   // in the application bundle
   if (options.development) {
 
-    var vendorsBundler = browserify({
+    var testBundler = browserify({
       debug: true,
-      require: dependencies
+      require: dependencies,
+      entries: ['test/main.js'], // Only need initial file, browserify finds the rest
     });
 
     // Run the vendor bundle
     var start = new Date();
-    console.log('Building VENDORS bundle');
-    vendorsBundler.bundle()
+    console.log('Building TEST bundle');
+    testBundler.bundle()
       .on('error', gutil.log)
-      .pipe(source('vendors.js'))
-      .pipe(gulpif(!options.development, streamify(uglify())))
-      .pipe(gulp.dest(options.dest))
+      .pipe(source('../test/main.js'))
+      // .pipe(streamify(uglify())
+      .pipe(rename('testbundle.js'))
+      .pipe(gulp.dest('./build/'))
       .pipe(notify(function () {
-        console.log('VENDORS bundle built in ' + (Date.now() - start) + 'ms');
+        console.log('TEST bundle built in ' + (Date.now() - start) + 'ms');
       }));
   }
   return promise;

@@ -1,116 +1,120 @@
 'use strict';
 
-define(['plasmid.core', 'plasmid.ext'], function(plasmid, ext) {
-  describe('Plasmid: Extensions', function() {
+var plasmid = require('../../src/plasmid.core.js');
+var ext = require('../../src/plasmid.ext.js');
+var utils = require('../util/indexeddb.js');
+var make_database = utils.make_database;
+var make_fixtures = utils.make_fixtures;
+var make_queries = utils.make_queries;
 
-    var C = 0;
-    function counter() {
-      return C++;
-    }
+describe('Plasmid: Extensions', function() {
 
-    var created = new ext.Default('created', 'add', counter);
-    var updated = new ext.Default('updated', counter);
+  var C = 0;
+  function counter() {
+    return C++;
+  }
 
-    var schema_ext = {
-      version: 1,
-      stores: {
-        notes: {
-          sync: false,
-          extensions: [
-            created,
-            updated,
-          ]
-        }
+  var created = new ext.Default('created', 'add', counter);
+  var updated = new ext.Default('updated', counter);
+
+  var schema_ext = {
+    version: 1,
+    stores: {
+      notes: {
+        sync: false,
+        extensions: [
+          created,
+          updated,
+        ]
       }
-    };
+    }
+  };
 
-    describe('invokes extension hooks', function () {
+  describe('invokes extension hooks', function () {
 
-      it('sets up event hooks for extension', function(){
+    it('sets up event hooks for extension', function(){
 
-        spyOn(created, 'extendStore');
-        spyOn(updated, 'extendStore');
+      spyOn(created, 'extendStore');
+      spyOn(updated, 'extendStore');
 
-        make_database(schema_ext);
+      make_database(schema_ext);
 
-        runs(function(){
-          expect(created.extendStore).toHaveBeenCalled();
-          expect(updated.extendStore).toHaveBeenCalled();
-        });
+      runs(function(){
+        expect(created.extendStore).toHaveBeenCalled();
+        expect(updated.extendStore).toHaveBeenCalled();
+      });
+    });
+
+    it('triggers correct extension events', function() {
+      make_database(schema_ext);
+
+      var X = {note: 123};
+      var Y = {note: 'abc'};
+
+      var events = [];
+      created.on('storepreupdate', function(store, action, value) {
+        events.push({action:action, value:value});
       });
 
-      it('triggers correct extension events', function() {
-        make_database(schema_ext);
+      var p = make_queries('writes to track by extension',
+        function () {
+          return DB.stores.notes.add(X);
+        },
+        function () {
+          return DB.stores.notes.put(Y);
+        }
+      );
+      runs(function() {
+        expect(events.length).toBe(2);
 
-        var X = {note: 123};
-        var Y = {note: 'abc'};
+        expect(events[0].action).toBe('add');
+        expect(events[0].value.note).toBe(123);
 
-        var events = [];
-        created.on('storepreupdate', function(store, action, value) {
-          events.push({action:action, value:value});
-        });
-
-        var p = make_queries('writes to track by extension',
-          function () {
-            return DB.stores.notes.add(X);
-          },
-          function () {
-            return DB.stores.notes.put(Y);
-          }
-        );
-        runs(function() {
-          expect(events.length).toBe(2);
-
-          expect(events[0].action).toBe('add');
-          expect(events[0].value.note).toBe(123);
-
-          expect(events[1].action).toBe('put');
-          expect(events[1].value.note).toBe('abc');
-        });
-
+        expect(events[1].action).toBe('put');
+        expect(events[1].value.note).toBe('abc');
       });
 
-      it('injects dates', function(){
+    });
 
-        var X = {note: 123};
-        C = 0;
-        make_database(schema_ext);
+    it('injects dates', function(){
 
-        make_queries('writes to track by extension',
-          function () {
-            return DB.stores.notes.add(X);
-          }
-        );
-        var p = make_queries('get saved value',
-          function() {
-            return DB.stores.notes.get(X._id);
-          }
-        );
-        runs(function(){
-          expect(C).toBe(2);
-          expect(p.result.created).toBe(0);
-          expect(p.result.updated).toBe(1);
-        });
+      var X = {note: 123};
+      C = 0;
+      make_database(schema_ext);
 
-        make_queries('writes to track by extension',
-          function () {
-            var X = p.result;
-            X.note = 'abc';
-            return DB.stores.notes.put(X);
-          }
-        );
-        var p2 = make_queries('get saved value',
-          function() {
-            return DB.stores.notes.get(X._id);
-          }
-        );
-        runs(function(){
-          expect(C).toBe(3);
-          expect(p2.result.created).toBe(0);
-          expect(p2.result.updated).toBe(2);
-        });
+      make_queries('writes to track by extension',
+        function () {
+          return DB.stores.notes.add(X);
+        }
+      );
+      var p = make_queries('get saved value',
+        function() {
+          return DB.stores.notes.get(X._id);
+        }
+      );
+      runs(function(){
+        expect(C).toBe(2);
+        expect(p.result.created).toBe(0);
+        expect(p.result.updated).toBe(1);
       });
 
+      make_queries('writes to track by extension',
+        function () {
+          var X = p.result;
+          X.note = 'abc';
+          return DB.stores.notes.put(X);
+        }
+      );
+      var p2 = make_queries('get saved value',
+        function() {
+          return DB.stores.notes.get(X._id);
+        }
+      );
+      runs(function(){
+        expect(C).toBe(3);
+        expect(p2.result.created).toBe(0);
+        expect(p2.result.updated).toBe(2);
+      });
     });
 
   });
