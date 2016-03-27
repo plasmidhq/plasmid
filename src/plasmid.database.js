@@ -43,7 +43,6 @@ var Database = function Database(options) {
         };
 
         req.onsuccess = function(event) {
-            console.log('Meta not initialized yet?', db.meta);
             db.idb = event.target.result;
 
             if (options.autoSync) {
