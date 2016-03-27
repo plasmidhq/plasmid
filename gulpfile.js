@@ -49,7 +49,7 @@ var browserifyTask = function (options) {
     appBundler.bundle()
       .on('error', gutil.log)
       .pipe(source('index.js'))
-      .pipe(gulpif(!options.development, streamify(uglify())))
+      // .pipe(gulpif(!options.development, streamify(uglify())))
       .pipe(rename('bundle.js'))
       .pipe(gulp.dest(options.dest))
       .pipe(gulpif(options.development, livereload()))
