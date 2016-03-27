@@ -1,9 +1,0 @@
-title: Plasmid
-subtitle: Browser storage with multi-device syncronization
-status: published
-publish_time: !!timestamp '2012-06-23 10:00:00'
-updated_time: !!timestamp '2012-06-23 10:00:00'
-created_time: !!timestamp '2012-06-23 10:00:00'
-template: post.j2
-order: 1
-url: "/"
