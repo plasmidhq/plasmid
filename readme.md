@@ -15,7 +15,7 @@ smooth experience.
 
 See more details at the Plasmid website
 
-http://plasmidhq.github.io/plasmid/
+http://plasmid.readthedocs.org/en/latest/
 
 ## Installation
 
