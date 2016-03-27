@@ -68,7 +68,8 @@ var Database = function Database(options) {
                 db.meta.add({key: "remote_url", value: db._getRemoteEndpoint()});
             }
 
-            db.trigger('opensuccess')
+            console.log('opensuccess');
+            db.trigger('opensuccess');
             db._new = false;
         };
         req.onupgradeneeded = function(event) {

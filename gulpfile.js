@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var fs = require('fs');
 var source = require('vinyl-source-stream'); // Used to stream bundle for further handling
 var browserify = require('browserify');
 var watchify = require('watchify');
@@ -28,6 +29,7 @@ var dependencies = [
 ];
 
 var browserifyTask = function (options) {
+  var promise;
 
   // Our app bundler
   var appBundler = browserify({
@@ -46,16 +48,19 @@ var browserifyTask = function (options) {
   var rebundle = function () {
     var start = Date.now();
     console.log('Building APP bundle');
-    appBundler.bundle()
-      .on('error', gutil.log)
-      .pipe(source('index.js'))
-      // .pipe(gulpif(!options.development, streamify(uglify())))
-      .pipe(rename('bundle.js'))
-      .pipe(gulp.dest(options.dest))
-      .pipe(gulpif(options.development, livereload()))
-      .pipe(notify(function () {
-        console.log('APP bundle built in ' + (Date.now() - start) + 'ms');
-      }));
+    return new Promise(function(resolve, reject) {
+      appBundler.bundle()
+        .on('error', gutil.log)
+        .pipe(source('distribution_shim.js'))
+        // .pipe(gulpif(!options.development, streamify(uglify())))
+        .pipe(rename('bundle.js'))
+        .pipe(gulp.dest(options.dest))
+        .pipe(gulpif(options.development, livereload()))
+        .pipe(notify(function () {
+          console.log('APP bundle built in ' + (Date.now() - start) + 'ms');
+          resolve();
+        }));
+    });
   };
 
   // Fire up Watchify when developing
@@ -64,7 +69,7 @@ var browserifyTask = function (options) {
     appBundler.on('update', rebundle);
   }
 
-  rebundle();
+  promise = rebundle();
 
   // We create a separate bundle for our dependencies as they
   // should not rebundle on file changes. This only happens when
@@ -89,14 +94,15 @@ var browserifyTask = function (options) {
         console.log('VENDORS bundle built in ' + (Date.now() - start) + 'ms');
       }));
   }
+  return promise;
 }
 
 function rebuild(options) {
   var options = options || {};
 
-  browserifyTask({
+  return browserifyTask({
     development: options.development,
-    src: './src/index.js',
+    src: './src/distribution_shim.js',
     dest: './build/'
   });
 }
@@ -125,7 +131,16 @@ gulp.task('build', function() {
 });
 
 gulp.task('deploy', function() {
+  var package = JSON.parse(fs.readFileSync('./package.json'));
   rebuild({
     development: false,
-  })
+  }).then(function(){
+    gulp.src('./build/bundle.js')
+      .pipe(rename('plasmid-' + package.version + '.js'))
+      .pipe(gulp.dest('./dist/'));
+    gulp.src('./build/bundle.js')
+      .pipe(streamify(uglify()))
+      .pipe(rename('plasmid-' + package.version + '-min.js'))
+      .pipe(gulp.dest('./dist/'));
+  });
 });

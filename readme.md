@@ -17,6 +17,16 @@ See more details at the Plasmid website
 
 http://plasmidhq.github.io/plasmid/
 
+## Installation
+
+PlasmidDB is now hosted on NPM. To use it in your web applications, Browserify or WebPack
+are recommended. *Note: PlasmidDB is a browser-only package and will not work in NodeJS.*
+
+If you use PlasmidDB via the NPM package, simple `require("plasmiddb")`.
+
+If you'd like to use PlasmidDB without NPM, the website has distributions available that
+will package PlasmidDB up for use in a web application available as a global variable `plasmid`.
+
 ## Usage
 
 To connect to a Plasmid database, you'll need to source the required

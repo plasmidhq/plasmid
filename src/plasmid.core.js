@@ -10,7 +10,9 @@ var Base64 = require('./base64.js')
 ,   util = require('./plasmid.utilities.js')
 ;
 
-window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+if (typeof window !== 'undefined' && !window.indexedDB) {
+    window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+}
 
 /* Utilities
  */
