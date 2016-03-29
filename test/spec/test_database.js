@@ -13,53 +13,37 @@ describe('Plasmid: Database', function () {
   });
 
   afterEach(function () {
-    if (DB.idb !== null) {
+    if (DB && DB.idb !== null) {
       indexedDB.deleteDatabase(DB.idb.name);
     }
   });
 
-  it('creates a database', function () {
-    runs(function(){
-      DB = new plasmid.Database({
-        name: 'test',
-        schema: {version: 1},
-      })
-      .on('opensuccess', function() {
-        ready = true;
-      })
-    });
-
-    waitsFor(function(){
-      return ready;
-    });
-
-    runs(function(){
+  it('creates a database', function (done) {
+    DB = new plasmid.Database({
+      name: 'test',
+      schema: {version: 1},
+    })
+    .on('opensuccess', function() {
       expect(DB.idb.name).toBe('test');
-    });
-
+      done();
+    })
   })
 
-  it('triggers openerror', function () {
-    runs(function(){
-      DB = new plasmid.Database({
-        name: 'test',
-        schema: {version: 1/0},
-      })
-      .on('opensuccess', function() {
-        ready = "success";
-      })
-      .on('openerror', function() {
-        ready = "error";
-      })
-    });
-
-    waitsFor(function(){
-      return ready.length>0;
-    });
-
-    runs(function(){
-      //expect(ready).toBe("error");
-    });
+  it('triggers openerror', function (done) {
+    DB = new plasmid.Database({
+      name: 'test',
+      schema: {version: 1/0},
+    })
+    .on('opensuccess', function() {
+      ready = "success";
+      expect(ready).toBe("error");
+      done();
+    })
+    .on('openerror', function() {
+      ready = "error";
+      expect(ready).toBe("error");
+      done();
+    })
   })
 
 })

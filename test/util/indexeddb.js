@@ -20,7 +20,7 @@ function delete_database(name) {
     promise.ok();
   };
   close.onerror = function() {
-    promise.error();
+    promise.ok();
   };
   return promise;
 }
