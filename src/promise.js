@@ -58,7 +58,7 @@ Promise.prototype.then = function(onsuccess, onerror) {
             if (this._status === 'error') {
                 onerror.call(this, this._error);
             } else {
-                this.on('error', onerror);
+                this.onerror = onerror;
             }
         }
         if (this._status === 'fulfilled') {
@@ -76,7 +76,6 @@ Promise.prototype.ok = function(result) {
         this._status = 'fulfilled';
         this.trigger('success', result);
     } else {
-        console.log('ok', result, this._status, this._error.toString());
         throw "promise already " + this._status;
     }
 };
@@ -86,7 +85,6 @@ Promise.prototype.error = function(e) {
         this._status = 'error';
         return this.trigger('error', e);
     } else {
-        console.log('error', this._status, this._error);
         throw "promise already " + this._status;
     }
 };

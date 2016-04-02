@@ -30,9 +30,9 @@ describe('Plasmid: Extensions', function() {
     }
   };
 
-  describe('invokes extension hooks', function (done) {
+  describe('invokes extension hooks', function () {
 
-    it('sets up event hooks for extension', function(){
+    it('sets up event hooks for extension', function(done){
 
       spyOn(created, 'extendStore');
       spyOn(updated, 'extendStore');

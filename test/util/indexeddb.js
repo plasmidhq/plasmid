@@ -103,8 +103,6 @@ exports.make_queries = function() {
       //
     }
   }, function(e) {
-    console.log("query error, " + n + ": " + e);
-    //console.log(["chain status:", c._status, "for", n].join(' '));
     if (r._status === 'waiting') {
       r.error('chain fail: ' + e);
     } else if (r._status === 'fulfilled') {

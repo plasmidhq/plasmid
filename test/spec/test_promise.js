@@ -2,6 +2,7 @@
 
 var promise = require('../../src/promise.js');
 
+
 describe('Utility: Promise', function () {
 
   // Initialize the controller and a mock scope

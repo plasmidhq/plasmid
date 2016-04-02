@@ -114,13 +114,11 @@ describe('Plasmid: LocalStore', function () {
             return utils.DB.stores.notes.put(item);
           }
         ).then(function(){
-          make_queries(function(){
-            return p.result.__refreshing;
-          }).then(function(){
+          setTimeout(function(){
             expect(p.result.length).toBe(1);
             expect(p.result[0].text).toBe("ONE");
             done();
-          });
+          }, 100);
         })
       });
     });
@@ -191,38 +189,38 @@ describe('Plasmid: LocalStore', function () {
           expect(p.result.length).toBe(2);
           expect(p.result[0].text).toBe("three");
           expect(p.result[1].text).toBe("four");
-        });
 
-        var p3 = make_queries("paging 3",
-          function() {
-            return p.result.next();
-          }
-        );
-        p3.then(function(){
-          expect(p3._error).toMatch(/NoSuchPage$/);
-          expect(p3.result).toBe(undefined);
-        });
+          var p3 = make_queries("paging 3",
+            function() {
+              return p.result.next();
+            }
+          );
+          p3.then(function(){}, function(){
+            expect(p3._error).toMatch(/NoSuchPage$/);
+            expect(p3.result).toBe(undefined);
 
-        var p4 = make_queries("paging 4",
-          function() {
-            return p.result.previous();
-          }
-        );
-        p4.then(function(){
-          expect(p.result.length).toBe(2);
-          expect(p.result[0].text).toBe("one");
-          expect(p.result[1].text).toBe("two");
-        });
+            var p4 = make_queries("paging 4",
+              function() {
+                return p.result.previous();
+              }
+            );
+            p4.then(function(){
+              expect(p.result.length).toBe(2);
+              expect(p.result[0].text).toBe("one");
+              expect(p.result[1].text).toBe("two");
 
-        var p5 = make_queries("paging 5",
-          function() {
-            return p.result.previous();
-          }
-        );
-        p5.then(function(){
-          expect(p5.result).toBe(undefined);
-          expect(p5._error).toMatch(/NoSuchPage$/);
-          done();
+              var p5 = make_queries("paging 5",
+                function() {
+                  return p.result.previous();
+                }
+              );
+              p5.then(function(){}, function(){
+                expect(p5.result).toBe(undefined);
+                expect(p5._error).toMatch(/NoSuchPage$/);
+                done();
+              });
+            });
+          });
         });
       });
     });

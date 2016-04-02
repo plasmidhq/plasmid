@@ -96,6 +96,7 @@ Results.prototype.next = function() {
     var filter = this.filter;
     var new_stop = stop + (stop - start);
     var new_start = stop;
+    var self = this;
 
     return this.refresh({start: new_start, stop: new_stop}, function(p, results) {
         if (results.length === 0) {

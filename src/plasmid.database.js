@@ -68,7 +68,6 @@ var Database = function Database(options) {
                 db.meta.add({key: "remote_url", value: db._getRemoteEndpoint()});
             }
 
-            console.log('opensuccess');
             db.trigger('opensuccess');
             db._new = false;
         };

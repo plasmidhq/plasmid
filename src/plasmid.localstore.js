@@ -231,14 +231,13 @@ LocalStore.prototype._set_item = function(action, value) {
         });
 
         store.trigger('preupdate', action, value);
-        console.log(action, JSON.stringify(value));
         var idbreq = method.call(idbstore, value);
         idbreq.onsuccess = function(event) {
             if (event.target.result) {
-                setTimeout(function(){
+                // setTimeout(function(){
                     request.ok(value);
                     store.trigger('update', action, value);
-                });
+                // }, 100);
             } else {
                 request.trigger('error', 'unknown');
             }
