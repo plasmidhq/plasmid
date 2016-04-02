@@ -30,7 +30,7 @@ describe('Plasmid: Extensions', function() {
     }
   };
 
-  describe('invokes extension hooks', function () {
+  describe('invokes extension hooks', function (done) {
 
     it('sets up event hooks for extension', function(){
 
@@ -40,6 +40,8 @@ describe('Plasmid: Extensions', function() {
       make_database(schema_ext).then(function(){
         expect(created.extendStore).toHaveBeenCalled();
         expect(updated.extendStore).toHaveBeenCalled();
+
+        done();
       });
     });
 

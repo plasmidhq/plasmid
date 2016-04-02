@@ -126,6 +126,21 @@ gulp.task('default', function (cb) {
 
 });
 
+gulp.task('test', function() {
+  rebuild({
+    development: true,
+  }).then(function() {
+    var runserver = spawn("./node_modules/karma/bin/karma", ["start"], {
+      stdio: "inherit",
+    });
+    runserver.on('close', function(code) {
+      if (code !== 0) {
+        console.error('Tests exited with error code: ' + code);
+      }
+    });
+  });
+});
+
 gulp.task('build', function() {
   rebuild({
     development: true,
