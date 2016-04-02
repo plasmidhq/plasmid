@@ -126,12 +126,17 @@ gulp.task('default', function (cb) {
 
 });
 
-gulp.task('test', function() {
+function test(opts) {
+  var env = Object.assign(process.env);
+  if (opts.detect_browsers) {
+    env['KARMA_DETECT_BROWSERS'] = 'TRUE';
+  }
   rebuild({
     development: true,
   }).then(function() {
     var runserver = spawn("./node_modules/karma/bin/karma", ["start"], {
       stdio: "inherit",
+      env: env,
     });
     runserver.on('close', function(code) {
       if (code !== 0) {
@@ -139,7 +144,14 @@ gulp.task('test', function() {
       }
     });
   });
-});
+}
+gulp.task('test', test);
+
+gulp.task('testfull', function() {
+  test({
+    detect_browsers: true,
+  })
+})
 
 gulp.task('build', function() {
   rebuild({

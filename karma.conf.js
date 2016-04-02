@@ -1,6 +1,11 @@
 // Karma configuration
 // Generated on Fri Apr 01 2016 21:37:58 GMT-0400 (EDT)
 
+var frameworks = ['jasmine', 'browserify'];
+if (process.env.KARMA_DETECT_BROWSERS) {
+  frameworks.push('detectBrowsers');
+}
+
 module.exports = function(config) {
   config.set({
 
@@ -9,13 +14,10 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'browserify'],
-
+    frameworks: frameworks,
 
     // list of files / patterns to load in the browser
     files: [
-      // 'src/**/*.js',
-      // 'test/spec/*.js'
       'build/bundle.js',
       'build/testbundle.js'
     ],
@@ -34,6 +36,21 @@ module.exports = function(config) {
      debug: true,
      transform: [ ]
    },
+
+   postDetection: function(availableBrowser) {
+      var result = availableBrowser;
+
+      //Remove PhantomJS if another browser has been detected
+      if (availableBrowser.length > 1 && availableBrowser.indexOf('PhantomJS')>-1) {
+        var i = result.indexOf('PhantomJS');
+
+        if (i !== -1) {
+          result.splice(i, 1);
+        }
+      }
+
+      return result;
+    },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
