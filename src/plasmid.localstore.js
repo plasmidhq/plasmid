@@ -129,6 +129,8 @@ LocalStore.prototype.walk = function(filter) {
             range = IDBKeyRange.lowerBound(low, typeof filter.gt !== 'undefined');
         } else if (filter.eq) {
             range = IDBKeyRange.only(filter.eq);
+        } else if (typeof filter !== 'object') {
+            range = IDBKeyRange.only(filter);
         }
 
         if (filter.reverse) {

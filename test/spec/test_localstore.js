@@ -331,6 +331,19 @@ describe('Plasmid: LocalStore', function () {
         });
     });
 
+    it('filters by = with eq filter', function(done){
+        var exact = make_queries(
+          function() {
+            return utils.DB.stores.notes.by('created').fetch(3);
+          }
+        );
+        exact.then(function() {
+          expect(exact.result.length).toBe(1);
+          expect(exact.result[0].text).toBe("three");
+          done();
+        });
+    });
+
     it('filters on multi-entry indexes by =', function(done) {
       var exact = make_queries(
         function() {
