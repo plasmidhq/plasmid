@@ -127,8 +127,8 @@ LocalStore.prototype.walk = function(filter) {
             range = IDBKeyRange.upperBound(high, typeof filter.lt !== 'undefined');
         } else if (low) {
             range = IDBKeyRange.lowerBound(low, typeof filter.gt !== 'undefined');
-        } else if (typeof filter !== 'object') {
-            range = IDBKeyRange.only(filter);
+        } else if (filter.eq) {
+            range = IDBKeyRange.only(filter.eq);
         }
 
         if (filter.reverse) {
@@ -150,6 +150,10 @@ LocalStore.prototype.walk = function(filter) {
         var cursor = event.target.result;
         if (cursor) {
             if (index >= filter.start && index < filter.stop || !filter.stop) {
+                if (typeof filter.eq !== 'undefined' && filter.eq === cursor.value) {
+                    request.ok();
+                    return;
+                }
                 request.trigger('each', cursor.value);
             }
             index++;

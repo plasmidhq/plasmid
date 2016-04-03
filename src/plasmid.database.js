@@ -100,7 +100,7 @@ var Database = function Database(options) {
                     indexopt = options.schema.stores[storename].indexes[indexname];
                     if (indexopt) {
                         idbstore.createIndex(indexname, indexopt.key,
-                            {unique: indexopt.unique, multi: indexopt.multi}
+                            {unique: indexopt.unique, multiEntry: indexopt.multi}
                         );
                     }
                 }

@@ -12,7 +12,7 @@ describe('Plasmid: LocalStore', function () {
     make_database({
       version: 1,
       stores: {
-        notes: {sync: false}
+        notes: {sync: false},
       }
     }).then(function(){
       var X = {note: "test 1 2 3"};
@@ -32,7 +32,8 @@ describe('Plasmid: LocalStore', function () {
           notes: {
               sync: false,
               indexes: {
-                  created: {key: 'created'}
+                  created: {key: 'created'},
+                  tags: {key: 'tags', multi: true},
               }
           }
       }
@@ -46,10 +47,10 @@ describe('Plasmid: LocalStore', function () {
         make_database(indexed_schema).then(function(){
           fixtures = {};
           var fixture_data = [
-            {created: 2, text: 'two'},
-            {created: 4, text: 'four'},
-            {created: 1, text: 'one'},
-            {created: 3, text: 'three'},
+            {created: 2, text: 'two', tags: ['even']},
+            {created: 4, text: 'four', tags: ['even']},
+            {created: 1, text: 'one', tags: ['odd']},
+            {created: 3, text: 'three', tags: ['odd']},
           ];
 
           // create fixtures
@@ -320,7 +321,7 @@ describe('Plasmid: LocalStore', function () {
     it('filters by =', function(done){
         var exact = make_queries(
           function() {
-            return utils.DB.stores.notes.by('created').fetch(3);
+            return utils.DB.stores.notes.by('created').fetch({eq: 3});
           }
         );
         exact.then(function() {
@@ -328,6 +329,20 @@ describe('Plasmid: LocalStore', function () {
           expect(exact.result[0].text).toBe("three");
           done();
         });
+    });
+
+    it('filters on multi-entry indexes by =', function(done) {
+      var exact = make_queries(
+        function() {
+          return utils.DB.stores.notes.by('tags').fetch({eq: 'even'});
+        }
+      );
+      exact.then(function() {
+        expect(exact.result.length).toBe(2);
+        expect(exact.result[0].text).toBe("two");
+        expect(exact.result[1].text).toBe("four");
+        done();
+      });
     });
 
     it('can walk in reverse', function(done){
