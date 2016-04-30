@@ -37,7 +37,7 @@ EventListener.prototype.on = function(eventname, handler) {
     return this;
 };
 EventListener.prototype.onerror = function() {
-    console.error('Unhandled error', arguments);
+    console.error('Unhandled error', arguments[0]);
 };
 
 function Event(eventname, target, data) {

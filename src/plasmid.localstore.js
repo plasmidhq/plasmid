@@ -165,7 +165,7 @@ LocalStore.prototype.walk = function(filter) {
         }
     };
     idbreq.onerror = function(event) {
-        request.trigger('error');
+        request.trigger('error', `Walking cursor failed: ${event}`);
     };
     return request;
 };
@@ -199,7 +199,7 @@ LocalStore.prototype._get_item = function(key) {
         }
     };
     idbreq.onerror = function(event) {
-        request.trigger('error', 'unknown');
+        request.trigger('error', `LocalStore::get(${key}) failed: ${event}`);
     }
 
     return request;
@@ -211,7 +211,7 @@ LocalStore.prototype.get = function(key) {
     item_request.then(function(item) {
         value_request.ok(item);
     }).on('error', function(e) {
-        value_request.trigger('error', e);
+        value_request.trigger('error', `LocalStore::get(${key}) failed: ${e}`);
     }).on('missing', function() {
         value_request.trigger('missing', key);
     });
@@ -245,11 +245,11 @@ LocalStore.prototype._set_item = function(action, value) {
                     store.trigger('update', action, value);
                 // }, 100);
             } else {
-                request.trigger('error', 'unknown');
+                request.trigger('error', `LocalStore::set(${action}, ...) failed with empty result`);
             }
         };
         idbreq.onerror = function(event) {
-            request.trigger('error', 'unknown');
+            request.trigger('error', `LocalStore::set(${action}, ...) failed with value: ${JSON.stringify(value)}`);
         };
     }
     return request;
@@ -280,7 +280,7 @@ LocalStore.prototype.remove = function(key) {
         }
     };
     idbreq.onerror = function(event) {
-        request.trigger('error', 'unknown');
+        request.trigger('error', `remove(${key}) failed: ${event}`);
     };
     return request;
 };
