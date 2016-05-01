@@ -268,21 +268,23 @@ LocalStore.prototype.put = function(value) {
 };
 
 LocalStore.prototype.remove = function(key) {
+    if (typeof key === 'object' && key._id) {
+        key = key._id;
+    }
     var store = this;
     var request = new Promise(this);
+
     var t = this.db._getIDBTrans([this.storename], "readwrite");
-    var idbreq = t.objectStore(this.storename).remove(key);
+    var idbreq = t.objectStore(this.storename).delete(key);
     idbreq.onsuccess = function(event) {
-        if (event.target.result) {
-            request.trigger('success', event.target.result.value);
-        } else {
-            request.trigger('missing', key);
-        }
+        request.ok();
     };
     idbreq.onerror = function(event) {
-        request.trigger('error', `remove(${key}) failed: ${event}`);
+        request.error(`delete(${key}) failed: ${event}`);
     };
+
     return request;
 };
+LocalStore.prototype.delete = LocalStore.prototype.remove;
 
 exports.LocalStore = LocalStore;
