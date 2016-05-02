@@ -56,7 +56,9 @@ EventListener.error(`handler`)
 Promise
 #######
 
-Promise is based on an EventListener_.
+Promise is based on an EventListener_. `Note:` Plasmid uses its own Promise implementation
+with a non-standard API because it was written before promises were standardized completely.
+It is in the process of being rewritten on native-Promise APIs and this API will be removed.
 
 Promise.then(`success`, `error`)
 --------------------------------
@@ -97,6 +99,28 @@ Database is based on an EventListener_.
 The database, of course, is the first thing you're going to be working with. It acts
 primarily as a container of stores and our interface to initiating transactions, but
 otherwise is used very little directly.
+
+Every Database  must be created with a current schema definition (example
+below). The schema defines the current `schema version` and at least one `store`, which
+may define indices. Plasmid will translate this schema to IndexedDB when the `schema version`
+has been incremented. If you make a change to the schema, you must increment this version
+identifier.
+
+.. sourcecode:: javascript
+
+    let db = new PlasmidDB.Database({
+      name: 'my_database',
+      schema: {
+        version: 1,
+        stores: {
+          notes: {
+            indexes: {
+              tags: {key: "tags", multi: true},
+            }
+          },
+        },
+      }
+    });
 
 .. _transaction:
 
