@@ -292,6 +292,11 @@ LocalStore.putmany(`many`)
 
     There is no varient to "add many", however.
 
+LocalStore.delete(`key`)
+------------------------
+
+    Removes the given key from the store.
+
 LocalStore.meta(`key`, `metaname`, `(metavalue)`)
 -------------------------------------------------
 
@@ -425,4 +430,3 @@ Credentials.create(`type`)
             });
             database.setRemote(data.dbname);
         })
-
