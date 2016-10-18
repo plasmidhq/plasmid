@@ -16,9 +16,19 @@ function Results(db, storename, indexname, filter, watching) {
             results.refresh();
         }
     });
+
+    this._events = new promise.EventListener();
 }
 
 Results.prototype = new Array();
+
+Results.prototype.on = function() {
+    return this._events.on.apply(this, arguments);
+}
+
+Results.prototype.trigger = function() {
+    return this._events.trigger.apply(this, arguments);
+}
 
 Results.prototype.getSource = function() {
     var store = this.db.stores[this.storename];
@@ -67,6 +77,7 @@ Results.prototype.refresh = function(filter, cb) {
             self.filter = filter;
             Array.prototype.splice.apply(self, cb_results);
             p.ok();
+            self.trigger('change', cb_results)
         }
     });
     self.__refreshing = p;

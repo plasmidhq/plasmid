@@ -278,6 +278,7 @@ LocalStore.prototype.remove = function(key) {
     var idbreq = t.objectStore(this.storename).delete(key);
     idbreq.onsuccess = function(event) {
         request.ok();
+        store.trigger('update')
     };
     idbreq.onerror = function(event) {
         request.error(`delete(${key}) failed: ${event}`);
