@@ -1,3 +1,17 @@
+Release 1.3.0
+-------------
+
+- LocalStore.remove() triggers 'update' event on the store
+- Results are now event-emitting objects
+- Results trigger 'update' when refreshed
+
+Release 1.2.1
+-------------
+
+- LocalStore.remove() accepts an object in addition to a key
+- Improved browser support with LocalStore.remove()
+- Add LocalStore.delete() alias to mirror IndexedDB API
+
 Release 1.1.1 - April 30, 2016
 ------------------------------
 
