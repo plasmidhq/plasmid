@@ -54,7 +54,8 @@ Results.prototype.watch = function(immediately) {
 Results.prototype.refresh = function(filter, cb) {
     var self = this;
     var p = new promise.Promise(this);
-    var results = [0, 0];
+    var results = [];
+    // default callback is pass through, ignoring promise
     var cb = cb || function(p, results){ return results; };
     if (!!filter) {
         for (key in this.filter) {
@@ -65,17 +66,22 @@ Results.prototype.refresh = function(filter, cb) {
     } else {
         var filter = this.filter;
     }
+    // re-walk() and collect all results
     this.getSource().walk(filter)
     .on('each', function(obj) {
         results.push(obj);
-        results[1]++;
     })
     .then(function(){
-        var cb_results = cb(p, results.slice(2));
+        // The callback passed to refresh() is given a chance to
+        // cancel the operation, for example if the results are found
+        // to be empty.
+        var cb_results = cb(p, results);
         if (p._status === 'waiting') {
-            cb_results.splice(0, 0, results[0], results[1]);
             self.filter = filter;
-            Array.prototype.splice.apply(self, cb_results);
+            // Clear and Replace the current results
+            self.splice.apply(self, [0, self.length].concat(cb_results))
+            // The promise fulfills without a value, because the result
+            // is the side-effect of updating this Results array in-place
             p.ok();
             self.trigger('change', cb_results)
         }

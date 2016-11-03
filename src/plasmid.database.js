@@ -122,9 +122,26 @@ Database.prototype._getIDBTrans = function() {
 };
 
 Database.prototype.transaction = function(stores, mode) {
+    if (typeof stores === 'string') {
+        stores = [stores];
+    }
     var idbt = this.idb.transaction(stores, mode);
+    var db = this;
     function TransactionFactory() {
         this.stores = {};
+        var p = new Promise();
+        var updated = [];
+
+        idbt.oncomplete = function() {
+            for (var i=0; i<updated.length; i++) {
+                db.stores[updated[i]].trigger('update');
+            }
+            p.ok();
+        }
+
+        this.then = function() {
+            p.then.apply(p, arguments);
+        }
 
         this.abort = function() {
             idbt.abort();
@@ -157,7 +174,10 @@ Database.prototype.transaction = function(stores, mode) {
         }
 
         for (var i=0; i < stores.length; i++) {
-            this.stores[ stores[i] ] = new LocalStore(db, stores[i]);
+            this.stores[ stores[i] ] = new LocalStore(this, stores[i]);
+            this.stores[ stores[i] ].on('update', (function() {
+                updated.push(this);
+            }).bind(stores[i]))
         }
     };
     TransactionFactory.prototype = this;

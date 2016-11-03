@@ -82,10 +82,10 @@ describe('Plasmid: LocalStore', function () {
             utils.DB.stores.notes.put(item)
             .then(function() {
               setTimeout(function(){
-              p.result.refresh().then(function(){
-                refresh.ok('done');
-              });
-              },0);
+                p.result.refresh().then(function(){
+                  refresh.ok('done');
+                });
+              }, 0);
             });
             return refresh;
           }
