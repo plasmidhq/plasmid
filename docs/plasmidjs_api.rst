@@ -265,6 +265,10 @@ LocalStore.walk(`filter`)
     The `filter` parameter controls which objects are returned. The follow keys are allowed,
     including combinations.
 
+    eq
+        Only find keys equal to a given value
+    anyof
+        Only find keys equal to one of a given array of values
     gt
         Only find keys greater than a given value
     gte
