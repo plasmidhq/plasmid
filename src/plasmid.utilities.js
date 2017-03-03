@@ -72,3 +72,104 @@ exports.random_token = function(size) {
     }
     return chars.join('');
 };
+
+// Returns a "Stream Zipper" object
+// Which can combine N streams into one, expecting
+// the input streams are all ordered.
+exports.zipStreams = function(n, cmp, callback, done) {
+    if (arguments.length === 2) {
+        callback = arguments[1]
+        cmp = null
+    }
+    if (cmp === null) {
+        cmp = (a, b) => a - b
+    }
+    var buffers = [];
+    for (var i=0; i < n; i++) {
+        buffers.push({values: [], finished: false})
+    }
+
+    // internal utilities
+    function hasUnfinishedBuffers() {
+        for (var i=0; i < n; i++) {
+            if (!buffers[i].finished) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function hasWaitingBuffers() {
+        for (var i=0; i < n; i++) {
+            if (buffers[i].values.length === 0 && !buffers[i].finished) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function hasReadyBuffers() {
+        for (var i=0; i < n; i++) {
+            if (buffers[i].values.length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function pop(i) {
+        return buffers[i].values.splice(0, 1)[0]
+    }
+
+    function sendNext() {
+        var candidates = []
+        for (var i=0; i < n; i++) {
+            if (buffers[i].values.length > 0) {
+                candidates.push({
+                    i: i,
+                    value: buffers[i].values[0],
+                })
+            }
+        }
+        candidates.sort((a, b) => cmp(a.value, b.value))
+
+        if (candidates.length > 0) {
+            var value = pop(candidates[0].i)
+            callback(value)
+            doneIfDone()
+        }
+    }
+
+    var doneCalled = false;
+    function doneIfDone() {
+        if (!doneCalled && !hasUnfinishedBuffers() && !hasReadyBuffers()) {
+            if (typeof done === 'function') {
+                done()
+                doneCalled = true;
+            }
+        }
+    }
+
+    function sendUntilExhausted() {
+        while (hasReadyBuffers()) {
+            if (hasWaitingBuffers()) {
+                return;
+            } else {
+                sendNext();
+            }
+        }
+    }
+
+    return {
+        push: function(streamNumber, value, last) {
+            buffers[streamNumber].values.push(value);
+            if (last) {
+                buffers[streamNumber].finished = true;
+            }
+            sendUntilExhausted()
+        },
+        done: function(streamNumber) {
+            buffers[streamNumber].finished = true;
+            sendUntilExhausted()
+            doneIfDone()
+        },
+    }
+};

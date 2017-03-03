@@ -82,7 +82,7 @@ LocalStore.prototype.walk = function(filter) {
     var store = this;
     var idbstore = this.db._getIDBTrans(this.storename)
         .objectStore(this.storename);
-    var idbreq
+    var idbreqs
     ,   range = null
     ,   order = IDBCursor.NEXT
     ,   index = 0
@@ -129,6 +129,11 @@ LocalStore.prototype.walk = function(filter) {
             range = IDBKeyRange.lowerBound(low, typeof filter.gt !== 'undefined');
         } else if (filter.eq) {
             range = IDBKeyRange.only(filter.eq);
+        } else if (filter.anyof) {
+            // "Any Of" is not an IndexedDB supported query
+            // but is something PlasmidDB builds on top of it.
+            // We do this by issueing N queries and combining the results.
+            range = filter.anyof.map((v) => IDBKeyRange.only(v))
         } else if (typeof filter !== 'object') {
             range = IDBKeyRange.only(filter);
         }
@@ -141,33 +146,80 @@ LocalStore.prototype.walk = function(filter) {
     }
     filter.start = !!filter.start ? filter.start : 0;
 
+    idbreqs = this.__createWalkRequests(source, range, order);
 
-    if (typeof order !== 'undefined') {
-        idbreq = source.openCursor(range, order);
-    } else {
-        idbreq = source.openCursor(range);
-    }
-
-    idbreq.onsuccess = function(event) {
-        var cursor = event.target.result;
-        if (cursor) {
-            if (index >= filter.start && index < filter.stop || !filter.stop) {
-                if (typeof filter.eq !== 'undefined' && filter.eq === cursor.value) {
-                    request.ok();
-                    return;
-                }
-                request.trigger('each', cursor.value);
+    // There may be multiple requests if we required multiple indices to be queried,
+    // and in that case we'll need to combine the results as they come in.
+    if (idbreqs.length > 1) {
+        var seen = {}
+        var streamZipper = util.zipStreams(idbreqs.length, null, (value) => {
+            if (!seen[value._id]) {
+                seen[value._id] = true;
+                request.trigger('each', value);
             }
-            index++;
-            cursor.continue();
-        } else {
-            request.ok();
-        }
-    };
-    idbreq.onerror = function(event) {
-        request.trigger('error', `Walking cursor failed: ${event}`);
-    };
+        }, () => {
+            request.ok()
+        })
+
+        idbreqs.forEach((idbreq, i) => {
+            idbreq.onsuccess = function(event) {
+                var cursor = event.target.result;
+                if (cursor) {
+                    if (index >= filter.start && index < filter.stop || !filter.stop) {
+                        if (typeof filter.eq !== 'undefined' && filter.eq === cursor.value) {
+                            request.ok();
+                            return;
+                        }
+                        streamZipper.push(i, cursor.value);
+                    }
+                    index++;
+                    cursor.continue();
+                } else {
+                    streamZipper.done(i)
+                }
+            };
+            idbreq.onerror = function(event) {
+                request.trigger('error', "Walking cursor failed.", event);
+            };
+        });
+    } else {
+        var idbreq = idbreqs[0];
+
+        idbreq.onsuccess = function(event) {
+            var cursor = event.target.result;
+            if (cursor) {
+                if (index >= filter.start && index < filter.stop || !filter.stop) {
+                    if (typeof filter.eq !== 'undefined' && filter.eq === cursor.value) {
+                        request.ok();
+                        return;
+                    }
+                    request.trigger('each', cursor.value);
+                }
+                index++;
+                cursor.continue();
+            } else {
+                request.ok();
+            }
+        };
+        idbreq.onerror = function(event) {
+            request.trigger('error', `Walking cursor failed: ${event}`);
+        };
+    }
     return request;
+};
+LocalStore.prototype.__createWalkRequests = function(source, range, order) {
+    if (range instanceof Array) {
+        return range.map((r) => this.__createSingleWalkRequest(source, r, order))
+    } else {
+        return [this.__createSingleWalkRequest(source, range, order)]
+    }
+};
+LocalStore.prototype.__createSingleWalkRequest = function(source, range, order) {
+    if (typeof order !== 'undefined') {
+        return source.openCursor(range, order);
+    } else {
+        return source.openCursor(range);
+    }
 };
 
 LocalStore.prototype.fetch = function(filter) {
